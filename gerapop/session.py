@@ -33,7 +33,7 @@ def add_item(key: SessionKey, template: Any) -> None:
     st.session_state[key].append(template)
 
 
-def remove_item(key: SessionKey, index: int) -> None:
+def remove_at(key: SessionKey, index: int) -> None:
     if len(st.session_state[key]) > 1:
         st.session_state[key].pop(index)
 

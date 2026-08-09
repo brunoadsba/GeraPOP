@@ -17,11 +17,11 @@ from gerapop.session import (
     get_regras,
     get_revisoes,
     get_secoes,
+    remove_at,
     remove_passo,
     set_generated_pop,
     templates,
 )
-from gerapop.ui.components import remove_at
 
 
 @dataclass(slots=True)
