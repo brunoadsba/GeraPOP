@@ -18,9 +18,15 @@ class Definicao(TypedDict):
     definicao: str
 
 
+class CampoProcedimento(TypedDict):
+    campo: str
+    descricao: str
+
+
 class Secao(TypedDict):
     titulo: str
     passos: list[str]
+    campos: list[CampoProcedimento]  # opcional (dados antigos podem não ter)
 
 
 class Revisao(TypedDict):
@@ -34,8 +40,12 @@ def default_definicao() -> Definicao:
     return {"termo": "", "definicao": ""}
 
 
+def default_campo() -> CampoProcedimento:
+    return {"campo": "", "descricao": ""}
+
+
 def default_secao() -> Secao:
-    return {"titulo": "", "passos": [""]}
+    return {"titulo": "", "passos": [""], "campos": []}
 
 
 def default_revisao() -> Revisao:
