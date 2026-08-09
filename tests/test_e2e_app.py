@@ -18,7 +18,10 @@ APP_PATH = str(Path(__file__).resolve().parent.parent / "app.py")
 
 
 def _button(at: AppTest, label: str):
-    return [button for button in at.button if button.label == label][0]
+    buttons = [button for button in at.button if button.label == label]
+    if not buttons:
+        raise AssertionError(f"Botão '{label}' não encontrado no AppTest")
+    return buttons[0]
 
 
 def _fill_obrigatorios(at: AppTest) -> None:
