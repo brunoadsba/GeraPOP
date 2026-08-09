@@ -32,3 +32,6 @@ Thumbs.db
 
 # Dados gerados (histórico de POPs)
 data/
+
+# Artefatos de QA (Playwright MCP)
+.playwright-mcp/
