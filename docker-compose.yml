@@ -6,4 +6,5 @@ services:
     volumes:
       - ./app.py:/app/app.py:ro
       - ./gerapop:/app/gerapop:ro
+      - ./data:/app/data
     restart: unless-stopped

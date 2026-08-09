@@ -1,8 +1,10 @@
 """Orquestração da interface Streamlit."""
 
+import io
+
 import streamlit as st
 
-from gerapop.constants import DOCX_MIME
+from gerapop.constants import DOCX_MIME, SessionKey
 from gerapop.models import PopData
 from gerapop.services.docx import gerar_docx
 from gerapop.session import (
@@ -14,8 +16,10 @@ from gerapop.session import (
     get_revisoes,
     get_secoes,
     init_state,
+    preencher_formulario,
     set_generated_docx,
 )
+from gerapop.storage import get_docx_bytes, get_pop, list_pops, save_pop
 from gerapop.ui.form_sections import (
     ConteudoFields,
     IdentificacaoFields,
@@ -89,6 +93,12 @@ def _sync_generated_state(
         clear_generated()
 
 
+def _salvar_generated(pop: PopData, docx: io.BytesIO) -> None:
+    if SessionKey.SAVED_POP_ID in st.session_state:
+        return
+    st.session_state[SessionKey.SAVED_POP_ID] = save_pop(pop, docx.getvalue())
+
+
 def render_download() -> None:
     pop: PopData | None = get_generated_pop()
     if not pop:
@@ -99,6 +109,7 @@ def render_download() -> None:
     if docx is None:
         docx = gerar_docx(pop)
         set_generated_docx(docx)
+        _salvar_generated(pop, docx)
     st.download_button(
         "Baixar POP (.docx)",
         data=docx,
@@ -108,8 +119,45 @@ def render_download() -> None:
     )
 
 
+def render_historico() -> None:
+    st.divider()
+    with st.expander("Histórico de POPs gerados"):
+        records = list_pops()
+        if not records:
+            st.caption("Nenhum POP salvo ainda. Gere um POP para vê-lo aqui.")
+            return
+        labels = {
+            record["id"]: (
+                f"{record['created_at'][:19]} — "
+                f"{record['codigo'] or 'POP'} — {record['nome_pop'][:40]}"
+            )
+            for record in records
+        }
+        selected = st.selectbox(
+            "POP salvo",
+            [record["id"] for record in records],
+            format_func=lambda pop_id: labels[pop_id],
+        )
+        col_download, col_load = st.columns(2)
+        docx_bytes = get_docx_bytes(selected)
+        if docx_bytes is not None:
+            record = next(r for r in records if r["id"] == selected)
+            col_download.download_button(
+                "Baixar .docx",
+                data=docx_bytes,
+                file_name=record["filename"],
+                mime=DOCX_MIME,
+            )
+        if col_load.button("Carregar para editar"):
+            pop = get_pop(selected)
+            if pop is not None:
+                preencher_formulario(pop)
+                st.rerun()
+
+
 def run() -> None:
     configure_page()
     init_state()
     render_form()
     render_download()
+    render_historico()

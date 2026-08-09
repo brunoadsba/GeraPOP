@@ -22,12 +22,22 @@ PASSO_COL_WIDTH_CM = 1
 
 
 class SessionKey(StrEnum):
+    NOME_POP = "nome_pop"
+    CODIGO = "codigo"
+    VERSAO = "versao"
+    DATA = "data_pop"
+    AREA = "area"
+    AVISO = "aviso"
+    OBJETIVO = "objetivo"
+    ESCOPO = "escopo"
+    CONSULTA = "consulta"
     DEFINICOES = "definicoes"
     SECOES = "secoes"
     REGRAS = "regras"
     REVISOES = "revisoes"
     GENERATED_POP = "generated_pop"
     GENERATED_DOCX = "generated_docx"
+    SAVED_POP_ID = "saved_pop_id"
 
 
 class ValidationMessage(StrEnum):

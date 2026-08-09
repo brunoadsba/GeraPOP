@@ -8,6 +8,7 @@ import streamlit as st
 from gerapop.constants import SessionKey
 from gerapop.models import (
     Definicao,
+    PopData,
     Revisao,
     Secao,
     default_definicao,
@@ -75,6 +76,23 @@ def get_generated_pop() -> Any | None:
 def clear_generated() -> None:
     st.session_state.pop(SessionKey.GENERATED_POP, None)
     st.session_state.pop(SessionKey.GENERATED_DOCX, None)
+    st.session_state.pop(SessionKey.SAVED_POP_ID, None)
+
+
+def preencher_formulario(pop: PopData) -> None:
+    st.session_state[SessionKey.NOME_POP] = pop.nome_pop
+    st.session_state[SessionKey.CODIGO] = pop.codigo
+    st.session_state[SessionKey.VERSAO] = pop.versao
+    st.session_state[SessionKey.DATA] = pop.data
+    st.session_state[SessionKey.AREA] = pop.area
+    st.session_state[SessionKey.AVISO] = pop.aviso
+    st.session_state[SessionKey.OBJETIVO] = pop.objetivo
+    st.session_state[SessionKey.ESCOPO] = pop.escopo
+    st.session_state[SessionKey.CONSULTA] = pop.consulta
+    st.session_state[SessionKey.DEFINICOES] = pop.definicoes
+    st.session_state[SessionKey.SECOES] = pop.secoes
+    st.session_state[SessionKey.REGRAS] = pop.regras
+    st.session_state[SessionKey.REVISOES] = pop.revisoes
 
 
 def set_generated_docx(docx: io.BytesIO) -> None:

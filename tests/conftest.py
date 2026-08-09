@@ -1,11 +1,17 @@
 import logging
 from datetime import date
+from pathlib import Path
 
 import pytest
 
 from gerapop.models import PopData
 
 logging.getLogger("streamlit.runtime.scriptrunner_utils.script_run_context").setLevel(logging.ERROR)
+
+
+@pytest.fixture(autouse=True)
+def _data_dir_tmp(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("GERAPOP_DATA_DIR", str(tmp_path))
 
 
 @pytest.fixture

@@ -54,17 +54,23 @@ def render_identificacao() -> IdentificacaoFields:
         nome_pop = st.text_input(
             "Nome do POP *",
             placeholder="Registro de Manobras no Sistema TOS – OpenPort",
+            key=SessionKey.NOME_POP,
         )
-        codigo = st.text_input("Código *", placeholder="POP-OPE-XXX")
-        versao = st.text_input("Versão", value=DEFAULT_VERSAO)
+        codigo = st.text_input("Código *", placeholder="POP-OPE-XXX", key=SessionKey.CODIGO)
+        versao = st.text_input("Versão", value=DEFAULT_VERSAO, key=SessionKey.VERSAO)
 
     with col2:
-        area = st.text_input("Área *", placeholder="Operações Portuárias")
-        data_pop = st.text_input("Data", value=date.today().strftime(DATE_FORMAT))
+        area = st.text_input("Área *", placeholder="Operações Portuárias", key=SessionKey.AREA)
+        data_pop = st.text_input(
+            "Data",
+            value=date.today().strftime(DATE_FORMAT),
+            key=SessionKey.DATA,
+        )
 
     aviso = st.text_input(
         "Aviso / Atenção (opcional)",
         placeholder="Ex: Este POP não contempla...",
+        key=SessionKey.AVISO,
     )
 
     return IdentificacaoFields(nome_pop, codigo, versao, data_pop, area, aviso)
@@ -72,10 +78,12 @@ def render_identificacao() -> IdentificacaoFields:
 
 def render_objetivo_escopo() -> tuple[str, str]:
     st.header("1. Objetivo")
-    objetivo = st.text_area("Descreva o objetivo do procedimento *", height=100)
+    objetivo = st.text_area(
+        "Descreva o objetivo do procedimento *", height=100, key=SessionKey.OBJETIVO
+    )
 
     st.header("2. Escopo e Pré-condições")
-    escopo = st.text_area("A quem se aplica / condições prévias", height=100)
+    escopo = st.text_area("A quem se aplica / condições prévias", height=100, key=SessionKey.ESCOPO)
 
     return objetivo, escopo
 
@@ -180,7 +188,9 @@ def render_regras() -> None:
 
 def render_consulta() -> str:
     st.header("6. Consulta e Relatórios")
-    return st.text_area("Caminho / menu para consulta (opcional)", height=70)
+    return st.text_area(
+        "Caminho / menu para consulta (opcional)", height=70, key=SessionKey.CONSULTA
+    )
 
 
 def render_revisoes() -> None:

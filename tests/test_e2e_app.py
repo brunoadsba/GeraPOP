@@ -13,6 +13,7 @@ from streamlit.testing.v1 import AppTest
 from gerapop.constants import SessionKey, ValidationMessage
 from gerapop.models import PopData
 from gerapop.services.docx import gerar_docx
+from gerapop.storage import get_docx_bytes, list_pops
 
 APP_PATH = str(Path(__file__).resolve().parent.parent / "app.py")
 
@@ -22,6 +23,10 @@ def _button(at: AppTest, label: str):
     if not buttons:
         raise AssertionError(f"Botão '{label}' não encontrado no AppTest")
     return buttons[0]
+
+
+def _download_pop_atual(at: AppTest) -> list:
+    return [d for d in at.get("download_button") if d.proto.label == "Baixar POP (.docx)"]
 
 
 def _fill_obrigatorios(at: AppTest) -> None:
@@ -55,7 +60,7 @@ def test_e2e_fluxo_completo_gera_docx() -> None:
     assert not at.exception
     assert [success.value for success in at.success] == ["POP gerado com sucesso."]
 
-    download = at.get("download_button")
+    download = _download_pop_atual(at)
     assert len(download) == 1
     assert download[0].proto.label == "Baixar POP (.docx)"
 
@@ -138,12 +143,12 @@ def test_e2e_edicao_invalida_download() -> None:
 
     _fill_obrigatorios(at)
     _gerar_pop(at)
-    assert at.get("download_button")
+    assert _download_pop_atual(at)
 
     at.text_area[0].set_value("Objetivo alterado após geração")
     at.run()
 
-    assert at.get("download_button") == []
+    assert _download_pop_atual(at) == []
     assert not at.success
     assert SessionKey.GENERATED_POP not in at.session_state
 
@@ -154,12 +159,12 @@ def test_e2e_pop_snapshot_isolado() -> None:
 
     _fill_obrigatorios(at)
     _gerar_pop(at)
-    assert at.get("download_button")
+    assert _download_pop_atual(at)
 
     _button(at, "+ Adicionar termo").click()
     at.run()
 
-    assert at.get("download_button") == []
+    assert _download_pop_atual(at) == []
 
 
 def test_e2e_docx_gerado_uma_vez() -> None:
@@ -205,3 +210,26 @@ def test_e2e_remover_revisao() -> None:
 
     assert len(at.session_state[SessionKey.REVISOES]) == 1
     assert [b for b in at.button if b.label == "Remover"] == []
+
+
+def test_e2e_historico() -> None:
+    at = AppTest.from_file(APP_PATH, default_timeout=10)
+    at.run()
+
+    _fill_obrigatorios(at)
+    _gerar_pop(at)
+    at.run()  # re-render limpo após o st.rerun do try_generate
+
+    records = list_pops()
+    assert len(records) == 1
+    assert records[0]["codigo"] == "POP-OPE-001"
+    assert get_docx_bytes(records[0]["id"]) is not None
+    assert "POP-OPE-001" in at.selectbox[0].options[0]
+
+    _button(at, "Carregar para editar").click()
+    at.run()
+    at.run()  # re-render limpo após o st.rerun do carregamento
+
+    assert at.text_input[0].value == "Registro de Manobras no Sistema TOS"
+    assert at.session_state[SessionKey.OBJETIVO] == "Padronizar o registro de manobras."
+    assert len(at.session_state[SessionKey.REVISOES]) == 1
