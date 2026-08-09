@@ -35,6 +35,7 @@ Thumbs.db
 
 # Artefatos de QA (Playwright MCP)
 .playwright-mcp/
+.qa_shots/
 
 # Artefatos locais de planejamento (OhMyOpenCode)
 .omo/
