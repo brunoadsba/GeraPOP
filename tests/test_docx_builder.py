@@ -99,3 +99,34 @@ def test_aviso_vem_depois_do_escopo(pop_minimo: PopData) -> None:
 
     escopo = seq.index("Aplica-se à equipe de operações.")
     assert seq[escopo + 1] == "⚠ ATENÇÃO: Procedimento condicionado."
+
+
+def test_campos_obrigatorios_por_secao(pop_minimo: PopData) -> None:
+    pop_minimo.secoes[0]["campos"] = [
+        {"campo": "Berço", "descricao": "Número do berço de atracação designado."},
+        {"campo": "Data e Hora", "descricao": "Data e hora efetiva da atracação."},
+    ]
+
+    texts, tables = _docx_estrutura(pop_minimo)
+
+    assert "Campos obrigatórios – Atracação:" in texts
+    campos_table = next(
+        t for t in tables if _texto_tabela(t) == "Campo" and len(t.columns) == 2
+    )
+    assert [row.cells[0].text for row in campos_table.rows[1:]] == ["Berço", "Data e Hora"]
+    assert campos_table.rows[1].cells[1].text == "Número do berço de atracação designado."
+
+
+def test_secao_sem_campos_nao_gera_subtabela(pop_minimo: PopData) -> None:
+    texts, tables = _docx_estrutura(pop_minimo)
+
+    assert not any("Campos obrigatórios" in t for t in texts)
+    assert not any(_texto_tabela(t) == "Campo" for t in tables)
+
+
+def test_secao_antiga_sem_chave_campos(pop_minimo: PopData) -> None:
+    pop_minimo.secoes[0] = {"titulo": "Atracação", "passos": ["Localizar o navio."]}
+
+    texts, _ = _docx_estrutura(pop_minimo)
+
+    assert "4.  Atracação" in texts

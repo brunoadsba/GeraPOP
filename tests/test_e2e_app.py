@@ -13,7 +13,7 @@ from streamlit.testing.v1 import AppTest
 from gerapop.constants import SessionKey, ValidationMessage
 from gerapop.models import PopData
 from gerapop.services.docx import gerar_docx
-from gerapop.storage import get_docx_bytes, list_pops
+from gerapop.storage import get_docx_bytes, list_pops, serialize_pop
 
 APP_PATH = str(Path(__file__).resolve().parent.parent / "app.py")
 
@@ -218,6 +218,41 @@ def test_e2e_remover_revisao() -> None:
 
     assert len(at.session_state[SessionKey.REVISOES]) == 1
     assert [b for b in at.button if b.label == "Remover"] == []
+
+
+def test_e2e_campos_por_secao() -> None:
+    at = AppTest.from_file(APP_PATH, default_timeout=10)
+    at.run()
+
+    at.text_input(key="sec_titulo_0").set_value("Atracação")
+
+    _button(at, "+ Adicionar campo").click()
+    at.run()
+    at.text_input(key="campo_0_0").set_value("Berço")
+    at.text_input(key="campodesc_0_0").set_value("Número do berço designado.")
+    assert [b for b in at.button if b.label == "Remover"] == []
+
+    _button(at, "+ Adicionar campo").click()
+    at.run()
+    assert len([b for b in at.button if b.label == "Remover"]) == 2
+    at.text_input(key="campo_0_1").set_value("Prático")
+    at.text_input(key="campodesc_0_1").set_value("Nome do prático.")
+
+    _fill_obrigatorios(at)
+    _gerar_pop(at)
+
+    assert not at.exception
+    pop = at.session_state[SessionKey.GENERATED_POP]
+    assert pop.secoes[0]["campos"][1]["campo"] == "Prático"
+
+    texts = _docx_texts(pop)
+    assert "Campos obrigatórios – Atracação:" in texts
+    assert "Berço" in texts
+    assert "Nome do prático." in texts
+
+    payload = serialize_pop(pop)
+    assert payload["pop"]["secoes"][0]["campos"][0]["campo"] == "Berço"
+    assert payload["pop"]["secoes"][0]["campos"][1]["descricao"] == "Nome do prático."
 
 
 def test_e2e_export_json() -> None:

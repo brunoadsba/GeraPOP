@@ -109,6 +109,23 @@ def _add_procedimento(doc: Document, pop: PopData, numero: int) -> int:
                 row = passos_table.add_row()
                 row.cells[0].text = str(passo_idx)
                 row.cells[1].text = passo
+
+        campos = secao.get("campos", [])
+        if any(item["campo"].strip() for item in campos):
+            legenda = doc.add_paragraph()
+            run = legenda.add_run(f"Campos obrigatórios – {secao['titulo']}:")
+            run.bold = True
+            campos_table = doc.add_table(rows=1, cols=2)
+            campos_table.style = "Table Grid"
+            style_header_cell(campos_table.rows[0].cells[0], "Campo", shading=SHADING_HEADER)
+            style_header_cell(
+                campos_table.rows[0].cells[1], "Descrição / Instruções", shading=SHADING_HEADER
+            )
+            for item in campos:
+                if item["campo"].strip():
+                    row = campos_table.add_row()
+                    row.cells[0].text = item["campo"]
+                    row.cells[1].text = item["descricao"]
     return numero
 
 
