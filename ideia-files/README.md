@@ -1,17 +1,7 @@
-# Arquivo de referência — projeto migrado para a raiz
+# Arquivo de referência — protótipo original
 
-O código ativo está em:
+O projeto foi reorganizado na raiz do repositório.
 
-- `/app.py` — interface Streamlit
-- `/gerapop/` — módulos do projeto
-- `/README.md` — instruções de execução
-
-Para rodar:
-
-```bash
-cd ..
-make install
-make run
-```
-
-O `app.py` desta pasta é o protótipo original e não deve ser usado.
+- Código ativo: `/app.py`, `/gerapop/`
+- Documentação: `/README.md`, `/docs/plano.md`
+- Execução: `make install-dev && make run`

@@ -4,6 +4,13 @@ from dataclasses import dataclass, field
 from datetime import date
 from typing import TypedDict
 
+from gerapop.constants import (
+    DATE_FORMAT,
+    DEFAULT_VERSAO,
+    FILENAME_SLUG_MAX_LEN,
+    ValidationMessage,
+)
+
 
 class Definicao(TypedDict):
     termo: str
@@ -20,6 +27,27 @@ class Revisao(TypedDict):
     data: str
     descricao: str
     responsavel: str
+
+
+def default_definicao() -> Definicao:
+    return {"termo": "", "definicao": ""}
+
+
+def default_secao() -> Secao:
+    return {"titulo": "", "passos": [""]}
+
+
+def default_revisao() -> Revisao:
+    return {
+        "revisao": DEFAULT_VERSAO,
+        "data": date.today().strftime(DATE_FORMAT),
+        "descricao": "Emissão inicial",
+        "responsavel": "",
+    }
+
+
+def empty_revisao() -> Revisao:
+    return {"revisao": "", "data": "", "descricao": "", "responsavel": ""}
 
 
 @dataclass(slots=True)
@@ -73,27 +101,15 @@ class PopData:
         )
 
     def validate(self) -> list[str]:
-        errors: list[str] = []
-        if not self.nome_pop:
-            errors.append("Nome do POP é obrigatório.")
-        if not self.objetivo:
-            errors.append("Objetivo é obrigatório.")
-        if not self.codigo:
-            errors.append("Código é obrigatório.")
-        if not self.area:
-            errors.append("Área é obrigatória.")
-        return errors
+        checks = (
+            (self.nome_pop, ValidationMessage.NOME_OBRIGATORIO),
+            (self.objetivo, ValidationMessage.OBJETIVO_OBRIGATORIO),
+            (self.codigo, ValidationMessage.CODIGO_OBRIGATORIO),
+            (self.area, ValidationMessage.AREA_OBRIGATORIA),
+        )
+        return [message for value, message in checks if not value]
 
     def output_filename(self) -> str:
-        slug = self.nome_pop[:30].replace(" ", "_").replace("/", "-")
+        slug = self.nome_pop[:FILENAME_SLUG_MAX_LEN].replace(" ", "_").replace("/", "-")
         prefix = self.codigo or "POP"
         return f"{prefix}_{slug}.docx"
-
-
-def default_revisao() -> Revisao:
-    return {
-        "revisao": "01",
-        "data": date.today().strftime("%d/%m/%Y"),
-        "descricao": "Emissão inicial",
-        "responsavel": "",
-    }

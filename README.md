@@ -38,13 +38,19 @@ make docker-run
 
 ```
 gerapop/
-├── app.py                 # Entrada Streamlit
+├── app.py                      # Entrada Streamlit (3 linhas)
 ├── gerapop/
-│   ├── models.py          # Tipos e validação
-│   ├── session.py         # Estado da sessão Streamlit
-│   └── docx_builder.py    # Geração do .docx
+│   ├── constants.py            # Constantes e enums
+│   ├── models.py               # Domínio e validação
+│   ├── session.py              # Estado da sessão Streamlit
+│   ├── services/
+│   │   └── docx/               # Geração do .docx
+│   └── ui/
+│       ├── main.py             # Orquestração da interface
+│       ├── form_sections.py    # Seções do formulário
+│       └── components.py       # Helpers reutilizáveis
 ├── tests/
-├── docs/plano.md          # Visão do produto e roadmap
+├── docs/plano.md
 ├── requirements.txt
 ├── pyproject.toml
 └── Makefile

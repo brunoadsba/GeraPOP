@@ -27,6 +27,5 @@ jobs:
         run: |
           ruff check app.py gerapop tests
           ruff format --check app.py gerapop tests
-
       - name: Test
         run: pytest -q
