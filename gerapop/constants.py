@@ -43,6 +43,7 @@ class SessionKey(StrEnum):
     GENERATED_DOCX = "generated_docx"
     SAVED_POP_ID = "saved_pop_id"
     DRAFT_RESTORED = "draft_restored"
+    LOADED_FROM_ID = "loaded_from_id"
 
 
 class ValidationMessage(StrEnum):

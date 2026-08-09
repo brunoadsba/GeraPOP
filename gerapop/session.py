@@ -17,7 +17,7 @@ from gerapop.models import (
     default_secao,
     empty_revisao,
 )
-from gerapop.storage import get_draft, save_draft
+from gerapop.storage import get_draft, list_pops, save_draft
 
 FORM_SCALAR_KEYS = (
     SessionKey.NOME_POP,
@@ -110,6 +110,49 @@ def clear_generated() -> None:
     st.session_state.pop(SessionKey.SAVED_POP_ID, None)
 
 
+def set_loaded_from(pop_id: str) -> None:
+    """Registra o registro que o formulário atual representa (origem de edição)."""
+    st.session_state[SessionKey.LOADED_FROM_ID] = pop_id
+
+
+def get_loaded_from() -> str | None:
+    return st.session_state.get(SessionKey.LOADED_FROM_ID)
+
+
+def encontrar_codigo_duplicado(
+    codigo: str,
+    records: list[dict[str, Any]],
+    ids_permitidos: set[str],
+) -> dict[str, Any] | None:
+    """Retorna o registro mais recente com o mesmo código fora da permissão.
+
+    Espera a lista ordenada por data de criação desc (como `list_pops`
+    entrega), de modo que o primeiro conflito é o registro mais recente.
+    Código vazio nunca é considerado duplicado.
+    """
+    if not codigo:
+        return None
+    for record in records:
+        if record["codigo"] == codigo and record["id"] not in ids_permitidos:
+            return record
+    return None
+
+
+def verificar_codigo_duplicado(codigo: str) -> dict[str, Any] | None:
+    """Verifica se o código do formulário conflita com o histórico salvo.
+
+    São permitidos: o registro carregado via "Carregar para editar"
+    (LOADED_FROM_ID) e o registro salvo na geração atual (SAVED_POP_ID).
+    Qualquer outro registro com o mesmo código bloqueia a geração.
+    """
+    ids_permitidos = {
+        pop_id
+        for pop_id in (get_loaded_from(), st.session_state.get(SessionKey.SAVED_POP_ID))
+        if pop_id
+    }
+    return encontrar_codigo_duplicado(codigo, list_pops(), ids_permitidos)
+
+
 def preencher_formulario(pop: PopData) -> None:
     st.session_state[SessionKey.NOME_POP] = pop.nome_pop
     st.session_state[SessionKey.CODIGO] = pop.codigo
@@ -156,7 +199,11 @@ def salvar_rascunho() -> None:
     form: dict[str, Any] = {
         str(key): st.session_state.get(key) for key in FORM_SCALAR_KEYS + FORM_LIST_KEYS
     }
-    payload: dict[str, Any] = {"session_id": obter_sid(), "form": form}
+    payload: dict[str, Any] = {
+        "session_id": obter_sid(),
+        "form": form,
+        "loaded_from_id": get_loaded_from(),
+    }
     if payload != get_draft():
         save_draft(payload)
 
@@ -176,3 +223,8 @@ def restaurar_rascunho() -> None:
     for key in FORM_LIST_KEYS:
         if str(key) in form:
             st.session_state[key] = form[str(key)]
+    loaded_from_id = payload.get("loaded_from_id")
+    if loaded_from_id and any(
+        record["id"] == loaded_from_id for record in list_pops()
+    ):
+        set_loaded_from(loaded_from_id)

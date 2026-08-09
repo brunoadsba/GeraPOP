@@ -2,6 +2,7 @@
 
 import io
 import json
+from collections import Counter
 from datetime import datetime
 
 import streamlit as st
@@ -22,6 +23,7 @@ from gerapop.session import (
     restaurar_rascunho,
     salvar_rascunho,
     set_generated_docx,
+    set_loaded_from,
 )
 from gerapop.storage import (
     gerar_backup_zip,
@@ -108,7 +110,9 @@ def _sync_generated_state(
 def _salvar_generated(pop: PopData, docx: io.BytesIO) -> None:
     if SessionKey.SAVED_POP_ID in st.session_state:
         return
-    st.session_state[SessionKey.SAVED_POP_ID] = save_pop(pop, docx.getvalue())
+    pop_id = save_pop(pop, docx.getvalue())
+    st.session_state[SessionKey.SAVED_POP_ID] = pop_id
+    set_loaded_from(pop_id)
 
 
 def render_download() -> None:
@@ -138,6 +142,15 @@ def render_download() -> None:
     )
 
 
+def _historico_label(record: dict, contagem_codigos: Counter) -> str:
+    """Rótulo do selectbox do histórico, com marca de código repetido."""
+    codigo = record["codigo"] or "POP"
+    label = f"{record['created_at'][:19]} — {codigo} — {record['nome_pop'][:40]}"
+    if contagem_codigos[record["codigo"]] > 1:
+        label += f" ⚠ ({contagem_codigos[record['codigo']]})"
+    return label
+
+
 def render_historico() -> None:
     st.divider()
     with st.expander("Histórico de POPs gerados"):
@@ -145,11 +158,9 @@ def render_historico() -> None:
         if not records:
             st.caption("Nenhum POP salvo ainda. Gere um POP para vê-lo aqui.")
             return
+        contagem_codigos = Counter(record["codigo"] for record in records)
         labels = {
-            record["id"]: (
-                f"{record['created_at'][:19]} — "
-                f"{record['codigo'] or 'POP'} — {record['nome_pop'][:40]}"
-            )
+            record["id"]: _historico_label(record, contagem_codigos)
             for record in records
         }
         selected = st.selectbox(
@@ -179,6 +190,7 @@ def render_historico() -> None:
         if col_load.button("Carregar para editar"):
             pop = get_pop(selected)
             if pop is not None:
+                set_loaded_from(selected)
                 preencher_formulario(pop)
                 st.rerun()
 

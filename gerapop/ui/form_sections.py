@@ -23,6 +23,7 @@ from gerapop.session import (
     remove_passo,
     set_generated_pop,
     templates,
+    verificar_codigo_duplicado,
 )
 
 
@@ -290,6 +291,15 @@ def try_generate(identificacao: IdentificacaoFields, conteudo: ConteudoFields) -
     if errors:
         for error in errors:
             st.error(error)
+        return
+
+    duplicado = verificar_codigo_duplicado(pop.codigo)
+    if duplicado is not None:
+        st.error(
+            f"O código {pop.codigo} já é usado pelo POP '{duplicado['nome_pop']}' "
+            f"(criado em {duplicado['created_at'][:16]}). Use um código diferente "
+            "ou carregue o POP existente no histórico para editá-lo."
+        )
         return
 
     set_generated_pop(deepcopy(pop))
