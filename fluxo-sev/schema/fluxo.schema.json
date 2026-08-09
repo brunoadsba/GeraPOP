@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://codeba.local/fluxo-sev/schemas/fluxo.schema.json",
+  "title": "Fluxo SEV (diagrama clicável)",
+  "description": "Estrutura de um fluxo do SEV: etapas (colunas) com nós clicáveis que abrem o POP vinculado.",
+  "type": "object",
+  "required": ["fluxo_id", "titulo", "nos"],
+  "properties": {
+    "fluxo_id": { "type": "string" },
+    "titulo": { "type": "string" },
+    "descricao": { "type": "string" },
+    "nos": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/definitions/no" }
+    },
+    "links": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["from", "to"],
+        "properties": {
+          "from": { "type": "string" },
+          "to": { "type": "string" },
+          "rotulo": { "type": "string" }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "no": {
+      "type": "object",
+      "required": ["id", "etapa", "rotulo"],
+      "properties": {
+        "id": { "type": "string" },
+        "etapa": { "type": "integer", "minimum": 1 },
+        "rotulo": { "type": "string" },
+        "descricao": { "type": "string" },
+        "pop_ref": {
+          "description": "Nome do arquivo do POP em data/pops/ (sem extensão). Nulo quando o POP ainda não foi gerado.",
+          "type": ["string", "null"]
+        }
+      }
+    }
+  }
+}

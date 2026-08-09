@@ -1,0 +1,84 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://codeba.local/fluxo-sev/schemas/pop.schema.json",
+  "title": "POP exportado pelo GeraPOP",
+  "description": "Formato do pop.json gerado pelo GeraPOP (serialize_pop): metadata + pop.",
+  "type": "object",
+  "required": ["metadata", "pop"],
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "required": ["created_at", "status", "codigo", "nome_pop", "filename"],
+      "properties": {
+        "created_at": { "type": "string" },
+        "status": { "const": "generated" },
+        "codigo": { "type": "string" },
+        "nome_pop": { "type": "string" },
+        "filename": { "type": "string" }
+      }
+    },
+    "pop": { "$ref": "#/definitions/popData" }
+  },
+  "definitions": {
+    "popData": {
+      "type": "object",
+      "required": [
+        "nome_pop", "codigo", "versao", "data", "area", "aviso",
+        "objetivo", "escopo", "definicoes", "secoes", "regras", "consulta", "revisoes"
+      ],
+      "properties": {
+        "nome_pop": { "type": "string" },
+        "codigo": { "type": "string" },
+        "versao": { "type": "string" },
+        "data": { "type": "string" },
+        "area": { "type": "string" },
+        "aviso": { "type": "string" },
+        "objetivo": { "type": "string" },
+        "escopo": { "type": "string" },
+        "definicoes": { "type": "array", "items": { "$ref": "#/definitions/definicao" } },
+        "secoes": { "type": "array", "items": { "$ref": "#/definitions/secao" } },
+        "regras": { "type": "array", "items": { "type": "string" } },
+        "consulta": { "type": "string" },
+        "revisoes": { "type": "array", "items": { "$ref": "#/definitions/revisao" } }
+      }
+    },
+    "definicao": {
+      "type": "object",
+      "required": ["termo", "definicao"],
+      "properties": {
+        "termo": { "type": "string" },
+        "definicao": { "type": "string" }
+      }
+    },
+    "secao": {
+      "type": "object",
+      "required": ["titulo", "passos"],
+      "properties": {
+        "titulo": { "type": "string" },
+        "passos": { "type": "array", "items": { "type": "string" } },
+        "campos": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/campoProcedimento" }
+        }
+      }
+    },
+    "campoProcedimento": {
+      "type": "object",
+      "required": ["campo", "descricao"],
+      "properties": {
+        "campo": { "type": "string" },
+        "descricao": { "type": "string" }
+      }
+    },
+    "revisao": {
+      "type": "object",
+      "required": ["revisao", "data", "descricao", "responsavel"],
+      "properties": {
+        "revisao": { "type": "string" },
+        "data": { "type": "string" },
+        "descricao": { "type": "string" },
+        "responsavel": { "type": "string" }
+      }
+    }
+  }
+}

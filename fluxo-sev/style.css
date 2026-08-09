@@ -1,0 +1,246 @@
+:root {
+  --azul-marinho: #0f2a43;
+  --azul-medio: #1f6f8b;
+  --azul-claro: #e8f1f5;
+  --fundo: #f4f6f8;
+  --borda: #d5dde3;
+  --texto: #1c2733;
+  --texto-suave: #5b6b7a;
+  --card-sem-pop: #fbf3e6;
+  --borda-sem-pop: #e4c98f;
+  --sombra: 0 2px 6px rgba(15, 42, 67, 0.12);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  background: var(--fundo);
+  color: var(--texto);
+  line-height: 1.5;
+}
+
+.cabecalho {
+  background: var(--azul-marinho);
+  color: #fff;
+  padding: 1.25rem 1.5rem;
+}
+
+.cabecalho h1 {
+  margin: 0;
+  font-size: 1.4rem;
+}
+
+.subtitulo {
+  margin: 0.25rem 0 0;
+  color: #c9d9e4;
+  font-size: 0.95rem;
+}
+
+main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.erro {
+  background: #fdecea;
+  border: 1px solid #f0b4ab;
+  color: #8a2b22;
+  padding: 0.9rem 1rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+}
+
+.diagrama {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.etapa h2 {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--texto-suave);
+  margin: 0 0 0.6rem;
+  border-bottom: 2px solid var(--azul-medio);
+  padding-bottom: 0.3rem;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  width: 100%;
+  text-align: left;
+  background: #fff;
+  border: 1px solid var(--borda);
+  border-left: 5px solid var(--azul-medio);
+  border-radius: 8px;
+  padding: 0.8rem 0.9rem;
+  margin-bottom: 0.75rem;
+  cursor: pointer;
+  box-shadow: var(--sombra);
+  font: inherit;
+  color: inherit;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.card:hover,
+.card:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(15, 42, 67, 0.2);
+  outline: 2px solid var(--azul-medio);
+  outline-offset: 1px;
+}
+
+.card-sem-pop {
+  background: var(--card-sem-pop);
+  border-left-color: var(--borda-sem-pop);
+}
+
+.card-descricao {
+  color: var(--texto-suave);
+  font-size: 0.85rem;
+}
+
+.card-badge {
+  margin-top: auto;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--azul-medio);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.card-sem-pop .card-badge {
+  color: #9a7b2d;
+}
+
+.rodape {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1rem 1.5rem 2rem;
+  color: var(--texto-suave);
+  font-size: 0.8rem;
+}
+
+/* Modal */
+.modal {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.modal[hidden] {
+  display: none;
+}
+
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 24, 38, 0.6);
+}
+
+.modal-card {
+  position: relative;
+  background: #fff;
+  width: min(680px, 92vw);
+  max-height: 86vh;
+  overflow-y: auto;
+  border-radius: 10px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+  padding: 1.5rem;
+}
+
+.modal-fechar {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.8rem;
+  background: none;
+  border: none;
+  font-size: 1.6rem;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--texto-suave);
+}
+
+.modal-fechar:hover {
+  color: var(--texto);
+}
+
+/* Conteúdo do POP */
+.pop-cabecalho {
+  border-bottom: 2px solid var(--azul-marinho);
+  padding-bottom: 0.6rem;
+  margin-bottom: 0.8rem;
+}
+
+.pop-cabecalho h2 {
+  margin: 0 0 0.3rem;
+  color: var(--azul-marinho);
+  font-size: 1.25rem;
+}
+
+.pop-meta {
+  color: var(--texto-suave);
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+.pop-aviso {
+  background: #fff7e0;
+  border: 1px solid #ecd9a0;
+  border-radius: 6px;
+  padding: 0.6rem 0.8rem;
+  margin: 0.6rem 0;
+  font-size: 0.9rem;
+}
+
+.pop-bloco {
+  margin: 0.9rem 0;
+}
+
+.pop-bloco h3 {
+  font-size: 0.95rem;
+  color: var(--azul-medio);
+  margin: 0 0 0.35rem;
+}
+
+.pop-passos {
+  margin: 0;
+  padding-left: 1.3rem;
+}
+
+.pop-campos {
+  border-collapse: collapse;
+  width: 100%;
+  margin-top: 0.5rem;
+  font-size: 0.88rem;
+}
+
+.pop-campos th,
+.pop-campos td {
+  border: 1px solid var(--borda);
+  padding: 0.35rem 0.5rem;
+  text-align: left;
+}
+
+.pop-campos th {
+  background: var(--azul-claro);
+  color: var(--azul-marinho);
+}
+
+.pop-sem-pop {
+  text-align: center;
+  color: var(--texto-suave);
+  padding: 1rem 0;
+}
