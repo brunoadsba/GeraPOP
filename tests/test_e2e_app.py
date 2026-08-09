@@ -5,8 +5,16 @@ verificar o `.docx` produzido (mesmo caminho servido pelo botao de download).
 """
 
 from io import BytesIO
-from pathlib import Path
 
+from conftest import (
+    APP_PATH,
+    _button,
+    _download_json_gerado,
+    _download_json_historico,
+    _download_pop_atual,
+    _fill_obrigatorios,
+    _gerar_pop,
+)
 from docx import Document
 from streamlit.testing.v1 import AppTest
 
@@ -14,39 +22,6 @@ from gerapop.constants import SessionKey, ValidationMessage
 from gerapop.models import PopData
 from gerapop.services.docx import gerar_docx
 from gerapop.storage import get_docx_bytes, list_pops, serialize_pop
-
-APP_PATH = str(Path(__file__).resolve().parent.parent / "app.py")
-
-
-def _button(at: AppTest, label: str):
-    buttons = [button for button in at.button if button.label == label]
-    if not buttons:
-        raise AssertionError(f"Botão '{label}' não encontrado no AppTest")
-    return buttons[0]
-
-
-def _download_pop_atual(at: AppTest) -> list:
-    return [d for d in at.get("download_button") if d.proto.label == "Baixar POP (.docx)"]
-
-
-def _download_json_gerado(at: AppTest) -> list:
-    return [d for d in at.get("download_button") if d.proto.label == "Baixar POP (.json)"]
-
-
-def _download_json_historico(at: AppTest) -> list:
-    return [d for d in at.get("download_button") if d.proto.label == "Baixar .json"]
-
-
-def _fill_obrigatorios(at: AppTest) -> None:
-    at.text_input[0].set_value("Registro de Manobras no Sistema TOS")  # Nome do POP
-    at.text_input[1].set_value("POP-OPE-001")  # Código
-    at.text_input[3].set_value("Operações Portuárias")  # Área
-    at.text_area[0].set_value("Padronizar o registro de manobras.")  # Objetivo
-
-
-def _gerar_pop(at: AppTest) -> None:
-    _button(at, "Gerar POP (.docx)").click()
-    at.run()
 
 
 def _docx_texts(pop: PopData) -> list[str]:
@@ -228,9 +203,7 @@ def test_e2e_backup_zip_no_historico() -> None:
     _gerar_pop(at)
     at.run()
 
-    backups = [
-        d for d in at.get("download_button") if d.proto.label == "Baixar backup (.zip)"
-    ]
+    backups = [d for d in at.get("download_button") if d.proto.label == "Baixar backup (.zip)"]
     assert len(backups) == 1
     assert backups[0].proto.url.endswith(".zip")
 

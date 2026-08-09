@@ -5,33 +5,11 @@ mesma sessão e o fluxo "Carregar para editar" → editar → regerar (com a
 marca de código repetido no histórico).
 """
 
-from pathlib import Path
-
+from conftest import APP_PATH, _button, _fill_obrigatorios, _gerar_pop
 from streamlit.testing.v1 import AppTest
 
 from gerapop.constants import SessionKey
 from gerapop.storage import clear_draft, list_pops
-
-APP_PATH = str(Path(__file__).resolve().parent.parent / "app.py")
-
-
-def _button(at: AppTest, label: str):
-    buttons = [button for button in at.button if button.label == label]
-    if not buttons:
-        raise AssertionError(f"Botão '{label}' não encontrado no AppTest")
-    return buttons[0]
-
-
-def _fill_obrigatorios(at: AppTest) -> None:
-    at.text_input[0].set_value("Registro de Manobras no Sistema TOS")  # Nome do POP
-    at.text_input[1].set_value("POP-OPE-001")  # Código
-    at.text_input[3].set_value("Operações Portuárias")  # Área
-    at.text_area[0].set_value("Padronizar o registro de manobras.")  # Objetivo
-
-
-def _gerar_pop(at: AppTest) -> None:
-    _button(at, "Gerar POP (.docx)").click()
-    at.run()
 
 
 def test_e2e_codigo_duplicado_bloqueia_nova_sessao() -> None:
@@ -53,9 +31,7 @@ def test_e2e_codigo_duplicado_bloqueia_nova_sessao() -> None:
     assert not at2.exception
     assert not at2.success
     assert SessionKey.GENERATED_POP not in at2.session_state
-    assert [
-        d for d in at2.get("download_button") if d.proto.label == "Baixar POP (.docx)"
-    ] == []
+    assert [d for d in at2.get("download_button") if d.proto.label == "Baixar POP (.docx)"] == []
 
     errors = [error.value for error in at2.error]
     assert any("POP-OPE-001" in error and "já é usado" in error for error in errors)
