@@ -77,19 +77,19 @@ def render_identificacao() -> IdentificacaoFields:
 
 
 def render_objetivo_escopo() -> tuple[str, str]:
-    st.header("1. Objetivo")
+    st.header("Objetivo")
     objetivo = st.text_area(
         "Descreva o objetivo do procedimento *", height=100, key=SessionKey.OBJETIVO
     )
 
-    st.header("2. Escopo e Pré-condições")
+    st.header("Escopo e Pré-condições")
     escopo = st.text_area("A quem se aplica / condições prévias", height=100, key=SessionKey.ESCOPO)
 
     return objetivo, escopo
 
 
 def render_definicoes() -> None:
-    st.header("3. Definições")
+    st.header("Definições")
     for index, item in enumerate(get_definicoes()):
         col_termo, col_def, col_action = st.columns([2, 4, 1])
         item["termo"] = col_termo.text_input(
@@ -118,7 +118,7 @@ def render_definicoes() -> None:
 
 
 def render_procedimento() -> None:
-    st.header("4. Procedimento")
+    st.header("Procedimento")
     for secao_index, secao in enumerate(get_secoes()):
         st.subheader(f"Seção {secao_index + 1}")
         secao["titulo"] = st.text_input(
@@ -164,7 +164,7 @@ def render_procedimento() -> None:
 
 
 def render_regras() -> None:
-    st.header("5. Regras e Restrições")
+    st.header("Regras e Restrições")
     regras = get_regras()
     for index, regra in enumerate(regras):
         col_regra, col_action = st.columns([6, 1])
@@ -187,14 +187,14 @@ def render_regras() -> None:
 
 
 def render_consulta() -> str:
-    st.header("6. Consulta e Relatórios")
+    st.header("Consulta e Relatórios")
     return st.text_area(
         "Caminho / menu para consulta (opcional)", height=70, key=SessionKey.CONSULTA
     )
 
 
 def render_revisoes() -> None:
-    st.header("7. Histórico de Revisões")
+    st.header("Histórico de Revisões")
     for index, revisao in enumerate(get_revisoes()):
         col_rev, col_data, col_desc, col_resp, col_action = st.columns([1, 1.5, 4, 2, 1])
         revisao["revisao"] = col_rev.text_input(

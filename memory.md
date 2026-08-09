@@ -58,6 +58,8 @@ GeraPOP (Projeto 2)  →  dados estruturados  →  Fluxo Interativo SEV (Projeto
 
 **Export JSON (v1.1):** todo POP gerado pode ser baixado como `.json` (formato `{"metadata": ..., "pop": ...}`, igual ao `pop.json` do storage) — tanto na tela de geração quanto no Histórico. Habilita o Projeto 1 (Fluxo SEV).
 
+**Fidelidade ao modelo (v1.1):** o `.docx` segue o modelo `POP_Manobras_CODEBA_v2` (validado em 2026-08-09 com o modelo real OpenPort): numeração plana automática das seções (1..N), aviso ⚠ dentro do Escopo, regras em tabela `R | texto`, consulta em caixa, fontes 18/13pt. **Gap conhecido (G6):** tabela de "Campos obrigatórios" por procedimento não implementada (opcional).
+
 **O que a v1 NÃO faz (proposital):**
 - Login / multi-usuário
 - Nuvem
@@ -144,7 +146,7 @@ make install-dev
 make run          # http://localhost:8501
 
 # Qualidade
-make test         # 29 testes (storage + docx + models + e2e)
+make test         # 31 testes (storage + docx + models + e2e)
 make lint         # ruff check + format --check
 make format       # auto-format
 
@@ -180,10 +182,10 @@ Seguir estas regras ao continuar o projeto:
   - Separação em `constants`, `services/docx/`, `ui/`
   - Remoção de `gerapop/docx_builder.py` monolítico
   - Remoção de duplicatas em `ideia-files/`
-  - Novos testes (`test_models.py`, `test_e2e_app.py`, `test_storage.py`, `conftest.py`) — **29 testes passando**
+  - Novos testes (`test_models.py`, `test_e2e_app.py`, `test_storage.py`, `conftest.py`) — **31 testes passando**
   - README atualizado com nova estrutura
 
-**Próxima ação sugerida:** testar com POP real da CODEBA e ajustar campos/layout, ou seguir para o Projeto 1 (Fluxo SEV) usando o export JSON.
+**Próxima ação sugerida:** seguir para o Projeto 1 (Fluxo SEV) consumindo o export JSON, ou (opcional) implementar o G6 (tabela de campos por procedimento).
 
 ---
 
@@ -191,7 +193,7 @@ Seguir estas regras ao continuar o projeto:
 
 ### Curto prazo (GeraPOP v1.1)
 - [x] **Export JSON** junto com `.docx` — habilita Projeto 1 (Fluxo SEV)
-- [ ] Testar com POP real da CODEBA e ajustar campos/layout
+- [x] Testar com POP real da CODEBA e ajustar campos/layout — validado contra modelo OpenPort (11 seções idênticas); G6 (tabela de campos) pendente/opcional
 - [x] Commit + push da refatoração clean code
 
 ### Médio prazo (GeraPOP v2)
@@ -240,8 +242,8 @@ Leia memory.md e docs/plano.md antes de codar.
 Stack: Python 3.11, Streamlit, python-docx, pytest, ruff.
 Arquitetura: gerapop/models (domínio), services/docx (geração), ui/ (formulário).
 
-Estado: MVP v1 funcional + histórico de POPs gerados em disco + export JSON (29 testes OK).
-Próximo passo sugerido: validação com POP real da CODEBA.
+Estado: MVP v1 funcional + histórico de POPs gerados em disco + export JSON + docx fiel ao modelo real (31 testes OK).
+Próximo passo sugerido: Projeto 1 (Fluxo SEV) com o export JSON.
 
 NÃO implementar: nuvem, auth, multi-agente, migração de stack.
 ```

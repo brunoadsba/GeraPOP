@@ -138,7 +138,7 @@ def test_e2e_listas_dinamicas_integradas() -> None:
     texts = _docx_texts(pop)
     assert "TOS" in texts
     assert "Terminal Operating System" in texts
-    assert "4.1.  Atracação" in texts
+    assert "4.  Atracação" in texts
     assert "Verificar condições." in texts
     assert "Registrar no sistema." in texts
     assert "Não executar sem autorização." in texts
