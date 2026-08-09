@@ -11,6 +11,7 @@ import streamlit as st
 from gerapop.constants import DATE_FORMAT, DEFAULT_VERSAO, SessionKey
 from gerapop.models import PopData
 from gerapop.session import (
+    add_campo,
     add_item,
     add_passo,
     get_definicoes,
@@ -18,6 +19,7 @@ from gerapop.session import (
     get_revisoes,
     get_secoes,
     remove_at,
+    remove_campo,
     remove_passo,
     set_generated_pop,
     templates,
@@ -147,6 +149,36 @@ def render_procedimento() -> None:
             "+ Adicionar passo",
             key=f"add_passo_{secao_index}",
             on_click=add_passo,
+            args=(secao_index,),
+        )
+
+        campos = secao.setdefault("campos", [])
+        for campo_index, campo in enumerate(campos):
+            col_campo, col_desc, col_action = st.columns([2, 4, 1])
+            campo["campo"] = col_campo.text_input(
+                "Campo",
+                value=campo["campo"],
+                key=f"campo_{secao_index}_{campo_index}",
+                label_visibility="collapsed",
+                placeholder="Campo",
+            )
+            campo["descricao"] = col_desc.text_input(
+                "Descrição",
+                value=campo["descricao"],
+                key=f"campodesc_{secao_index}_{campo_index}",
+                label_visibility="collapsed",
+                placeholder="Descrição / Instruções",
+            )
+            if len(campos) > 1 and col_action.button(
+                "Remover", key=f"rm_campo_{secao_index}_{campo_index}"
+            ):
+                remove_campo(secao_index, campo_index)
+                st.rerun()
+
+        st.button(
+            "+ Adicionar campo",
+            key=f"add_campo_{secao_index}",
+            on_click=add_campo,
             args=(secao_index,),
         )
 

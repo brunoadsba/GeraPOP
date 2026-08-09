@@ -11,6 +11,7 @@ from gerapop.models import (
     PopData,
     Revisao,
     Secao,
+    default_campo,
     default_definicao,
     default_revisao,
     default_secao,
@@ -47,6 +48,16 @@ def remove_passo(secao_index: int, passo_index: int) -> None:
     passos: list[str] = st.session_state[SessionKey.SECOES][secao_index]["passos"]
     if len(passos) > 1:
         passos.pop(passo_index)
+
+
+def add_campo(secao_index: int) -> None:
+    get_secoes()[secao_index].setdefault("campos", []).append(default_campo())
+
+
+def remove_campo(secao_index: int, campo_index: int) -> None:
+    campos = get_secoes()[secao_index].setdefault("campos", [])
+    if len(campos) > 1:
+        campos.pop(campo_index)
 
 
 def get_definicoes() -> list[Definicao]:
