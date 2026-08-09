@@ -9,7 +9,7 @@ from datetime import date
 import streamlit as st
 
 from gerapop.constants import DATE_FORMAT, DEFAULT_VERSAO, SessionKey
-from gerapop.models import PopData
+from gerapop.models import PopData, default_definicao, default_secao, empty_revisao
 from gerapop.session import (
     add_campo,
     add_item,
@@ -22,7 +22,6 @@ from gerapop.session import (
     remove_campo,
     remove_passo,
     set_generated_pop,
-    templates,
     verificar_codigo_duplicado,
 )
 
@@ -76,7 +75,14 @@ def render_identificacao() -> IdentificacaoFields:
         key=SessionKey.AVISO,
     )
 
-    return IdentificacaoFields(nome_pop, codigo, versao, data_pop, area, aviso)
+    return IdentificacaoFields(
+        nome_pop=nome_pop,
+        codigo=codigo,
+        versao=versao,
+        data=data_pop,
+        area=area,
+        aviso=aviso,
+    )
 
 
 def render_objetivo_escopo() -> tuple[str, str]:
@@ -116,7 +122,7 @@ def render_definicoes() -> None:
     st.button(
         "+ Adicionar termo",
         on_click=add_item,
-        args=(SessionKey.DEFINICOES, templates()["definicao"]),
+        args=(SessionKey.DEFINICOES, default_definicao()),
     )
 
 
@@ -192,7 +198,7 @@ def render_procedimento() -> None:
     st.button(
         "+ Adicionar seção",
         on_click=add_item,
-        args=(SessionKey.SECOES, templates()["secao"]),
+        args=(SessionKey.SECOES, default_secao()),
     )
 
 
@@ -215,7 +221,7 @@ def render_regras() -> None:
     st.button(
         "+ Adicionar regra",
         on_click=add_item,
-        args=(SessionKey.REGRAS, templates()["regra"]),
+        args=(SessionKey.REGRAS, ""),
     )
 
 
@@ -263,7 +269,7 @@ def render_revisoes() -> None:
     st.button(
         "+ Adicionar revisão",
         on_click=add_item,
-        args=(SessionKey.REVISOES, templates()["revisao"]),
+        args=(SessionKey.REVISOES, empty_revisao()),
     )
 
 

@@ -142,7 +142,7 @@ def render_download() -> None:
     )
 
 
-def _historico_label(record: dict, contagem_codigos: Counter) -> str:
+def _historico_label(record: dict, contagem_codigos: Counter[str]) -> str:
     """Rótulo do selectbox do histórico, com marca de código repetido."""
     codigo = record["codigo"] or "POP"
     label = f"{record['created_at'][:19]} — {codigo} — {record['nome_pop'][:40]}"
@@ -159,10 +159,7 @@ def render_historico() -> None:
             st.caption("Nenhum POP salvo ainda. Gere um POP para vê-lo aqui.")
             return
         contagem_codigos = Counter(record["codigo"] for record in records)
-        labels = {
-            record["id"]: _historico_label(record, contagem_codigos)
-            for record in records
-        }
+        labels = {record["id"]: _historico_label(record, contagem_codigos) for record in records}
         selected = st.selectbox(
             "POP salvo",
             [record["id"] for record in records],

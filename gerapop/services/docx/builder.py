@@ -33,11 +33,11 @@ def _configure_margins(doc: Document) -> None:
         section.right_margin = Cm(MARGIN_RIGHT_CM)
 
 
-def _add_centered_title(doc: Document, text: str, *, size: int, bold: bool = True) -> None:
+def _add_centered_title(doc: Document, text: str, *, size: int) -> None:
     paragraph = doc.add_paragraph()
     paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
     run = paragraph.add_run(text)
-    run.bold = bold
+    run.bold = True
     run.font.size = Pt(size)
 
 

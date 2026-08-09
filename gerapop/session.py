@@ -15,7 +15,6 @@ from gerapop.models import (
     default_definicao,
     default_revisao,
     default_secao,
-    empty_revisao,
 )
 from gerapop.storage import get_draft, list_pops, save_draft
 
@@ -177,15 +176,6 @@ def get_generated_docx() -> io.BytesIO | None:
     return st.session_state.get(SessionKey.GENERATED_DOCX)
 
 
-def templates() -> dict[str, Any]:
-    return {
-        "definicao": default_definicao(),
-        "secao": default_secao(),
-        "regra": "",
-        "revisao": empty_revisao(),
-    }
-
-
 def obter_sid() -> str | None:
     """ID da sessão Streamlit atual (None fora de um runtime ativo)."""
     try:
@@ -224,7 +214,5 @@ def restaurar_rascunho() -> None:
         if str(key) in form:
             st.session_state[key] = form[str(key)]
     loaded_from_id = payload.get("loaded_from_id")
-    if loaded_from_id and any(
-        record["id"] == loaded_from_id for record in list_pops()
-    ):
+    if loaded_from_id and any(record["id"] == loaded_from_id for record in list_pops()):
         set_loaded_from(loaded_from_id)
