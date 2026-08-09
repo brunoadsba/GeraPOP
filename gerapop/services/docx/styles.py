@@ -9,11 +9,13 @@ from gerapop.constants import FONT_HEADER_PT
 
 def set_cell_shading(cell, color_hex: str) -> None:
     tc_pr = cell._tc.get_or_add_tcPr()
-    shading = OxmlElement("w:shd")
+    shading = tc_pr.find(qn("w:shd"))
+    if shading is None:
+        shading = OxmlElement("w:shd")
+        tc_pr.append(shading)
     shading.set(qn("w:val"), "clear")
     shading.set(qn("w:color"), "auto")
     shading.set(qn("w:fill"), color_hex)
-    tc_pr.append(shading)
 
 
 def style_header_cell(

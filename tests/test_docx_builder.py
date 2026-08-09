@@ -1,6 +1,20 @@
+from docx import Document
+from docx.oxml.ns import qn
+
 from gerapop.constants import ValidationMessage
 from gerapop.models import PopData
 from gerapop.services.docx import gerar_docx
+from gerapop.services.docx.styles import set_cell_shading
+
+
+def test_set_cell_shading_nao_duplica() -> None:
+    doc = Document()
+    cell = doc.add_table(rows=1, cols=1).rows[0].cells[0]
+
+    set_cell_shading(cell, "D9D9D9")
+    set_cell_shading(cell, "D9D9D9")
+
+    assert len(cell._tc.get_or_add_tcPr().findall(qn("w:shd"))) == 1
 
 
 def test_gerar_docx_minimo(pop_minimo: PopData) -> None:
