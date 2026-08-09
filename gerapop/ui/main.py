@@ -1,15 +1,15 @@
 """Orquestração da interface Streamlit."""
 
 import io
-import json
 from collections import Counter
 from datetime import datetime
 
 import streamlit as st
 
-from gerapop.constants import DOCX_MIME, JSON_MIME, SessionKey
+from gerapop.constants import DOCX_MIME, PDF_MIME, SessionKey
 from gerapop.models import PopData
 from gerapop.services.docx import gerar_docx
+from gerapop.services.pdf import gerar_pdf
 from gerapop.session import (
     clear_generated,
     get_definicoes,
@@ -20,6 +20,7 @@ from gerapop.session import (
     get_secoes,
     init_state,
     preencher_formulario,
+    reset_widgets_formulario,
     restaurar_rascunho,
     salvar_rascunho,
     set_generated_docx,
@@ -29,11 +30,10 @@ from gerapop.storage import (
     gerar_backup_zip,
     get_docx_bytes,
     get_pop,
-    get_pop_json_bytes,
     list_pops,
     save_pop,
-    serialize_pop,
 )
+from gerapop.ui import theme
 from gerapop.ui.form_sections import (
     ConteudoFields,
     IdentificacaoFields,
@@ -47,14 +47,44 @@ from gerapop.ui.form_sections import (
     render_revisoes,
     try_generate,
 )
+from gerapop.ui.home import (
+    MODELO_POP_REF,
+    PAGINA_FORM,
+    PAGINA_HOME,
+    carregar_pop_fluxo,
+    render_home,
+)
+from gerapop.ui.simulacao import render_simulacao
 
 
 def configure_page() -> None:
     st.set_page_config(page_title="GeraPOP - CODEBA", page_icon="📋", layout="centered")
 
 
+def _carregar_modelo() -> None:
+    pop = carregar_pop_fluxo(MODELO_POP_REF)
+    if pop is None:
+        return
+    reset_widgets_formulario()
+    preencher_formulario(pop)
+
+
+def _render_ajuda_modelo() -> None:
+    modelo = carregar_pop_fluxo(MODELO_POP_REF)
+    if modelo is None:
+        return
+    col_texto, col_btn = st.columns([3, 1])
+    col_texto.caption(
+        f"**Modelo de referência:** {modelo.nome_pop} ({modelo.codigo}) — "
+        "exemplo completo de POP preenchido para consulta."
+    )
+    col_btn.button("Carregar modelo", key="modelo_btn", on_click=_carregar_modelo)
+
+
 def render_form() -> None:
     render_header()
+    _render_ajuda_modelo()
+    render_simulacao()
 
     identificacao = render_identificacao()
     objetivo, escopo = render_objetivo_escopo()
@@ -126,7 +156,7 @@ def render_download() -> None:
         docx = gerar_docx(pop)
         set_generated_docx(docx)
         _salvar_generated(pop, docx)
-    col_docx, col_json = st.columns(2)
+    col_docx, col_pdf = st.columns(2)
     col_docx.download_button(
         "Baixar POP (.docx)",
         data=docx,
@@ -134,11 +164,11 @@ def render_download() -> None:
         mime=DOCX_MIME,
         type="primary",
     )
-    col_json.download_button(
-        "Baixar POP (.json)",
-        data=json.dumps(serialize_pop(pop), ensure_ascii=False, indent=2).encode("utf-8"),
-        file_name=pop.output_filename().removesuffix(".docx") + ".json",
-        mime=JSON_MIME,
+    col_pdf.download_button(
+        "Baixar POP (.pdf)",
+        data=gerar_pdf(pop),
+        file_name=pop.output_filename().removesuffix(".docx") + ".pdf",
+        mime=PDF_MIME,
     )
 
 
@@ -149,6 +179,12 @@ def _historico_label(record: dict, contagem_codigos: Counter[str]) -> str:
     if contagem_codigos[record["codigo"]] > 1:
         label += f" ⚠ ({contagem_codigos[record['codigo']]})"
     return label
+
+
+def _ver_pop_salvo(pop_id: str) -> None:
+    """Abre a preview do POP salvo e navega para a home."""
+    st.session_state[SessionKey.PREVIEW] = {"tipo": "salvo", "ref": pop_id}
+    st.session_state[SessionKey.PAGE] = PAGINA_HOME
 
 
 def render_historico() -> None:
@@ -165,26 +201,33 @@ def render_historico() -> None:
             [record["id"] for record in records],
             format_func=lambda pop_id: labels[pop_id],
         )
-        col_download, col_load = st.columns([2, 1])
+        col_download, col_load = st.columns([2, 2])
         docx_bytes = get_docx_bytes(selected)
-        json_bytes = get_pop_json_bytes(selected)
         record = next(r for r in records if r["id"] == selected)
         if docx_bytes is not None:
-            col_docx, col_json = col_download.columns(2)
+            col_docx, col_pdf = col_download.columns(2)
             col_docx.download_button(
                 "Baixar .docx",
                 data=docx_bytes,
                 file_name=record["filename"],
                 mime=DOCX_MIME,
             )
-            if json_bytes is not None:
-                col_json.download_button(
-                    "Baixar .json",
-                    data=json_bytes,
-                    file_name=record["filename"].removesuffix(".docx") + ".json",
-                    mime=JSON_MIME,
+            pop = get_pop(selected)
+            if pop is not None:
+                col_pdf.download_button(
+                    "Baixar .pdf",
+                    data=gerar_pdf(pop),
+                    file_name=record["filename"].removesuffix(".docx") + ".pdf",
+                    mime=PDF_MIME,
                 )
-        if col_load.button("Carregar para editar"):
+        col_ver, col_editar = col_load.columns(2)
+        col_ver.button(
+            "Visualizar",
+            key="historico_ver",
+            on_click=_ver_pop_salvo,
+            args=(selected,),
+        )
+        if col_editar.button("Carregar para editar"):
             pop = get_pop(selected)
             if pop is not None:
                 set_loaded_from(selected)
@@ -200,8 +243,18 @@ def render_historico() -> None:
         )
 
 
+def _render_navegacao() -> str:
+    return st.sidebar.radio("Navegação", (PAGINA_HOME, PAGINA_FORM), key=SessionKey.PAGE)
+
+
 def run() -> None:
     configure_page()
+    theme.init_theme()
+    pagina = _render_navegacao()
+    theme.render_theme_toggle()
+    if pagina == PAGINA_HOME:
+        render_home()
+        return
     restaurar_rascunho()
     init_state()
     render_form()

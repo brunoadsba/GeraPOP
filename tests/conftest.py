@@ -18,6 +18,14 @@ def _button(at, label: str):
     return buttons[0]
 
 
+def _abrir_formulario(at) -> None:
+    """Garante que a tela atual seja o formulário (navega a partir da home)."""
+    radios = [radio for radio in at.sidebar.radio if radio.label == "Navegação"]
+    if radios and radios[0].value != "📝 Formulário":
+        radios[0].set_value("📝 Formulário")
+        at.run()
+
+
 def _fill_obrigatorios(at) -> None:
     """Preenche os campos obrigatórios usando as chaves dos widgets."""
     at.text_input(key="nome_pop").set_value("Registro de Manobras no Sistema TOS")
@@ -35,12 +43,12 @@ def _download_pop_atual(at) -> list:
     return [d for d in at.get("download_button") if d.proto.label == "Baixar POP (.docx)"]
 
 
-def _download_json_gerado(at) -> list:
-    return [d for d in at.get("download_button") if d.proto.label == "Baixar POP (.json)"]
+def _download_pdf_gerado(at) -> list:
+    return [d for d in at.get("download_button") if d.proto.label == "Baixar POP (.pdf)"]
 
 
 def _download_json_historico(at) -> list:
-    return [d for d in at.get("download_button") if d.proto.label == "Baixar .json"]
+    return [d for d in at.get("download_button") if d.proto.label == "Baixar .pdf"]
 
 
 @pytest.fixture(autouse=True)

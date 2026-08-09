@@ -3,7 +3,7 @@
 from enum import StrEnum
 
 DOCX_MIME = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-JSON_MIME = "application/json"
+PDF_MIME = "application/pdf"
 DOCX_TITLE = "POP – Procedimento Operacional Padrão"
 DATE_FORMAT = "%d/%m/%Y"
 DEFAULT_VERSAO = "01"
@@ -44,6 +44,10 @@ class SessionKey(StrEnum):
     SAVED_POP_ID = "saved_pop_id"
     DRAFT_RESTORED = "draft_restored"
     LOADED_FROM_ID = "loaded_from_id"
+    PAGE = "page"
+    SIM_ACTIVE = "sim_active"
+    SIM_STEP = "sim_step"
+    PREVIEW = "preview"
 
 
 class ValidationMessage(StrEnum):

@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 import io
+from datetime import date
 from typing import Any
 
 import streamlit as st
 
-from gerapop.constants import SessionKey
+from gerapop.constants import DATE_FORMAT, DEFAULT_VERSAO, SessionKey
 from gerapop.models import (
     Definicao,
     PopData,
@@ -166,6 +167,56 @@ def preencher_formulario(pop: PopData) -> None:
     st.session_state[SessionKey.SECOES] = pop.secoes
     st.session_state[SessionKey.REGRAS] = pop.regras
     st.session_state[SessionKey.REVISOES] = pop.revisoes
+
+
+def preparar_novo_pop(nome_pop: str, objetivo: str) -> None:
+    """Limpa o formulário e pré-preenche a partir de uma etapa do fluxo.
+
+    Descarta o rascunho/generação atuais para que o novo POP comece zerado
+    (o rascunho é re-salvo na próxima execução do formulário).
+    """
+    clear_generated()
+    st.session_state.pop(SessionKey.LOADED_FROM_ID, None)
+    st.session_state[SessionKey.NOME_POP] = nome_pop
+    st.session_state[SessionKey.CODIGO] = ""
+    st.session_state[SessionKey.VERSAO] = DEFAULT_VERSAO
+    st.session_state[SessionKey.DATA] = date.today().strftime(DATE_FORMAT)
+    st.session_state[SessionKey.AREA] = ""
+    st.session_state[SessionKey.AVISO] = ""
+    st.session_state[SessionKey.OBJETIVO] = objetivo
+    st.session_state[SessionKey.ESCOPO] = ""
+    st.session_state[SessionKey.CONSULTA] = ""
+    st.session_state[SessionKey.DEFINICOES] = [default_definicao()]
+    st.session_state[SessionKey.SECOES] = [default_secao()]
+    st.session_state[SessionKey.REGRAS] = [""]
+    st.session_state[SessionKey.REVISOES] = [default_revisao()]
+
+
+_WIDGET_KEY_PREFIXES = (
+    "termo_",
+    "def_",
+    "sec_titulo_",
+    "passo_",
+    "campo_",
+    "campodesc_",
+    "regra_",
+    "rev",
+)
+
+
+def reset_widgets_formulario() -> None:
+    """Remove os estados de widgets do formulário (usado ao carregar/simular).
+
+    Permite que os campos sejam recriados adotando os novos valores na
+    próxima renderização, em vez de manter valores antigos das sessões.
+    """
+    for key in FORM_SCALAR_KEYS + FORM_LIST_KEYS:
+        st.session_state.pop(key, None)
+    for chave in list(st.session_state):
+        if chave.startswith(_WIDGET_KEY_PREFIXES):
+            st.session_state.pop(chave, None)
+    clear_generated()
+    st.session_state.pop(SessionKey.LOADED_FROM_ID, None)
 
 
 def set_generated_docx(docx: io.BytesIO) -> None:

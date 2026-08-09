@@ -1,0 +1,615 @@
+/* ============================================================
+   GeraPOP — Tema institucional CODEBA
+   Placeholders __NOME__ são substituídos por theme.py conforme
+   o tema ativo (light/dark). Paleta do design system (mockup
+   telas-recriadas.html): accent teal, hero índigo→roxo,
+   superfícies em 3 níveis (BG / SURFACE / INPUT_BG).
+   ============================================================ */
+
+/* --- Base --- */
+html, body, .stApp {
+  background-color: __BG__;
+  color: __TEXT__;
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+
+[data-testid="stAppViewContainer"] {
+  background: __BG__;
+  color: __TEXT__;
+}
+
+/* Container de conteúdo responsivo: usa a largura disponível em telas largas,
+   com limite de leitura confortável (clamp) em vez de px fixo */
+[data-testid="stAppViewContainer"] .block-container {
+  max-width: clamp(720px, 88%, 1160px);
+  padding-inline: clamp(1rem, 4vw, 2.5rem);
+}
+
+::selection {
+  background: __ACCENT__;
+  color: __BG__;
+}
+
+/* --- Títulos e cabeçalho --- */
+h1, h2, h3, h4, h5, h6 {
+  color: __HEADING__;
+  letter-spacing: -0.01em;
+}
+
+[data-testid="stHeader"] {
+  background: transparent;
+}
+
+/* --- Polimento institucional: oculta menu e rodapé do Streamlit --- */
+#MainMenu,
+footer {
+  visibility: hidden;
+}
+
+/* --- Links --- */
+a {
+  color: __ACCENT__;
+}
+
+/* --- Sidebar --- */
+[data-testid="stSidebar"] {
+  background: __SIDEBAR__;
+  border-right: 1px solid __BORDER__;
+}
+
+[data-testid="stSidebar"] * {
+  color: __TEXT__;
+}
+
+[data-testid="stSidebar"] .stCaption p {
+  color: __MUTED__;
+}
+
+[data-testid="stSidebar"] hr {
+  border-color: __BORDER__;
+}
+
+/* Navegação da sidebar: item ativo com realce accent (mockup) */
+[data-testid="stSidebar"] [data-testid="stRadio"] label {
+  padding: 0.45rem 0.7rem;
+  border-radius: 8px;
+  transition: background 0.15s ease;
+}
+
+[data-testid="stSidebar"] [data-testid="stRadio"] label:hover {
+  background: __HOVER__;
+}
+
+[data-testid="stSidebar"] [data-testid="stRadio"] label:has(input:checked) {
+  background: __ACCENT_DIM__;
+  color: __TEXT__;
+  font-weight: 600;
+}
+
+[data-testid="stSidebar"] [data-testid="stRadio"] label:has(input:checked) p {
+  color: __TEXT__;
+  font-weight: 600;
+}
+
+/* Rodapé da sidebar: separador acima do toggle de tema */
+[data-testid="stSidebar"] [data-testid="stToggle"] {
+  margin-top: 1.2rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid __BORDER__;
+}
+
+/* --- Botões --- */
+.stButton > button,
+.stDownloadButton > button,
+.stFormSubmitButton > button {
+  background: __SURFACE__;
+  color: __TEXT__;
+  border: 1px solid __BORDER__;
+  border-radius: 10px;
+  font-weight: 600;
+  transition: all 0.15s ease;
+}
+
+.stButton > button:hover,
+.stDownloadButton > button:hover,
+.stFormSubmitButton > button:hover {
+  border-color: __PRIMARY__;
+  color: __PRIMARY__;
+  background: __HOVER__;
+}
+
+.stButton > button[kind="primary"],
+.stDownloadButton > button[kind="primary"] {
+  background: __PRIMARY__;
+  color: __PRIMARY_TEXT__;
+  border-color: __PRIMARY__;
+}
+
+.stButton > button[kind="primary"]:hover,
+.stDownloadButton > button[kind="primary"]:hover {
+  background: __PRIMARY_HOVER__;
+  border-color: __PRIMARY_HOVER__;
+  color: __PRIMARY_TEXT__;
+}
+
+.stButton > button:focus-visible,
+.stDownloadButton > button:focus-visible {
+  outline: 2px solid __ACCENT__;
+  outline-offset: 2px;
+}
+
+/* --- Campos de texto --- */
+.stTextInput input,
+.stNumberInput input,
+.stDateInput input,
+.stTimeInput input,
+.stTextArea textarea {
+  background: __INPUT_BG__;
+  color: __TEXT__;
+  border: 1px solid __BORDER__;
+  border-radius: 8px;
+}
+
+.stTextInput input::placeholder,
+.stTextArea textarea::placeholder {
+  color: __MUTED__;
+}
+
+.stTextInput input:focus,
+.stNumberInput input:focus,
+.stDateInput input:focus,
+.stTimeInput input:focus,
+.stTextArea textarea:focus {
+  border-color: __ACCENT__;
+  box-shadow: 0 0 0 1px __ACCENT__;
+}
+
+/* --- Selectbox / Multiselect --- */
+[data-baseweb="select"] > div {
+  background: __INPUT_BG__;
+  border-color: __BORDER__;
+  border-radius: 8px;
+}
+
+[data-baseweb="select"] span,
+[data-baseweb="select"] div {
+  color: __TEXT__;
+}
+
+[data-baseweb="select"]:focus-within > div {
+  border-color: __ACCENT__;
+  box-shadow: 0 0 0 1px __ACCENT__;
+}
+
+/* Dropdowns abertos */
+[data-baseweb="popover"] [data-baseweb="menu"],
+[data-baseweb="popover"] [data-baseweb="menu-list"] {
+  background: __SURFACE__;
+}
+
+[data-baseweb="popover"] [data-baseweb="menu"] li {
+  color: __TEXT__;
+}
+
+[data-baseweb="popover"] [data-baseweb="menu"] li:hover,
+[data-baseweb="popover"] [data-baseweb="menu"] li[aria-selected="true"] {
+  background: __HOVER__;
+}
+
+/* --- Checkbox / Toggle (tema escuro) --- */
+[data-baseweb="checkbox"] label span {
+  color: __TEXT__;
+}
+
+[data-testid="stToggle"] [role="switch"] {
+  background-color: __BORDER__;
+}
+
+[data-testid="stToggle"] [role="switch"][aria-checked="true"] {
+  background-color: __SWITCH__;
+}
+
+[data-testid="stToggle"] label {
+  color: __TEXT__;
+}
+
+/* --- Alertas (erro / sucesso / aviso / info) --- */
+[data-testid="stAlert"] {
+  background: __SURFACE__;
+  border: 1px solid __BORDER__;
+  border-radius: 8px;
+  color: __TEXT__;
+}
+
+[data-testid="stAlert"] p {
+  color: __TEXT__;
+}
+
+/* --- Expander --- */
+[data-testid="stExpander"] details {
+  background: __SURFACE__;
+  border: 1px solid __BORDER__;
+  border-radius: 8px;
+}
+
+[data-testid="stExpander"] summary {
+  color: __TEXT__;
+  font-weight: 600;
+}
+
+[data-testid="stExpander"] details[open] {
+  border-color: __BORDER__;
+}
+
+/* --- Tabs --- */
+[data-baseweb="tab-list"] {
+  border-bottom: 1px solid __BORDER__;
+}
+
+[data-baseweb="tab"] {
+  color: __MUTED__;
+}
+
+[data-baseweb="tab"][aria-selected="true"] {
+  color: __PRIMARY__;
+}
+
+[data-baseweb="tab-highlight"] {
+  background-color: __PRIMARY__;
+}
+
+/* --- Divisor / Caption --- */
+[data-testid="stDivider"] {
+  border-color: __BORDER__;
+}
+
+[data-testid="stCaptionContainer"] p {
+  color: __MUTED__;
+}
+
+/* --- Uploader --- */
+[data-testid="stFileUploaderDropzone"] {
+  background: __SURFACE__;
+  border: 1px dashed __BORDER__;
+  border-radius: 8px;
+}
+
+[data-testid="stFileUploaderDropzone"]:hover {
+  border-color: __ACCENT__;
+}
+
+/* --- Scrollbar --- */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: __BG__;
+}
+
+::-webkit-scrollbar-thumb {
+  background: __BORDER__;
+  border-radius: 8px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: __MUTED__;
+}
+
+/* --- Flags de orientação de preenchimento --- */
+.pop-flag-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0.1rem 0 0.2rem;
+  flex-wrap: wrap;
+}
+
+.pop-flag {
+  padding: 0.1rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  line-height: 1.3;
+  font-family: ui-monospace, "SF Mono", "Cascadia Mono", monospace;
+}
+
+.pop-flag-req {
+  background: __DANGER_DIM__;
+  color: __DANGER__;
+}
+
+.pop-flag-opt {
+  background: __OPTIONAL_DIM__;
+  color: __OPTIONAL__;
+}
+
+.pop-flag-hint {
+  color: __MUTED__;
+  font-size: 0.75rem;
+  line-height: 1.3;
+}
+
+/* ============================================================
+   Dashboard — tela inicial
+   ============================================================ */
+
+/* Hero (cabeçalho do painel) */
+.pop-dash-hero {
+  background: linear-gradient(135deg, __HERO_G1__, __HERO_G2__);
+  border-radius: 12px;
+  padding: 1.6rem 1.6rem 1.5rem;
+  color: #ffffff;
+  margin-bottom: 1rem;
+}
+
+.pop-dash-hero h1 {
+  color: #ffffff;
+  margin: 0;
+  font-size: 1.7rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.pop-dash-hero p {
+  color: rgba(255, 255, 255, 0.88);
+  margin: 0.4rem 0 0;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  max-width: 46rem;
+}
+
+.pop-dash-badge {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 999px;
+  padding: 0.16rem 0.7rem;
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 0.7rem;
+  font-family: ui-monospace, "SF Mono", "Cascadia Mono", monospace;
+}
+
+/* KPIs */
+.pop-dash-kpis {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.8rem;
+  margin-bottom: 1.2rem;
+}
+
+.pop-dash-kpi {
+  background: __SURFACE__;
+  border: 1px solid __BORDER__;
+  border-radius: 10px;
+  padding: 0.9rem 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.pop-dash-kpi-icon {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.pop-dash-kpi-value {
+  font-size: 1.7rem;
+  font-weight: 800;
+  color: __HEADING__;
+  line-height: 1.1;
+  margin: 0.3rem 0 0;
+}
+
+.pop-dash-kpi-label {
+  font-size: 0.68rem;
+  color: __MUTED__;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-top: 0.2rem;
+}
+
+/* Stepper das etapas do fluxo */
+.pop-dash-steps {
+  display: flex;
+  gap: 0.3rem;
+  margin: 0.8rem 0 1.4rem;
+}
+
+.pop-dash-step {
+  flex: 1;
+  text-align: center;
+  min-width: 0;
+}
+
+.pop-dash-dot {
+  width: 2rem;
+  height: 2rem;
+  margin: 0 auto 0.3rem;
+  border-radius: 50%;
+  background: __SURFACE__;
+  border: 2px solid __BORDER__;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.78rem;
+  color: __MUTED__;
+}
+
+.pop-dash-step.done .pop-dash-dot {
+  background: __ACCENT__;
+  border-color: __ACCENT__;
+  color: __PRIMARY_TEXT__;
+}
+
+.pop-dash-step.current .pop-dash-dot {
+  border-color: __ACCENT__;
+  color: __ACCENT__;
+  box-shadow: 0 0 0 4px __ACCENT_DIM__;
+}
+
+.pop-dash-step-label {
+  font-size: 0.62rem;
+  color: __MUTED__;
+  line-height: 1.15;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pop-dash-step.done .pop-dash-step-label,
+.pop-dash-step.current .pop-dash-step-label {
+  color: __TEXT__;
+  font-weight: 600;
+}
+
+/* Cards das seções (modelo, gerados, pendentes) */
+[data-testid="stVerticalBlockBorderWrapper"] {
+  border-radius: 10px;
+  border-color: __BORDER__;
+  background: __SURFACE__;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.pop-dash-chip {
+  display: inline-block;
+  background: __HOVER__;
+  border-radius: 999px;
+  padding: 0.12rem 0.55rem;
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: __MUTED__;
+  margin-left: 0.35rem;
+  vertical-align: middle;
+}
+
+.pop-dash-chip.gerado {
+  color: __ACCENT__;
+}
+
+.pop-dash-chip.pendente {
+  background: __DANGER_DIM__;
+  color: __DANGER__;
+}
+
+/* Tela de pré-visualização do POP (modo leitura) */
+.pop-preview-hero {
+  background: linear-gradient(135deg, __HERO_G1__, __HERO_G2__);
+  border-radius: 12px;
+  padding: 1.2rem 1.4rem;
+  margin: 0.6rem 0 1rem;
+  color: #ffffff;
+}
+
+.pop-preview-hero h1 {
+  margin: 0 0 0.5rem;
+  font-size: 1.35rem;
+  line-height: 1.25;
+  color: #ffffff;
+}
+
+.pop-preview-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.pop-preview-chip {
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 999px;
+  padding: 0.15rem 0.65rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  font-family: ui-monospace, "SF Mono", "Cascadia Mono", monospace;
+}
+
+.pop-preview-aviso {
+  background: __HOVER__;
+  border-left: 3px solid __ACCENT__;
+  border-radius: 6px;
+  padding: 0.6rem 0.9rem;
+  margin: 0.6rem 0;
+  font-size: 0.9rem;
+  color: __TEXT__;
+}
+
+.pop-preview-eyebrow {
+  font-family: ui-monospace, "SF Mono", "Cascadia Mono", monospace;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: __ACCENT__;
+  border-top: 1px solid __BORDER__;
+  margin: 2rem 0 0.4rem;
+  padding-top: 1.2rem;
+}
+
+.pop-preview-h2 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin: 0.1rem 0 0.5rem;
+  color: __TEXT__;
+}
+
+.pop-preview-h3 {
+  font-size: 0.92rem;
+  font-weight: 700;
+  margin: 0.8rem 0 0.3rem;
+  color: __TEXT__;
+}
+
+.pop-preview-passo {
+  padding: 0.2rem 0 0.2rem 1.1rem;
+  position: relative;
+}
+
+.pop-preview-passo::before {
+  content: "•";
+  position: absolute;
+  left: 0.35rem;
+  color: __ACCENT__;
+  font-weight: 700;
+}
+
+.pop-preview-regra {
+  padding: 0.2rem 0;
+  font-size: 0.9rem;
+}
+
+.pop-preview-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.6rem 0 1.2rem;
+  font-size: 0.86rem;
+}
+
+.pop-preview-table td {
+  border: none;
+  border-bottom: 1px solid __BORDER__;
+  padding: 0.4rem 0.6rem;
+  vertical-align: top;
+}
+
+.pop-preview-table tr:last-child td {
+  border-bottom: none;
+}
+
+.pop-preview-table td:first-child {
+  width: 140px;
+  font-weight: 700;
+  color: __TEXT__;
+}
+
+.pop-preview-table td:last-child {
+  color: __MUTED__;
+}

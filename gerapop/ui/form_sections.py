@@ -43,6 +43,28 @@ class ConteudoFields:
     consulta: str
 
 
+def _flag(obrigatorio: bool, exemplo: str) -> None:
+    """Badge obrigatório/opcional + orientação de preenchimento com exemplo."""
+    badge = "OBRIGATÓRIO" if obrigatorio else "OPCIONAL"
+    cls = "pop-flag-req" if obrigatorio else "pop-flag-opt"
+    st.markdown(
+        f"<div class='pop-flag-row'><span class='pop-flag {cls}'>{badge}</span>"
+        f"<span class='pop-flag-hint'>{exemplo}</span></div>",
+        unsafe_allow_html=True,
+    )
+
+
+def _flag_help(obrigatorio: bool, exemplo: str) -> str:
+    """Badge sem hint inline; devolve o exemplo para usar como tooltip nativo."""
+    badge = "OBRIGATÓRIO" if obrigatorio else "OPCIONAL"
+    cls = "pop-flag-req" if obrigatorio else "pop-flag-opt"
+    st.markdown(
+        f"<div class='pop-flag-row'><span class='pop-flag {cls}'>{badge}</span></div>",
+        unsafe_allow_html=True,
+    )
+    return exemplo
+
+
 def render_header() -> None:
     st.title("GeraPOP — CODEBA")
     st.caption("Preencha os campos e gere o documento POP formatado (.docx).")
@@ -52,27 +74,50 @@ def render_identificacao() -> IdentificacaoFields:
     st.header("Identificação")
     col1, col2 = st.columns(2)
 
+    if SessionKey.VERSAO not in st.session_state:
+        st.session_state[SessionKey.VERSAO] = DEFAULT_VERSAO
+    if SessionKey.DATA not in st.session_state:
+        st.session_state[SessionKey.DATA] = date.today().strftime(DATE_FORMAT)
+
     with col1:
         nome_pop = st.text_input(
             "Nome do POP *",
             placeholder="Registro de Manobras no Sistema TOS – OpenPort",
             key=SessionKey.NOME_POP,
+            help=_flag_help(
+                True, "Nome completo do procedimento — ex: Manobra de Atracação de Navio"
+            ),
         )
-        codigo = st.text_input("Código *", placeholder="POP-OPE-XXX", key=SessionKey.CODIGO)
-        versao = st.text_input("Versão", value=DEFAULT_VERSAO, key=SessionKey.VERSAO)
+        codigo = st.text_input(
+            "Código *",
+            placeholder="POP-OPE-XXX",
+            key=SessionKey.CODIGO,
+            help=_flag_help(True, "Código único do POP — ex: POP-MAN-001"),
+        )
+        versao = st.text_input(
+            "Versão",
+            key=SessionKey.VERSAO,
+            help=_flag_help(False, "Número da versão — ex: 01, 02"),
+        )
 
     with col2:
-        area = st.text_input("Área *", placeholder="Operações Portuárias", key=SessionKey.AREA)
+        area = st.text_input(
+            "Área *",
+            placeholder="Operações Portuárias",
+            key=SessionKey.AREA,
+            help=_flag_help(True, "Setor responsável — ex: Operações Portuárias"),
+        )
         data_pop = st.text_input(
             "Data",
-            value=date.today().strftime(DATE_FORMAT),
             key=SessionKey.DATA,
+            help=_flag_help(False, "Data de emissão — usa a data de hoje"),
         )
 
     aviso = st.text_input(
         "Aviso / Atenção (opcional)",
         placeholder="Ex: Este POP não contempla...",
         key=SessionKey.AVISO,
+        help=_flag_help(False, "Alerta importante — ex: Somente com prático credenciado a bordo"),
     )
 
     return IdentificacaoFields(
@@ -88,17 +133,35 @@ def render_identificacao() -> IdentificacaoFields:
 def render_objetivo_escopo() -> tuple[str, str]:
     st.header("Objetivo")
     objetivo = st.text_area(
-        "Descreva o objetivo do procedimento *", height=100, key=SessionKey.OBJETIVO
+        "Descreva o objetivo do procedimento *",
+        height=100,
+        key=SessionKey.OBJETIVO,
+        help=_flag_help(
+            True, "O que o procedimento padroniza — ex: Padronizar a manobra de atracação de navios"
+        ),
     )
 
     st.header("Escopo e Pré-condições")
-    escopo = st.text_area("A quem se aplica / condições prévias", height=100, key=SessionKey.ESCOPO)
+    escopo = st.text_area(
+        "A quem se aplica / condições prévias",
+        height=100,
+        key=SessionKey.ESCOPO,
+        help=_flag_help(
+            False,
+            "A quem se aplica e condições prévias — ex: Equipe de operações, práticos, rebocadores",
+        ),
+    )
 
     return objetivo, escopo
 
 
 def render_definicoes() -> None:
     st.header("Definições")
+    _flag(
+        True,
+        "Termos usados no POP e seus significados — ex: Prático → "
+        "profissional que conduz a manobra",
+    )
     for index, item in enumerate(get_definicoes()):
         col_termo, col_def, col_action = st.columns([2, 4, 1])
         item["termo"] = col_termo.text_input(
@@ -130,6 +193,7 @@ def render_procedimento() -> None:
     st.header("Procedimento")
     for secao_index, secao in enumerate(get_secoes()):
         st.subheader(f"Seção {secao_index + 1}")
+        _flag(True, "Título da etapa — ex: Preparação da manobra")
         secao["titulo"] = st.text_input(
             "Título da seção",
             value=secao["titulo"],
@@ -137,6 +201,7 @@ def render_procedimento() -> None:
             placeholder="Ex: Procedimento – Atracação",
         )
 
+        _flag(True, "Ações na ordem em que acontecem — ex: Confirmar o horário de chegada (ETA)")
         for passo_index, passo in enumerate(secao["passos"]):
             col_passo, col_action = st.columns([6, 1])
             secao["passos"][passo_index] = col_passo.text_input(
@@ -159,6 +224,10 @@ def render_procedimento() -> None:
             args=(secao_index,),
         )
 
+        _flag(
+            False,
+            "Campos de registro da etapa — ex: Berço → número do berço designado",
+        )
         campos = secao.setdefault("campos", [])
         for campo_index, campo in enumerate(campos):
             col_campo, col_desc, col_action = st.columns([2, 4, 1])
@@ -204,6 +273,7 @@ def render_procedimento() -> None:
 
 def render_regras() -> None:
     st.header("Regras e Restrições")
+    _flag(False, "Regras que não podem ser quebradas — ex: Não iniciar sem prático a bordo")
     regras = get_regras()
     for index, regra in enumerate(regras):
         col_regra, col_action = st.columns([6, 1])
@@ -228,12 +298,19 @@ def render_regras() -> None:
 def render_consulta() -> str:
     st.header("Consulta e Relatórios")
     return st.text_area(
-        "Caminho / menu para consulta (opcional)", height=70, key=SessionKey.CONSULTA
+        "Caminho / menu para consulta (opcional)",
+        height=70,
+        key=SessionKey.CONSULTA,
+        help=_flag_help(False, "Onde o registro é consultado — ex: Menu > Operações > Manobras"),
     )
 
 
 def render_revisoes() -> None:
     st.header("Histórico de Revisões")
+    _flag(
+        False,
+        "Versões anteriores do POP — ex: 02 → 15/03/2026 → Inclusão dos campos obrigatórios",
+    )
     for index, revisao in enumerate(get_revisoes()):
         col_rev, col_data, col_desc, col_resp, col_action = st.columns([1, 1.5, 4, 2, 1])
         revisao["revisao"] = col_rev.text_input(

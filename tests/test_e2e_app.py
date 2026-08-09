@@ -8,9 +8,10 @@ from io import BytesIO
 
 from conftest import (
     APP_PATH,
+    _abrir_formulario,
     _button,
-    _download_json_gerado,
     _download_json_historico,
+    _download_pdf_gerado,
     _download_pop_atual,
     _fill_obrigatorios,
     _gerar_pop,
@@ -22,6 +23,7 @@ from gerapop.constants import SessionKey, ValidationMessage
 from gerapop.models import PopData
 from gerapop.services.docx import gerar_docx
 from gerapop.storage import get_docx_bytes, list_pops, serialize_pop
+from gerapop.ui import home
 
 
 def _docx_texts(pop: PopData) -> list[str]:
@@ -37,6 +39,7 @@ def test_e2e_fluxo_completo_gera_docx() -> None:
     at = AppTest.from_file(APP_PATH, default_timeout=10)
     at.run()
 
+    _abrir_formulario(at)
     _fill_obrigatorios(at)
     _gerar_pop(at)
 
@@ -63,6 +66,7 @@ def test_e2e_validacao_impede_geracao() -> None:
     at = AppTest.from_file(APP_PATH, default_timeout=10)
     at.run()
 
+    _abrir_formulario(at)
     _gerar_pop(at)
 
     assert not at.exception
@@ -83,6 +87,7 @@ def test_e2e_listas_dinamicas_integradas() -> None:
     at = AppTest.from_file(APP_PATH, default_timeout=10)
     at.run()
 
+    _abrir_formulario(at)
     _button(at, "+ Adicionar termo").click()
     at.run()
     at.text_input(key="termo_1").set_value("TOS")
@@ -124,6 +129,7 @@ def test_e2e_edicao_invalida_download() -> None:
     at = AppTest.from_file(APP_PATH, default_timeout=10)
     at.run()
 
+    _abrir_formulario(at)
     _fill_obrigatorios(at)
     _gerar_pop(at)
     assert _download_pop_atual(at)
@@ -140,6 +146,7 @@ def test_e2e_pop_snapshot_isolado() -> None:
     at = AppTest.from_file(APP_PATH, default_timeout=10)
     at.run()
 
+    _abrir_formulario(at)
     _fill_obrigatorios(at)
     _gerar_pop(at)
     assert _download_pop_atual(at)
@@ -154,6 +161,7 @@ def test_e2e_docx_gerado_uma_vez() -> None:
     at = AppTest.from_file(APP_PATH, default_timeout=10)
     at.run()
 
+    _abrir_formulario(at)
     _fill_obrigatorios(at)
     _gerar_pop(at)
 
@@ -169,6 +177,7 @@ def test_e2e_remover_oculto_com_um_item() -> None:
     at = AppTest.from_file(APP_PATH, default_timeout=10)
     at.run()
 
+    _abrir_formulario(at)
     assert [b for b in at.button if b.label == "Remover"] == []
 
     _button(at, "+ Adicionar termo").click()
@@ -181,6 +190,7 @@ def test_e2e_remover_revisao() -> None:
     at = AppTest.from_file(APP_PATH, default_timeout=10)
     at.run()
 
+    _abrir_formulario(at)
     assert [b for b in at.button if b.label == "Remover"] == []
 
     _button(at, "+ Adicionar revisão").click()
@@ -199,6 +209,7 @@ def test_e2e_backup_zip_no_historico() -> None:
     at = AppTest.from_file(APP_PATH, default_timeout=10)
     at.run()
 
+    _abrir_formulario(at)
     _fill_obrigatorios(at)
     _gerar_pop(at)
     at.run()
@@ -212,6 +223,7 @@ def test_e2e_rascunho_restaurado_em_nova_sessao() -> None:
     at1 = AppTest.from_file(APP_PATH, default_timeout=10)
     at1.run()
 
+    _abrir_formulario(at1)
     at1.text_input[0].set_value("POP Rascunho Teste")
     at1.text_input[1].set_value("POP-RAS-001")
 
@@ -223,6 +235,7 @@ def test_e2e_rascunho_restaurado_em_nova_sessao() -> None:
     at2 = AppTest.from_file(APP_PATH, default_timeout=10)
     at2.run()
 
+    _abrir_formulario(at2)
     assert at2.text_input[0].value == "POP Rascunho Teste"
     assert at2.text_input[1].value == "POP-RAS-001"
     assert at2.session_state[SessionKey.SECOES][0]["campos"][0]["campo"] == "Berço"
@@ -232,6 +245,7 @@ def test_e2e_campos_por_secao() -> None:
     at = AppTest.from_file(APP_PATH, default_timeout=10)
     at.run()
 
+    _abrir_formulario(at)
     at.text_input(key="sec_titulo_0").set_value("Atracação")
 
     _button(at, "+ Adicionar campo").click()
@@ -263,18 +277,19 @@ def test_e2e_campos_por_secao() -> None:
     assert payload["pop"]["secoes"][0]["campos"][1]["descricao"] == "Nome do prático."
 
 
-def test_e2e_export_json() -> None:
+def test_e2e_export_pdf() -> None:
     at = AppTest.from_file(APP_PATH, default_timeout=10)
     at.run()
 
+    _abrir_formulario(at)
     _fill_obrigatorios(at)
     _gerar_pop(at)
 
     assert not at.exception
-    downloads = _download_json_gerado(at)
+    downloads = _download_pdf_gerado(at)
     assert len(downloads) == 1
     assert downloads[0].proto.type == "secondary"
-    assert downloads[0].proto.url.endswith(".json")
+    assert downloads[0].proto.url.endswith(".pdf")
 
     docx = _download_pop_atual(at)
     assert len(docx) == 1
@@ -282,17 +297,18 @@ def test_e2e_export_json() -> None:
     assert docx[0].proto.url.endswith(".docx")
 
 
-def test_e2e_historico_export_json() -> None:
+def test_e2e_historico_export_pdf() -> None:
     at = AppTest.from_file(APP_PATH, default_timeout=10)
     at.run()
 
+    _abrir_formulario(at)
     _fill_obrigatorios(at)
     _gerar_pop(at)
     at.run()  # re-render limpo após o st.rerun do try_generate
 
     downloads = _download_json_historico(at)
     assert len(downloads) == 1
-    assert downloads[0].proto.url.endswith(".json")
+    assert downloads[0].proto.url.endswith(".pdf")
 
     docx = [d for d in at.get("download_button") if d.proto.label == "Baixar .docx"]
     assert len(docx) == 1
@@ -303,6 +319,7 @@ def test_e2e_historico() -> None:
     at = AppTest.from_file(APP_PATH, default_timeout=10)
     at.run()
 
+    _abrir_formulario(at)
     _fill_obrigatorios(at)
     _gerar_pop(at)
     at.run()  # re-render limpo após o st.rerun do try_generate
@@ -311,7 +328,6 @@ def test_e2e_historico() -> None:
     assert len(records) == 1
     assert records[0]["codigo"] == "POP-OPE-001"
     assert get_docx_bytes(records[0]["id"]) is not None
-    assert "POP-OPE-001" in at.selectbox[0].options[0]
 
     _button(at, "Carregar para editar").click()
     at.run()
@@ -320,3 +336,22 @@ def test_e2e_historico() -> None:
     assert at.text_input[0].value == "Registro de Manobras no Sistema TOS"
     assert at.session_state[SessionKey.OBJETIVO] == "Padronizar o registro de manobras."
     assert len(at.session_state[SessionKey.REVISOES]) == 1
+
+
+def test_e2e_historico_visualizar_abre_preview() -> None:
+    at = AppTest.from_file(APP_PATH, default_timeout=10)
+    at.run()
+
+    _abrir_formulario(at)
+    _fill_obrigatorios(at)
+    _gerar_pop(at)
+    at.run()  # re-render limpo após o st.rerun do try_generate
+
+    at.button(key="historico_ver").click()
+    at.run()
+
+    assert not at.exception
+    assert at.sidebar.radio[0].value == home.PAGINA_HOME
+    assert any("POP-OPE-001" in el.value for el in at.markdown)
+    assert at.button(key="preview_voltar") is not None
+    assert at.button(key="preview_editar") is not None
