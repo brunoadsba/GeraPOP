@@ -14,6 +14,7 @@ from gerapop.models import PopData
 
 STORAGE_DIR_ENV = "GERAPOP_DATA_DIR"
 DEFAULT_STORAGE_DIR = "data"
+DRAFT_FILENAME = "draft.json"
 
 
 def get_storage_dir() -> Path:
@@ -92,6 +93,32 @@ def get_pop_json_bytes(pop_id: str) -> bytes | None:
         return path.read_bytes()
     except OSError:
         return None
+
+
+def _draft_path() -> Path:
+    return get_storage_dir() / DRAFT_FILENAME
+
+
+def save_draft(payload: dict[str, Any]) -> None:
+    """Persiste o rascunho do formulário (substitui o anterior)."""
+    _atomic_write(_draft_path(), json.dumps(payload, ensure_ascii=False, indent=2))
+
+
+def get_draft() -> dict[str, Any] | None:
+    """Lê o rascunho salvo; None quando não existe ou está corrompido."""
+    path = _draft_path()
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    return payload if isinstance(payload, dict) else None
+
+
+def clear_draft() -> None:
+    try:
+        _draft_path().unlink()
+    except FileNotFoundError:
+        pass
 
 
 def _atomic_write(path: Path, content: str | bytes) -> None:

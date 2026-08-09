@@ -18,6 +18,8 @@ from gerapop.session import (
     get_secoes,
     init_state,
     preencher_formulario,
+    restaurar_rascunho,
+    salvar_rascunho,
     set_generated_docx,
 )
 from gerapop.storage import (
@@ -181,7 +183,9 @@ def render_historico() -> None:
 
 def run() -> None:
     configure_page()
+    restaurar_rascunho()
     init_state()
     render_form()
     render_download()
     render_historico()
+    salvar_rascunho()

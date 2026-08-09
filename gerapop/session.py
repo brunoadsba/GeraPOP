@@ -17,6 +17,26 @@ from gerapop.models import (
     default_secao,
     empty_revisao,
 )
+from gerapop.storage import get_draft, save_draft
+
+FORM_SCALAR_KEYS = (
+    SessionKey.NOME_POP,
+    SessionKey.CODIGO,
+    SessionKey.VERSAO,
+    SessionKey.DATA,
+    SessionKey.AREA,
+    SessionKey.AVISO,
+    SessionKey.OBJETIVO,
+    SessionKey.ESCOPO,
+    SessionKey.CONSULTA,
+)
+
+FORM_LIST_KEYS = (
+    SessionKey.DEFINICOES,
+    SessionKey.SECOES,
+    SessionKey.REGRAS,
+    SessionKey.REVISOES,
+)
 
 
 def init_state() -> None:
@@ -121,3 +141,38 @@ def templates() -> dict[str, Any]:
         "regra": "",
         "revisao": empty_revisao(),
     }
+
+
+def obter_sid() -> str | None:
+    """ID da sessão Streamlit atual (None fora de um runtime ativo)."""
+    try:
+        ctx = st.runtime.scriptrunner.get_script_run_ctx()
+    except Exception:
+        return None
+    return ctx.session_id if ctx is not None else None
+
+
+def salvar_rascunho() -> None:
+    form: dict[str, Any] = {
+        str(key): st.session_state.get(key) for key in FORM_SCALAR_KEYS + FORM_LIST_KEYS
+    }
+    payload: dict[str, Any] = {"session_id": obter_sid(), "form": form}
+    if payload != get_draft():
+        save_draft(payload)
+
+
+def restaurar_rascunho() -> None:
+    """Restaura o rascunho salvo na primeira execução de cada sessão."""
+    if SessionKey.DRAFT_RESTORED in st.session_state:
+        return
+    st.session_state[SessionKey.DRAFT_RESTORED] = True
+    payload = get_draft()
+    if payload is None:
+        return
+    form = payload.get("form", {})
+    for key in FORM_SCALAR_KEYS:
+        if str(key) in form:
+            st.session_state[key] = form[str(key)]
+    for key in FORM_LIST_KEYS:
+        if str(key) in form:
+            st.session_state[key] = form[str(key)]

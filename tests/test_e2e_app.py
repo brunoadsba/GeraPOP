@@ -220,6 +220,26 @@ def test_e2e_remover_revisao() -> None:
     assert [b for b in at.button if b.label == "Remover"] == []
 
 
+def test_e2e_rascunho_restaurado_em_nova_sessao() -> None:
+    at1 = AppTest.from_file(APP_PATH, default_timeout=10)
+    at1.run()
+
+    at1.text_input[0].set_value("POP Rascunho Teste")
+    at1.text_input[1].set_value("POP-RAS-001")
+
+    _button(at1, "+ Adicionar campo").click()
+    at1.run()
+    at1.text_input(key="campo_0_0").set_value("Berço")
+    at1.run()
+
+    at2 = AppTest.from_file(APP_PATH, default_timeout=10)
+    at2.run()
+
+    assert at2.text_input[0].value == "POP Rascunho Teste"
+    assert at2.text_input[1].value == "POP-RAS-001"
+    assert at2.session_state[SessionKey.SECOES][0]["campos"][0]["campo"] == "Berço"
+
+
 def test_e2e_campos_por_secao() -> None:
     at = AppTest.from_file(APP_PATH, default_timeout=10)
     at.run()
