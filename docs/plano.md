@@ -62,6 +62,8 @@ Relatórios, Histórico de Revisões.
 **Entregue:**
 - `app.py` — formulário completo com seções dinâmicas (definições, passos,
   regras, revisões) e geração de `.docx`.
+- Campos obrigatórios por seção: lista dinâmica (campo + descrição) que vira
+  sub-tabela no `.docx` e segue no JSON exportado.
 - `requirements.txt`, `README.md`.
 
 **Próximo passo:** você testar localmente com um POP real e reportar ajustes
