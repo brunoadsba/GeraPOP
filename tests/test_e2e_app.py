@@ -220,6 +220,21 @@ def test_e2e_remover_revisao() -> None:
     assert [b for b in at.button if b.label == "Remover"] == []
 
 
+def test_e2e_backup_zip_no_historico() -> None:
+    at = AppTest.from_file(APP_PATH, default_timeout=10)
+    at.run()
+
+    _fill_obrigatorios(at)
+    _gerar_pop(at)
+    at.run()
+
+    backups = [
+        d for d in at.get("download_button") if d.proto.label == "Baixar backup (.zip)"
+    ]
+    assert len(backups) == 1
+    assert backups[0].proto.url.endswith(".zip")
+
+
 def test_e2e_rascunho_restaurado_em_nova_sessao() -> None:
     at1 = AppTest.from_file(APP_PATH, default_timeout=10)
     at1.run()

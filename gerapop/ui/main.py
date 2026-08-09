@@ -2,6 +2,7 @@
 
 import io
 import json
+from datetime import datetime
 
 import streamlit as st
 
@@ -23,6 +24,7 @@ from gerapop.session import (
     set_generated_docx,
 )
 from gerapop.storage import (
+    gerar_backup_zip,
     get_docx_bytes,
     get_pop,
     get_pop_json_bytes,
@@ -179,6 +181,14 @@ def render_historico() -> None:
             if pop is not None:
                 preencher_formulario(pop)
                 st.rerun()
+
+        st.divider()
+        st.download_button(
+            "Baixar backup (.zip)",
+            data=gerar_backup_zip(),
+            file_name=f"gerapop_backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}.zip",
+            mime="application/zip",
+        )
 
 
 def run() -> None:

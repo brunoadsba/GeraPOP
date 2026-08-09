@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+import io
 import json
 import os
 import uuid
+import zipfile
 from dataclasses import asdict
 from datetime import datetime
 from pathlib import Path
@@ -119,6 +121,17 @@ def clear_draft() -> None:
         _draft_path().unlink()
     except FileNotFoundError:
         pass
+
+
+def gerar_backup_zip() -> bytes:
+    """Zip em memória com todos os POPs salvos e o rascunho."""
+    buffer = io.BytesIO()
+    storage_dir = get_storage_dir()
+    with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as zf:
+        for path in sorted(storage_dir.rglob("*")):
+            if path.is_file():
+                zf.write(path, arcname=path.relative_to(storage_dir))
+    return buffer.getvalue()
 
 
 def _atomic_write(path: Path, content: str | bytes) -> None:

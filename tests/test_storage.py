@@ -1,8 +1,11 @@
+import io
 import json
+import zipfile
 
 from gerapop.models import PopData
 from gerapop.storage import (
     clear_draft,
+    gerar_backup_zip,
     get_docx_bytes,
     get_draft,
     get_pop,
@@ -84,3 +87,20 @@ def test_get_draft_arquivo_corrompido() -> None:
     (get_storage_dir() / "draft.json").write_text("{corrompido", encoding="utf-8")
 
     assert get_draft() is None
+
+
+def test_gerar_backup_zip_contem_arquivos(pop_minimo: PopData) -> None:
+    save_pop(pop_minimo, b"PK fake docx")
+    save_draft({"form": {"nome_pop": "Rascunho"}})
+
+    names = zipfile.ZipFile(io.BytesIO(gerar_backup_zip())).namelist()
+
+    assert any(name.endswith("pop.json") for name in names)
+    assert any(name.endswith("pop.docx") for name in names)
+    assert any(name.endswith("draft.json") for name in names)
+
+
+def test_gerar_backup_zip_vazio() -> None:
+    names = zipfile.ZipFile(io.BytesIO(gerar_backup_zip())).namelist()
+
+    assert names == []

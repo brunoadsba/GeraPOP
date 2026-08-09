@@ -1,4 +1,4 @@
-.PHONY: help install install-dev run test lint format clean docker-build docker-run
+.PHONY: help install install-dev run test lint format clean backup docker-build docker-run
 
 PYTHON ?= python3.11
 UV ?= uv
@@ -16,6 +16,7 @@ help:
 	@echo "  make test         — executa testes"
 	@echo "  make lint         — verifica código com ruff"
 	@echo "  make format       — formata código com ruff"
+	@echo "  make backup       — gera zip com todos os POPs e o rascunho"
 	@echo "  make clean        — remove venv e caches"
 	@echo "  make docker-run   — sobe via Docker (alternativa ao venv local)"
 
@@ -42,6 +43,9 @@ lint: install-dev
 format: install-dev
 	$(RUFF) format app.py gerapop tests
 	$(RUFF) check --fix app.py gerapop tests
+
+backup: install
+	$(BIN)/python -m gerapop.backup
 
 clean:
 	rm -rf $(VENV) .pytest_cache .ruff_cache .mypy_cache
