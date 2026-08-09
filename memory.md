@@ -13,7 +13,7 @@ O usuário preenche um formulário guiado e recebe um arquivo `.docx` formatado,
 
 **Repositório:** https://github.com/brunoadsba/GeraPOP.git  
 **Branch principal:** `main`  
-**Status atual:** MVP v1 funcional localmente; refatoração clean code concluída localmente, **ainda não commitada** (ver seção 8).
+**Status atual:** MVP v1 funcional; refatoração clean code **commitada e no GitHub** (`main`).
 
 ---
 
@@ -169,18 +169,16 @@ Seguir estas regras ao continuar o projeto:
 ## 8. Estado atual do repositório (2026-08-09)
 
 ### Já no GitHub (`main`)
-- Commit inicial: `feat(gerapop): estrutura inicial do MVP com Streamlit e geração de POP`
-- CI passando (lint + 3 testes da versão anterior)
+- `feat(gerapop): estrutura inicial do MVP com Streamlit e geração de POP`
+- `refactor(gerapop): reorganiza projeto em camadas e adiciona memory.md` — **commit + push concluídos**
+- Refatoração clean code completa no `main`:
+  - Separação em `constants`, `services/docx/`, `ui/`
+  - Remoção de `gerapop/docx_builder.py` monolítico
+  - Remoção de duplicatas em `ideia-files/`
+  - Novos testes (`test_models.py`, `conftest.py`) — **7 testes passando**
+  - README atualizado com nova estrutura
 
-### Alterações locais pendentes (não commitadas)
-Refatoração clean code completa:
-- Separação em `constants`, `services/docx/`, `ui/`
-- Remoção de `gerapop/docx_builder.py` monolítico
-- Remoção de duplicatas em `ideia-files/`
-- Novos testes (`test_models.py`, `conftest.py`) — **7 testes passando**
-- README atualizado com nova estrutura
-
-**Próxima ação sugerida:** commit + push da refatoração, ou implementar export JSON.
+**Próxima ação sugerida:** implementar export JSON (habilita o Projeto 1 — Fluxo SEV), ou testar com POP real da CODEBA.
 
 ---
 
@@ -189,7 +187,7 @@ Refatoração clean code completa:
 ### Curto prazo (GeraPOP v1.1)
 - [ ] **Export JSON** junto com `.docx` — habilita Projeto 1 (Fluxo SEV)
 - [ ] Testar com POP real da CODEBA e ajustar campos/layout
-- [ ] Commit + push da refatoração clean code
+- [x] Commit + push da refatoração clean code
 
 ### Médio prazo (GeraPOP v2)
 - [ ] Hospedagem Streamlit Community Cloud (após validação interna)
@@ -237,7 +235,7 @@ Leia memory.md e docs/plano.md antes de codar.
 Stack: Python 3.11, Streamlit, python-docx, pytest, ruff.
 Arquitetura: gerapop/models (domínio), services/docx (geração), ui/ (formulário).
 
-Estado: MVP v1 funcional. Refatoração clean code pronta localmente (7 testes OK).
+Estado: MVP v1 funcional. Refatoração clean code commitada e pushada (7 testes OK).
 Próximo passo sugerido: export JSON ou validação com POP real.
 
 NÃO implementar: nuvem, auth, multi-agente, migração de stack.
