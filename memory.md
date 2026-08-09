@@ -79,11 +79,11 @@ gerapop/
 │   │       └── builder.py          # Montagem do documento por seções
 │   └── ui/
 │       ├── main.py                 # Orquestração (configure → form → download)
-│       ├── form_sections.py        # Uma função por seção do formulário
-│       └── components.py           # Helpers (remove_at)
+│       └── form_sections.py        # Uma função por seção do formulário
 ├── tests/
 │   ├── conftest.py                 # Fixtures pop_minimo, pop_invalido
 │   ├── test_docx_builder.py
+│   ├── test_e2e_app.py             # E2E via AppTest
 │   └── test_models.py
 ├── docs/plano.md                   # Roadmap completo
 ├── ideia-files/                    # Protótipo original (referência, não usar)
@@ -139,7 +139,7 @@ make install-dev
 make run          # http://localhost:8501
 
 # Qualidade
-make test         # 7 testes (docx + models)
+make test         # 19 testes (docx + models + e2e)
 make lint         # ruff check + format --check
 make format       # auto-format
 
@@ -175,7 +175,7 @@ Seguir estas regras ao continuar o projeto:
   - Separação em `constants`, `services/docx/`, `ui/`
   - Remoção de `gerapop/docx_builder.py` monolítico
   - Remoção de duplicatas em `ideia-files/`
-  - Novos testes (`test_models.py`, `conftest.py`) — **7 testes passando**
+  - Novos testes (`test_models.py`, `test_e2e_app.py`, `conftest.py`) — **19 testes passando**
   - README atualizado com nova estrutura
 
 **Próxima ação sugerida:** implementar export JSON (habilita o Projeto 1 — Fluxo SEV), ou testar com POP real da CODEBA.
@@ -235,7 +235,7 @@ Leia memory.md e docs/plano.md antes de codar.
 Stack: Python 3.11, Streamlit, python-docx, pytest, ruff.
 Arquitetura: gerapop/models (domínio), services/docx (geração), ui/ (formulário).
 
-Estado: MVP v1 funcional. Refatoração clean code commitada e pushada (7 testes OK).
+Estado: MVP v1 funcional. Refatoração clean code commitada e pushada (19 testes OK).
 Próximo passo sugerido: export JSON ou validação com POP real.
 
 NÃO implementar: nuvem, auth, multi-agente, migração de stack.
