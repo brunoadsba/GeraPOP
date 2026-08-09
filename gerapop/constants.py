@@ -27,6 +27,7 @@ class SessionKey(StrEnum):
     REGRAS = "regras"
     REVISOES = "revisoes"
     GENERATED_POP = "generated_pop"
+    GENERATED_DOCX = "generated_docx"
 
 
 class ValidationMessage(StrEnum):

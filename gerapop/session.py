@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import io
 from typing import Any
 
 import streamlit as st
@@ -74,6 +75,14 @@ def get_generated_pop() -> Any | None:
 def clear_generated() -> None:
     st.session_state.pop(SessionKey.GENERATED_POP, None)
     st.session_state.pop(SessionKey.GENERATED_DOCX, None)
+
+
+def set_generated_docx(docx: io.BytesIO) -> None:
+    st.session_state[SessionKey.GENERATED_DOCX] = docx
+
+
+def get_generated_docx() -> io.BytesIO | None:
+    return st.session_state.get(SessionKey.GENERATED_DOCX)
 
 
 def templates() -> dict[str, Any]:

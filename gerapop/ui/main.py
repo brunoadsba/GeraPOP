@@ -8,11 +8,13 @@ from gerapop.services.docx import gerar_docx
 from gerapop.session import (
     clear_generated,
     get_definicoes,
+    get_generated_docx,
     get_generated_pop,
     get_regras,
     get_revisoes,
     get_secoes,
     init_state,
+    set_generated_docx,
 )
 from gerapop.ui.form_sections import (
     ConteudoFields,
@@ -93,9 +95,13 @@ def render_download() -> None:
         return
 
     st.success("POP gerado com sucesso.")
+    docx = get_generated_docx()
+    if docx is None:
+        docx = gerar_docx(pop)
+        set_generated_docx(docx)
     st.download_button(
         "Baixar POP (.docx)",
-        data=gerar_docx(pop),
+        data=docx,
         file_name=pop.output_filename(),
         mime=DOCX_MIME,
         type="primary",

@@ -157,3 +157,18 @@ def test_e2e_pop_snapshot_isolado() -> None:
     at.run()
 
     assert at.get("download_button") == []
+
+
+def test_e2e_docx_gerado_uma_vez() -> None:
+    at = AppTest.from_file(APP_PATH, default_timeout=10)
+    at.run()
+
+    _fill_obrigatorios(at)
+    _gerar_pop(at)
+
+    docx = at.session_state[SessionKey.GENERATED_DOCX]
+    assert docx.getvalue()[:2] == b"PK"
+    assert len(docx.getvalue()) > 1000
+
+    at.run()
+    assert at.session_state[SessionKey.GENERATED_DOCX] is docx
