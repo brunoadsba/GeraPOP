@@ -43,12 +43,12 @@ gerapop/
 │   ├── constants.py            # Constantes e enums
 │   ├── models.py               # Domínio e validação
 │   ├── session.py              # Estado da sessão Streamlit
+│   ├── storage.py              # Histórico em disco (pop.json + pop.docx)
 │   ├── services/
 │   │   └── docx/               # Geração do .docx
 │   └── ui/
 │       ├── main.py             # Orquestração da interface
-│       ├── form_sections.py    # Seções do formulário
-│       └── components.py       # Helpers reutilizáveis
+│       └── form_sections.py    # Seções do formulário
 ├── tests/
 ├── docs/plano.md
 ├── requirements.txt
@@ -61,10 +61,11 @@ gerapop/
 - Formulário com cabeçalho, objetivo, escopo, definições, procedimento (seções/passos dinâmicos), regras, consulta e histórico de revisões
 - Validação mínima (nome, código, área e objetivo)
 - Gera `.docx` seguindo estrutura do modelo `POP_Manobras_CODEBA_v2`
+- Histórico de POPs gerados em `data/pops/` (JSON + .docx) com re-download e "carregar para editar" (persistente via volume no Docker)
 
 ## O que a v1 não faz (proposital)
 
-- Persistência entre sessões
+- Rascunho do formulário persistido entre sessões
 - Multi-usuário / login / nuvem
 
 ## Sem Make

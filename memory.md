@@ -54,11 +54,12 @@ GeraPOP (Projeto 2)  →  dados estruturados  →  Fluxo Interativo SEV (Projeto
 | CI | GitHub Actions (`.github/workflows/ci.yml`) |
 | Container | Docker + docker-compose (alternativa ao venv) |
 
+**Persistência (v1.1):** POPs gerados são salvos automaticamente em `data/pops/<id>/` (`pop.json` + `pop.docx`) e listados no app (seção Histórico). Backup = copiar a pasta `data/` (volume no docker-compose).
+
 **O que a v1 NÃO faz (proposital):**
-- Persistência entre sessões
 - Login / multi-usuário
 - Nuvem
-- Export JSON (próximo passo sugerido, ainda não implementado)
+- Export JSON pela UI (próximo passo sugerido; o `pop.json` do storage já é o formato)
 
 ---
 
@@ -73,6 +74,7 @@ gerapop/
 │   ├── constants.py                # SessionKey, ValidationMessage, estilos docx, MIME
 │   ├── models.py                   # PopData, TypedDicts, validação, factories
 │   ├── session.py                  # Estado Streamlit (listas dinâmicas)
+│   ├── storage.py                  # Persistência em disco (pop.json + pop.docx)
 │   ├── services/
 │   │   └── docx/
 │   │       ├── styles.py           # Formatação de células Word
@@ -81,10 +83,11 @@ gerapop/
 │       ├── main.py                 # Orquestração (configure → form → download)
 │       └── form_sections.py        # Uma função por seção do formulário
 ├── tests/
-│   ├── conftest.py                 # Fixtures pop_minimo, pop_invalido
+│   ├── conftest.py                 # Fixtures pop_minimo, pop_invalido; data dir tmp
 │   ├── test_docx_builder.py
 │   ├── test_e2e_app.py             # E2E via AppTest
-│   └── test_models.py
+│   ├── test_models.py
+│   └── test_storage.py
 ├── docs/plano.md                   # Roadmap completo
 ├── ideia-files/                    # Protótipo original (referência, não usar)
 ├── Makefile
@@ -175,7 +178,7 @@ Seguir estas regras ao continuar o projeto:
   - Separação em `constants`, `services/docx/`, `ui/`
   - Remoção de `gerapop/docx_builder.py` monolítico
   - Remoção de duplicatas em `ideia-files/`
-  - Novos testes (`test_models.py`, `test_e2e_app.py`, `conftest.py`) — **19 testes passando**
+  - Novos testes (`test_models.py`, `test_e2e_app.py`, `test_storage.py`, `conftest.py`) — **25 testes passando**
   - README atualizado com nova estrutura
 
 **Próxima ação sugerida:** implementar export JSON (habilita o Projeto 1 — Fluxo SEV), ou testar com POP real da CODEBA.
@@ -235,7 +238,7 @@ Leia memory.md e docs/plano.md antes de codar.
 Stack: Python 3.11, Streamlit, python-docx, pytest, ruff.
 Arquitetura: gerapop/models (domínio), services/docx (geração), ui/ (formulário).
 
-Estado: MVP v1 funcional. Refatoração clean code commitada e pushada (19 testes OK).
+Estado: MVP v1 funcional + histórico de POPs gerados em disco (25 testes OK).
 Próximo passo sugerido: export JSON ou validação com POP real.
 
 NÃO implementar: nuvem, auth, multi-agente, migração de stack.
