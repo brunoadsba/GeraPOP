@@ -1,0 +1,9 @@
+services:
+  gerapop:
+    build: .
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./app.py:/app/app.py:ro
+      - ./gerapop:/app/gerapop:ro
+    restart: unless-stopped

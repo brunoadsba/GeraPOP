@@ -1,0 +1,76 @@
+# GeraPOP — CODEBA
+
+Gerador de POP (Procedimento Operacional Padrão) com formulário guiado e exportação `.docx` formatada.
+
+## Pré-requisitos
+
+- Python 3.11 (recomendado — Python 3.12 no WSL pode falhar com `ctypes`)
+- [uv](https://docs.astral.sh/uv/) ou Make
+
+## Início rápido
+
+```bash
+make install-dev
+make run
+```
+
+Abra [http://localhost:8501](http://localhost:8501), preencha o formulário e clique em **Gerar POP (.docx)**.
+
+## Alternativa via Docker
+
+```bash
+make docker-run
+```
+
+## Comandos
+
+| Comando | Descrição |
+|---------|-----------|
+| `make install` | Cria `.venv` e instala dependências |
+| `make install-dev` | Instala dependências + pytest e ruff |
+| `make run` | Sobe o Streamlit |
+| `make test` | Roda testes automatizados |
+| `make lint` | Verifica estilo e imports |
+| `make format` | Formata o código |
+| `make docker-run` | Sobe via Docker Compose |
+
+## Estrutura
+
+```
+gerapop/
+├── app.py                 # Entrada Streamlit
+├── gerapop/
+│   ├── models.py          # Tipos e validação
+│   ├── session.py         # Estado da sessão Streamlit
+│   └── docx_builder.py    # Geração do .docx
+├── tests/
+├── docs/plano.md          # Visão do produto e roadmap
+├── requirements.txt
+├── pyproject.toml
+└── Makefile
+```
+
+## O que a v1 faz
+
+- Formulário com cabeçalho, objetivo, escopo, definições, procedimento (seções/passos dinâmicos), regras, consulta e histórico de revisões
+- Validação mínima (nome, código, área e objetivo)
+- Gera `.docx` seguindo estrutura do modelo `POP_Manobras_CODEBA_v2`
+
+## O que a v1 não faz (proposital)
+
+- Persistência entre sessões
+- Multi-usuário / login / nuvem
+
+## Sem Make
+
+```bash
+uv venv --python 3.11 .venv
+source .venv/bin/activate
+uv pip install -r requirements.txt -r requirements-dev.txt
+uv pip install -e .
+streamlit run app.py --server.headless true
+```
+
+## Documentação
+
+Ver [docs/plano.md](docs/plano.md) para visão completa do pipeline GeraPOP + Fluxo Interativo SEV.
