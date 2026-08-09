@@ -184,3 +184,21 @@ def test_e2e_remover_oculto_com_um_item() -> None:
     at.run()
 
     assert len([b for b in at.button if b.label == "Remover"]) == 2
+
+
+def test_e2e_remover_revisao() -> None:
+    at = AppTest.from_file(APP_PATH, default_timeout=10)
+    at.run()
+
+    assert [b for b in at.button if b.label == "Remover"] == []
+
+    _button(at, "+ Adicionar revisão").click()
+    at.run()
+    assert len([b for b in at.button if b.label == "Remover"]) == 2
+
+    at.button(key="rm_rev_0").click()
+    at.run()
+    at.run()  # AppTest retém widgets do run pré-rerun; este run re-renderiza limpo
+
+    assert len(at.session_state[SessionKey.REVISOES]) == 1
+    assert [b for b in at.button if b.label == "Remover"] == []

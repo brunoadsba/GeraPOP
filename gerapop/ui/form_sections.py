@@ -186,7 +186,7 @@ def render_consulta() -> str:
 def render_revisoes() -> None:
     st.header("7. Histórico de Revisões")
     for index, revisao in enumerate(get_revisoes()):
-        col_rev, col_data, col_desc, col_resp = st.columns([1, 1.5, 4, 2])
+        col_rev, col_data, col_desc, col_resp, col_action = st.columns([1, 1.5, 4, 2, 1])
         revisao["revisao"] = col_rev.text_input(
             "Rev.",
             value=revisao["revisao"],
@@ -213,6 +213,9 @@ def render_revisoes() -> None:
             label_visibility="collapsed",
             placeholder="Responsável",
         )
+        if len(get_revisoes()) > 1 and col_action.button("Remover", key=f"rm_rev_{index}"):
+            remove_at(SessionKey.REVISOES, index)
+            st.rerun()
 
     st.button(
         "+ Adicionar revisão",
