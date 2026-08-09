@@ -3,6 +3,7 @@
 from enum import StrEnum
 
 DOCX_MIME = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+JSON_MIME = "application/json"
 DOCX_TITLE = "POP – Procedimento Operacional Padrão"
 DATE_FORMAT = "%d/%m/%Y"
 DEFAULT_VERSAO = "01"

@@ -28,10 +28,8 @@ def _pop_dir(pop_id: str) -> Path:
     return _pops_dir() / pop_id
 
 
-def save_pop(pop: PopData, docx: bytes | None = None) -> str:
-    pop_id = datetime.now().strftime("%Y%m%d_%H%M%S_%f") + "_" + uuid.uuid4().hex[:6]
-    target = _pop_dir(pop_id)
-    target.mkdir(parents=True, exist_ok=True)
+def serialize_pop(pop: PopData) -> dict[str, Any]:
+    """Serializa um PopData no formato reutilizável (metadata + pop)."""
     metadata = {
         "created_at": datetime.now().isoformat(),
         "status": "generated",
@@ -39,7 +37,14 @@ def save_pop(pop: PopData, docx: bytes | None = None) -> str:
         "nome_pop": pop.nome_pop,
         "filename": pop.output_filename(),
     }
-    payload = {"metadata": metadata, "pop": asdict(pop)}
+    return {"metadata": metadata, "pop": asdict(pop)}
+
+
+def save_pop(pop: PopData, docx: bytes | None = None) -> str:
+    pop_id = datetime.now().strftime("%Y%m%d_%H%M%S_%f") + "_" + uuid.uuid4().hex[:6]
+    target = _pop_dir(pop_id)
+    target.mkdir(parents=True, exist_ok=True)
+    payload = serialize_pop(pop)
     _atomic_write(target / "pop.json", json.dumps(payload, ensure_ascii=False, indent=2))
     if docx is not None:
         _atomic_write(target / "pop.docx", docx)
@@ -74,6 +79,15 @@ def get_pop(pop_id: str) -> PopData | None:
 
 def get_docx_bytes(pop_id: str) -> bytes | None:
     path = _pop_dir(pop_id) / "pop.docx"
+    try:
+        return path.read_bytes()
+    except OSError:
+        return None
+
+
+def get_pop_json_bytes(pop_id: str) -> bytes | None:
+    """Bytes do pop.json salvo (mesmo conteúdo exportado para download)."""
+    path = _pop_dir(pop_id) / "pop.json"
     try:
         return path.read_bytes()
     except OSError:

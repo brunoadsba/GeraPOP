@@ -1,10 +1,11 @@
 """Orquestração da interface Streamlit."""
 
 import io
+import json
 
 import streamlit as st
 
-from gerapop.constants import DOCX_MIME, SessionKey
+from gerapop.constants import DOCX_MIME, JSON_MIME, SessionKey
 from gerapop.models import PopData
 from gerapop.services.docx import gerar_docx
 from gerapop.session import (
@@ -19,7 +20,14 @@ from gerapop.session import (
     preencher_formulario,
     set_generated_docx,
 )
-from gerapop.storage import get_docx_bytes, get_pop, list_pops, save_pop
+from gerapop.storage import (
+    get_docx_bytes,
+    get_pop,
+    get_pop_json_bytes,
+    list_pops,
+    save_pop,
+    serialize_pop,
+)
 from gerapop.ui.form_sections import (
     ConteudoFields,
     IdentificacaoFields,
@@ -110,12 +118,19 @@ def render_download() -> None:
         docx = gerar_docx(pop)
         set_generated_docx(docx)
         _salvar_generated(pop, docx)
-    st.download_button(
+    col_docx, col_json = st.columns(2)
+    col_docx.download_button(
         "Baixar POP (.docx)",
         data=docx,
         file_name=pop.output_filename(),
         mime=DOCX_MIME,
         type="primary",
+    )
+    col_json.download_button(
+        "Baixar POP (.json)",
+        data=json.dumps(serialize_pop(pop), ensure_ascii=False, indent=2).encode("utf-8"),
+        file_name=pop.output_filename().removesuffix(".docx") + ".json",
+        mime=JSON_MIME,
     )
 
 
@@ -138,16 +153,25 @@ def render_historico() -> None:
             [record["id"] for record in records],
             format_func=lambda pop_id: labels[pop_id],
         )
-        col_download, col_load = st.columns(2)
+        col_download, col_load = st.columns([2, 1])
         docx_bytes = get_docx_bytes(selected)
+        json_bytes = get_pop_json_bytes(selected)
+        record = next(r for r in records if r["id"] == selected)
         if docx_bytes is not None:
-            record = next(r for r in records if r["id"] == selected)
-            col_download.download_button(
+            col_docx, col_json = col_download.columns(2)
+            col_docx.download_button(
                 "Baixar .docx",
                 data=docx_bytes,
                 file_name=record["filename"],
                 mime=DOCX_MIME,
             )
+            if json_bytes is not None:
+                col_json.download_button(
+                    "Baixar .json",
+                    data=json_bytes,
+                    file_name=record["filename"].removesuffix(".docx") + ".json",
+                    mime=JSON_MIME,
+                )
         if col_load.button("Carregar para editar"):
             pop = get_pop(selected)
             if pop is not None:

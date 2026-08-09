@@ -29,6 +29,14 @@ def _download_pop_atual(at: AppTest) -> list:
     return [d for d in at.get("download_button") if d.proto.label == "Baixar POP (.docx)"]
 
 
+def _download_json_gerado(at: AppTest) -> list:
+    return [d for d in at.get("download_button") if d.proto.label == "Baixar POP (.json)"]
+
+
+def _download_json_historico(at: AppTest) -> list:
+    return [d for d in at.get("download_button") if d.proto.label == "Baixar .json"]
+
+
 def _fill_obrigatorios(at: AppTest) -> None:
     at.text_input[0].set_value("Registro de Manobras no Sistema TOS")  # Nome do POP
     at.text_input[1].set_value("POP-OPE-001")  # Código
@@ -210,6 +218,42 @@ def test_e2e_remover_revisao() -> None:
 
     assert len(at.session_state[SessionKey.REVISOES]) == 1
     assert [b for b in at.button if b.label == "Remover"] == []
+
+
+def test_e2e_export_json() -> None:
+    at = AppTest.from_file(APP_PATH, default_timeout=10)
+    at.run()
+
+    _fill_obrigatorios(at)
+    _gerar_pop(at)
+
+    assert not at.exception
+    downloads = _download_json_gerado(at)
+    assert len(downloads) == 1
+    assert downloads[0].proto.type == "secondary"
+    assert downloads[0].proto.url.endswith(".json")
+
+    docx = _download_pop_atual(at)
+    assert len(docx) == 1
+    assert docx[0].proto.type == "primary"
+    assert docx[0].proto.url.endswith(".docx")
+
+
+def test_e2e_historico_export_json() -> None:
+    at = AppTest.from_file(APP_PATH, default_timeout=10)
+    at.run()
+
+    _fill_obrigatorios(at)
+    _gerar_pop(at)
+    at.run()  # re-render limpo após o st.rerun do try_generate
+
+    downloads = _download_json_historico(at)
+    assert len(downloads) == 1
+    assert downloads[0].proto.url.endswith(".json")
+
+    docx = [d for d in at.get("download_button") if d.proto.label == "Baixar .docx"]
+    assert len(docx) == 1
+    assert docx[0].proto.url.endswith(".docx")
 
 
 def test_e2e_historico() -> None:

@@ -61,6 +61,7 @@ gerapop/
 - Formulário com cabeçalho, objetivo, escopo, definições, procedimento (seções/passos dinâmicos), regras, consulta e histórico de revisões
 - Validação mínima (nome, código, área e objetivo)
 - Gera `.docx` seguindo estrutura do modelo `POP_Manobras_CODEBA_v2`
+- Export `.json` do POP (`{"metadata", "pop"}`) junto com o `.docx` — na geração e no histórico
 - Histórico de POPs gerados em `data/pops/` (JSON + .docx) com re-download e "carregar para editar" (persistente via volume no Docker)
 
 ## O que a v1 não faz (proposital)

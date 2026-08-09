@@ -56,10 +56,12 @@ GeraPOP (Projeto 2)  →  dados estruturados  →  Fluxo Interativo SEV (Projeto
 
 **Persistência (v1.1):** POPs gerados são salvos automaticamente em `data/pops/<id>/` (`pop.json` + `pop.docx`) e listados no app (seção Histórico). Backup = copiar a pasta `data/` (volume no docker-compose).
 
+**Export JSON (v1.1):** todo POP gerado pode ser baixado como `.json` (formato `{"metadata": ..., "pop": ...}`, igual ao `pop.json` do storage) — tanto na tela de geração quanto no Histórico. Habilita o Projeto 1 (Fluxo SEV).
+
 **O que a v1 NÃO faz (proposital):**
 - Login / multi-usuário
 - Nuvem
-- Export JSON pela UI (próximo passo sugerido; o `pop.json` do storage já é o formato)
+- Rascunho do formulário persistido entre sessões
 
 ---
 
@@ -142,7 +144,7 @@ make install-dev
 make run          # http://localhost:8501
 
 # Qualidade
-make test         # 19 testes (docx + models + e2e)
+make test         # 29 testes (storage + docx + models + e2e)
 make lint         # ruff check + format --check
 make format       # auto-format
 
@@ -178,17 +180,17 @@ Seguir estas regras ao continuar o projeto:
   - Separação em `constants`, `services/docx/`, `ui/`
   - Remoção de `gerapop/docx_builder.py` monolítico
   - Remoção de duplicatas em `ideia-files/`
-  - Novos testes (`test_models.py`, `test_e2e_app.py`, `test_storage.py`, `conftest.py`) — **25 testes passando**
+  - Novos testes (`test_models.py`, `test_e2e_app.py`, `test_storage.py`, `conftest.py`) — **29 testes passando**
   - README atualizado com nova estrutura
 
-**Próxima ação sugerida:** implementar export JSON (habilita o Projeto 1 — Fluxo SEV), ou testar com POP real da CODEBA.
+**Próxima ação sugerida:** testar com POP real da CODEBA e ajustar campos/layout, ou seguir para o Projeto 1 (Fluxo SEV) usando o export JSON.
 
 ---
 
 ## 9. Roadmap — próximos passos priorizados
 
 ### Curto prazo (GeraPOP v1.1)
-- [ ] **Export JSON** junto com `.docx` — habilita Projeto 1 (Fluxo SEV)
+- [x] **Export JSON** junto com `.docx` — habilita Projeto 1 (Fluxo SEV)
 - [ ] Testar com POP real da CODEBA e ajustar campos/layout
 - [x] Commit + push da refatoração clean code
 
@@ -238,8 +240,8 @@ Leia memory.md e docs/plano.md antes de codar.
 Stack: Python 3.11, Streamlit, python-docx, pytest, ruff.
 Arquitetura: gerapop/models (domínio), services/docx (geração), ui/ (formulário).
 
-Estado: MVP v1 funcional + histórico de POPs gerados em disco (25 testes OK).
-Próximo passo sugerido: export JSON ou validação com POP real.
+Estado: MVP v1 funcional + histórico de POPs gerados em disco + export JSON (29 testes OK).
+Próximo passo sugerido: validação com POP real da CODEBA.
 
 NÃO implementar: nuvem, auth, multi-agente, migração de stack.
 ```
