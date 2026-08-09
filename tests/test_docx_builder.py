@@ -110,9 +110,7 @@ def test_campos_obrigatorios_por_secao(pop_minimo: PopData) -> None:
     texts, tables = _docx_estrutura(pop_minimo)
 
     assert "Campos obrigatórios – Atracação:" in texts
-    campos_table = next(
-        t for t in tables if _texto_tabela(t) == "Campo" and len(t.columns) == 2
-    )
+    campos_table = next(t for t in tables if _texto_tabela(t) == "Campo" and len(t.columns) == 2)
     assert [row.cells[0].text for row in campos_table.rows[1:]] == ["Berço", "Data e Hora"]
     assert campos_table.rows[1].cells[1].text == "Número do berço de atracação designado."
 
