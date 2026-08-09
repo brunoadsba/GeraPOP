@@ -127,3 +127,33 @@ def test_e2e_listas_dinamicas_integradas() -> None:
     assert "Registrar no sistema." in texts
     assert "Não executar sem autorização." in texts
     assert "Revisão geral" in texts
+
+
+def test_e2e_edicao_invalida_download() -> None:
+    at = AppTest.from_file(APP_PATH, default_timeout=10)
+    at.run()
+
+    _fill_obrigatorios(at)
+    _gerar_pop(at)
+    assert at.get("download_button")
+
+    at.text_area[0].set_value("Objetivo alterado após geração")
+    at.run()
+
+    assert at.get("download_button") == []
+    assert not at.success
+    assert SessionKey.GENERATED_POP not in at.session_state
+
+
+def test_e2e_pop_snapshot_isolado() -> None:
+    at = AppTest.from_file(APP_PATH, default_timeout=10)
+    at.run()
+
+    _fill_obrigatorios(at)
+    _gerar_pop(at)
+    assert at.get("download_button")
+
+    _button(at, "+ Adicionar termo").click()
+    at.run()
+
+    assert at.get("download_button") == []

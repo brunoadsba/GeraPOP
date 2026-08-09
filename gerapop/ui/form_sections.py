@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from copy import deepcopy
 from dataclasses import dataclass
 from datetime import date
 
@@ -244,5 +245,5 @@ def try_generate(identificacao: IdentificacaoFields, conteudo: ConteudoFields) -
             st.error(error)
         return
 
-    set_generated_pop(pop)
+    set_generated_pop(deepcopy(pop))
     st.rerun()

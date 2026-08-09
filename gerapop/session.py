@@ -71,6 +71,11 @@ def get_generated_pop() -> Any | None:
     return st.session_state.get(SessionKey.GENERATED_POP)
 
 
+def clear_generated() -> None:
+    st.session_state.pop(SessionKey.GENERATED_POP, None)
+    st.session_state.pop(SessionKey.GENERATED_DOCX, None)
+
+
 def templates() -> dict[str, Any]:
     return {
         "definicao": default_definicao(),
