@@ -44,13 +44,16 @@ gerapop/
 │   ├── models.py               # Domínio e validação
 │   ├── session.py              # Estado da sessão Streamlit
 │   ├── storage.py              # Histórico em disco (pop.json + pop.docx)
+│   ├── backup.py               # CLI de backup (python -m gerapop.backup)
 │   ├── services/
 │   │   └── docx/               # Geração do .docx
 │   └── ui/
 │       ├── main.py             # Orquestração da interface
 │       └── form_sections.py    # Seções do formulário
+├── fluxo-sev/                  # Diagrama interativo do fluxo SEV
 ├── tests/
 ├── docs/plano.md
+├── guia-usuario.md
 ├── requirements.txt
 ├── pyproject.toml
 └── Makefile
@@ -58,15 +61,16 @@ gerapop/
 
 ## O que a v1 faz
 
-- Formulário com cabeçalho, objetivo, escopo, definições, procedimento (seções/passos dinâmicos), regras, consulta e histórico de revisões
-- Validação mínima (nome, código, área e objetivo)
+- Formulário com cabeçalho, objetivo, escopo, definições, procedimento (seções/passos dinâmicos com campos obrigatórios), regras, consulta e histórico de revisões
+- Validação mínima (nome, código, área e objetivo) e unicidade de código (bloqueio de duplicidade com exceção para edição)
 - Gera `.docx` seguindo a estrutura do modelo `POP_Manobras_CODEBA_v2` (numeração automática das seções, aviso ⚠ no escopo, regras em tabela, fontes do modelo) — validado contra o modelo real OpenPort
 - Export `.json` do POP (`{"metadata", "pop"}`) junto com o `.docx` — na geração e no histórico
 - Histórico de POPs gerados em `data/pops/` (JSON + .docx) com re-download e "carregar para editar" (persistente via volume no Docker)
+- Rascunho do formulário persistido entre sessões
+- Backup dos POPs em `.zip` (botão no histórico + `python -m gerapop.backup`)
 
 ## O que a v1 não faz (proposital)
 
-- Rascunho do formulário persistido entre sessões
 - Multi-usuário / login / nuvem
 
 ## Sem Make
