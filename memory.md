@@ -1,7 +1,7 @@
 # GeraPOP — Memória de Contexto para LLMs
 
 > Documento de continuidade do projeto. Leia antes de implementar qualquer feature.
-> Última atualização: 2026-08-09 (sessão de limpeza + unicidade de código + clean code)
+> Última atualização: 2026-08-09 (design system + dashboard/preview/simulação + PDF + harness UX/UI)
 
 ---
 
@@ -13,7 +13,7 @@ O usuário preenche um formulário guiado e recebe um arquivo `.docx` formatado,
 
 **Repositório:** https://github.com/brunoadsba/GeraPOP.git  
 **Branch principal:** `main`  
-**Status atual:** MVP v1 completo (validação por seção, unicidade de código, rascunho persistente, backup zip, export JSON) + Fluxo SEV v1 entregue (fluxo Desembarque); **54 testes passando**; CI do GitHub desativado por pedido do usuário.
+**Status atual:** MVP v1 completo (validação por seção, unicidade de código, rascunho persistente, backup zip, export JSON) + export **PDF** (reportlab) + **dashboard home** (KPIs/stepper do fluxo SEV) + **preview do POP** (modo leitura) + **simulação RPA** de preenchimento + **design system** (tema light/dark, harness UX/UI em `harnessfiles/`); **72 testes passando**; CI do GitHub desativado por pedido do usuário.
 
 ---
 
@@ -79,19 +79,27 @@ gerapop/
 ├── memory.md                       # Este arquivo
 ├── guia-usuario.md                 # Guia do usuário final (seção 10 = campos obrigatórios)
 ├── gerapop/
-│   ├── __init__.py                 # Exporta PopData, gerar_docx
-│   ├── constants.py                # SessionKey, ValidationMessage, estilos docx, MIME
+│   ├── __init__.py                 # Exporta PopData, gerar_docx, gerar_pdf
+│   ├── constants.py                # SessionKey, ValidationMessage, estilos docx/pdf, MIME
 │   ├── models.py                   # PopData, TypedDicts, validação, factories
 │   ├── session.py                  # Estado Streamlit (listas dinâmicas, rascunho, unicidade)
 │   ├── storage.py                  # Persistência em disco (pop.json + pop.docx)
 │   ├── backup.py                   # CLI de backup zip (python -m gerapop.backup)
+│   ├── assets/                     # Logos CODEBA (light/dark) usados na sidebar
 │   ├── services/
-│   │   └── docx/
-│   │       ├── styles.py           # Formatação de células Word
-│   │       └── builder.py          # Montagem do documento por seções
+│   │   ├── docx/
+│   │   │   ├── styles.py           # Formatação de células Word
+│   │   │   └── builder.py          # Montagem do documento por seções
+│   │   └── pdf/
+│   │       └── builder.py          # Mesma estrutura do .docx em PDF (reportlab)
 │   └── ui/
-│       ├── main.py                 # Orquestração (configure → form → histórico → download)
-│       └── form_sections.py        # Uma função por seção do formulário
+│       ├── main.py                 # Orquestração (sidebar + navegação + form + histórico)
+│       ├── home.py                 # Dashboard: hero, KPIs, stepper, cards do fluxo SEV
+│       ├── form_sections.py        # Uma função por seção do formulário
+│       ├── simulacao.py            # Simulação RPA de preenchimento (demo)
+│       ├── preview.py              # Tela de leitura do POP (modo documento)
+│       └── theme.py / theme.css    # Tokens __VAR__ light/dark + estilos custom
+├── harnessfiles/                   # Harness de UX/UI (AGENTS.md, design_system.md, ui_loop.py)
 ├── fluxo-sev/                      # Projeto 1 — diagrama interativo (HTML/CSS/JS puro)
 │   ├── index.html, app.js, style.css
 │   ├── schema/                     # fluxo.schema.json + pop.schema.json
@@ -104,7 +112,9 @@ gerapop/
 │   ├── test_e2e_codigo_duplicado.py# E2E unicidade de código
 │   ├── test_validacao_codigo.py    # Unit unicidade + label de histórico
 │   ├── test_fluxo_sev.py           # Valida dados estáticos do fluxo-sev
+│   ├── test_home.py                # Dashboard (hero, KPIs, stepper, cards)
 │   ├── test_models.py
+│   ├── test_simulacao.py           # Simulação RPA (fluxo de preenchimento)
 │   └── test_storage.py
 ├── docs/
 │   ├── plano.md                    # Roadmap completo
@@ -164,7 +174,7 @@ make install-dev
 make run          # http://localhost:8501
 
 # Qualidade
-make test         # 54 testes (storage + docx + models + e2e + unicidade + fluxo-sev)
+make test         # 72 testes (storage + docx + pdf + models + e2e + unicidade + home + simulação + fluxo-sev)
 make lint         # ruff check + format --check
 make format       # auto-format
 
@@ -212,10 +222,16 @@ Seguir estas regras ao continuar o projeto:
 - `style: ruff format` — `48f65c2`
 - `docs(readme): estrutura e escopo v1 atualizados` — `8f218ea`
 - `chore(repo): arquiva protótipo em obsoleto/ e versiona dados do fluxo-sev` — `5598bd8`
+- `docs(memory): atualizar estado do projeto` — `7d1d40a`
+- `feat(pdf): gerar PDF do POP com reportlab` — `9f6cd84`
+- `feat(ui): dashboard, preview, simulacao e design system` — `d2be58d`
+- `chore(harness): harness de UX/UI, mockup e docs de frontend` — `9edab35`
 
 > Detalhes da limpeza: `ideia-files/` (protótipo original) movido para `obsoleto/ideia-files/` (pasta versionada de arquivamento — convenção §7.9); `.gitignore` `data/` → `/data/` (só raiz) para que `fluxo-sev/data/` (essencial ao `test_fluxo_sev.py`) fosse versionado; referências a `ideia-files/` removidas de `pyproject.toml` (ruff exclude) e `.ruffignore`; lixo local não versionado removido (`gerapop.egg-info/`, caches).
 
 **Fora do repo (estado local):** CI do GitHub desativado por pedido do usuário (`gh workflow disable 330472653` — reativar com `gh workflow enable 330472653 --repo brunoadsba/GeraPOP`).
+
+**Nota sobre o harness:** `harnessfiles/` contém o loop de crítica visual (screenshot → LLM com visão → correção) e o `changelog.md` acumulado. O `AGENTS.md` dele rege mudanças de UX/UI: cores novas sempre como `__VAR__` com light/dark, 72 testes verdes antes de finalizar, mudanças estruturais exigem confirmação do usuário.
 
 **Próxima ação sugerida:** executar o piloto com a equipe (`docs/piloto.md`) — gate que desbloqueia nuvem e os 3 fluxos SEV restantes.
 
@@ -232,6 +248,12 @@ Seguir estas regras ao continuar o projeto:
 - [x] Unicidade de código com exceção de edição
 - [x] Fluxo SEV v1 (Desembarque) com QA Playwright
 - [x] Clean code + docs (README, guia-usuario, deploy, piloto)
+- [x] Export PDF (reportlab) — mesma estrutura do .docx
+- [x] Dashboard home (KPIs, stepper, cards do fluxo SEV)
+- [x] Preview do POP em modo leitura (com .docx/.pdf baixáveis)
+- [x] Simulação RPA de preenchimento
+- [x] Design system: paleta light/dark, componentes custom (hero, KPIs, stepper, badges, tooltips nativos, tabelas, container responsivo)
+- [x] Harness de UX/UI (`harnessfiles/`): AGENTS.md + design_system.md + ui_loop.py + changelog
 
 ### Gate de negócio (aguarda usuário/equipe)
 - [ ] **Piloto com a equipe** — `docs/piloto.md` (roteiro pronto, GATE explícito)
@@ -283,15 +305,17 @@ Seguir estas regras ao continuar o projeto:
 ## 12. Prompt de continuidade (copiar para nova sessão)
 
 ```
-Contexto: Projeto GeraPOP (CODEBA) — gerador de POP em Streamlit + python-docx.
+Contexto: Projeto GeraPOP (CODEBA) — gerador de POP em Streamlit + python-docx + reportlab.
 Leia memory.md e docs/plano.md antes de codar.
 
-Stack: Python 3.11, Streamlit, python-docx, pytest, ruff.
-Arquitetura: gerapop/models (domínio), services/docx (geração), ui/ (formulário),
-storage/backup (persistência), fluxo-sev/ (Projeto 1, HTML/CSS/JS puro).
+Stack: Python 3.11, Streamlit, python-docx, reportlab, pytest, ruff.
+Arquitetura: gerapop/models (domínio), services/docx + services/pdf (geração),
+ui/ (formulário, home, preview, simulação, theme), storage/backup (persistência),
+fluxo-sev/ (Projeto 1, HTML/CSS/JS puro), harnessfiles/ (harness de UX/UI).
 
 Estado: MVP v1 completo (validação por seção, unicidade de código, rascunho,
-backup zip, export JSON) + Fluxo SEV v1 Desembarque (54 testes OK). CI desativado.
+backup zip, export JSON + PDF, dashboard home, preview, simulação, design system
+light/dark, harness UX/UI) — 72 testes OK. CI desativado.
 Próximo passo sugerido: piloto com a equipe (docs/piloto.md) — depois os 3 fluxos
 SEV restantes e a decisão de hospedagem (docs/deploy.md).
 
