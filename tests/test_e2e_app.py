@@ -172,3 +172,15 @@ def test_e2e_docx_gerado_uma_vez() -> None:
 
     at.run()
     assert at.session_state[SessionKey.GENERATED_DOCX] is docx
+
+
+def test_e2e_remover_oculto_com_um_item() -> None:
+    at = AppTest.from_file(APP_PATH, default_timeout=10)
+    at.run()
+
+    assert [b for b in at.button if b.label == "Remover"] == []
+
+    _button(at, "+ Adicionar termo").click()
+    at.run()
+
+    assert len([b for b in at.button if b.label == "Remover"]) == 2

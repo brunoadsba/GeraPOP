@@ -98,7 +98,7 @@ def render_definicoes() -> None:
             label_visibility="collapsed",
             placeholder="Definição",
         )
-        if col_action.button("Remover", key=f"rm_def_{index}"):
+        if len(get_definicoes()) > 1 and col_action.button("Remover", key=f"rm_def_{index}"):
             remove_at(SessionKey.DEFINICOES, index)
             st.rerun()
 
@@ -129,7 +129,9 @@ def render_procedimento() -> None:
                 label_visibility="collapsed",
                 placeholder=f"Passo {passo_index + 1}",
             )
-            if col_action.button("Remover", key=f"rm_passo_{secao_index}_{passo_index}"):
+            if len(secao["passos"]) > 1 and col_action.button(
+                "Remover", key=f"rm_passo_{secao_index}_{passo_index}"
+            ):
                 remove_passo(secao_index, passo_index)
                 st.rerun()
 
@@ -165,7 +167,7 @@ def render_regras() -> None:
             label_visibility="collapsed",
             placeholder="Regra",
         )
-        if col_action.button("Remover", key=f"rm_regra_{index}"):
+        if len(get_regras()) > 1 and col_action.button("Remover", key=f"rm_regra_{index}"):
             remove_at(SessionKey.REGRAS, index)
             st.rerun()
 
