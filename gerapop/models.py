@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 from datetime import date
 from typing import TypedDict
@@ -110,6 +111,11 @@ class PopData:
         return [message for value, message in checks if not value]
 
     def output_filename(self) -> str:
-        slug = self.nome_pop[:FILENAME_SLUG_MAX_LEN].replace(" ", "_").replace("/", "-")
         prefix = self.codigo or "POP"
-        return f"{prefix}_{slug}.docx"
+        return f"{prefix}_{_slugify(self.nome_pop)}.docx"
+
+
+def _slugify(nome: str) -> str:
+    """Converte um nome em slug seguro para filename (Windows/macOS/Linux)."""
+    slug = re.sub(r"[^A-Za-z0-9._-]+", "_", nome.strip()).strip("_")
+    return slug[:FILENAME_SLUG_MAX_LEN]
