@@ -1,6 +1,5 @@
 # Ruff
 .venv/
-ideia-files/
 
 # Python
 __pycache__/

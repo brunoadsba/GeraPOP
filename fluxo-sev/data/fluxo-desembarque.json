@@ -1,0 +1,64 @@
+{
+  "fluxo_id": "desembarque",
+  "titulo": "Fluxo — Desembarque",
+  "descricao": "Etapas do desembarque de navio no terminal: da chegada à desatracação. Clique numa caixa para abrir o POP vinculado.",
+  "nos": [
+    {
+      "id": "chegada",
+      "etapa": 1,
+      "rotulo": "Chegada do navio",
+      "descricao": "Recebimento do aviso de ETA e identificação do navio.",
+      "pop_ref": null
+    },
+    {
+      "id": "planejamento",
+      "etapa": 2,
+      "rotulo": "Planejamento da atracação",
+      "descricao": "Definição do berço, prático e rebocadores para a manobra.",
+      "pop_ref": null
+    },
+    {
+      "id": "atracacao",
+      "etapa": 3,
+      "rotulo": "Atracação",
+      "descricao": "Manobra de atracação no berço designado.",
+      "pop_ref": "pop-desembarque"
+    },
+    {
+      "id": "inspecao",
+      "etapa": 4,
+      "rotulo": "Inspeção inicial",
+      "descricao": "Vistoria do navio e liberação para início da operação.",
+      "pop_ref": null
+    },
+    {
+      "id": "descarga",
+      "etapa": 5,
+      "rotulo": "Operação de descarga",
+      "descricao": "Movimentação da carga do navio para o pátio.",
+      "pop_ref": null
+    },
+    {
+      "id": "conferencia",
+      "etapa": 6,
+      "rotulo": "Conferência e documentação",
+      "descricao": "Conferência da carga descarregada e documentos da operação.",
+      "pop_ref": null
+    },
+    {
+      "id": "desatracacao",
+      "etapa": 7,
+      "rotulo": "Desatracação",
+      "descricao": "Manobra de desatracação e saída do navio.",
+      "pop_ref": "pop-desembarque"
+    }
+  ],
+  "links": [
+    { "from": "chegada", "to": "planejamento" },
+    { "from": "planejamento", "to": "atracacao" },
+    { "from": "atracacao", "to": "inspecao" },
+    { "from": "inspecao", "to": "descarga" },
+    { "from": "descarga", "to": "conferencia" },
+    { "from": "conferencia", "to": "desatracacao" }
+  ]
+}

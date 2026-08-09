@@ -1,0 +1,92 @@
+{
+  "metadata": {
+    "created_at": "2026-03-15T09:24:31.125846",
+    "status": "generated",
+    "codigo": "POP-MAN-001",
+    "nome_pop": "Manobra de Atracação de Navio",
+    "filename": "POP-MAN-001_Manobra_de_Atraca_o_de_Navio.docx"
+  },
+  "pop": {
+    "nome_pop": "Manobra de Atracação de Navio",
+    "codigo": "POP-MAN-001",
+    "versao": "02",
+    "data": "15/03/2026",
+    "area": "Operações Portuárias",
+    "aviso": "Manobra de atracação somente com prático credenciado a bordo e rebocadores disponíveis.",
+    "objetivo": "Padronizar a manobra de atracação de navios no berço designado, garantindo segurança à tripulação, ao navio e à infraestrutura do terminal.",
+    "escopo": "Aplica-se à equipe de operações portuárias, práticos, rebocadores e conferentes envolvidos na manobra de atracação.",
+    "definicoes": [
+      {
+        "termo": "Prático",
+        "definicao": "Profissional credenciado responsável por conduzir a manobra do navio dentro da área do porto."
+      },
+      {
+        "termo": "Rebocador",
+        "definicao": "Embarcação de apoio utilizada para posicionar e manobrar o navio durante a atracação."
+      },
+      {
+        "termo": "Berço",
+        "definicao": "Local designado no cais onde o navio será atracado."
+      }
+    ],
+    "secoes": [
+      {
+        "titulo": "Preparação da manobra",
+        "passos": [
+          "Confirmar o horário de chegada (ETA) e a identificação do navio.",
+          "Designar o berço de atracação conforme o plano de operação.",
+          "Confirmar a disponibilidade de prático e rebocadores."
+        ],
+        "campos": [
+          {
+            "campo": "Data e Hora",
+            "descricao": "Data e hora efetiva do início da manobra."
+          },
+          {
+            "campo": "Berço",
+            "descricao": "Número do berço designado para a atracação."
+          },
+          {
+            "campo": "Prático",
+            "descricao": "Nome do prático responsável pela manobra."
+          }
+        ]
+      },
+      {
+        "titulo": "Execução da atracação",
+        "passos": [
+          "Conduzir o navio até o berço com apoio dos rebocadores.",
+          "Posicionar o navio conforme o plano de manobra.",
+          "Passar as amarras e fixar o navio ao cais.",
+          "Confirmar a atracação e registrar o término da manobra."
+        ],
+        "campos": [
+          {
+            "campo": "Rebocadores",
+            "descricao": "Relação dos rebocadores utilizados na manobra."
+          }
+        ]
+      }
+    ],
+    "regras": [
+      "Não iniciar a manobra sem prático credenciado a bordo.",
+      "Manter comunicação de rádio contínua entre prático, rebocadores e coordenação.",
+      "Parar a manobra imediatamente em caso de condição meteorológica adversa."
+    ],
+    "consulta": "Menu > Operações > Manobras",
+    "revisoes": [
+      {
+        "revisao": "02",
+        "data": "15/03/2026",
+        "descricao": "Inclusão dos campos obrigatórios de registro da manobra.",
+        "responsavel": "Operações Portuárias"
+      },
+      {
+        "revisao": "01",
+        "data": "10/01/2026",
+        "descricao": "Emissão inicial.",
+        "responsavel": "Operações Portuárias"
+      }
+    ]
+  }
+}

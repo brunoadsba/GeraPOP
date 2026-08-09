@@ -26,7 +26,7 @@ include = ["gerapop*"]
 [tool.ruff]
 line-length = 100
 target-version = "py311"
-exclude = ["ideia-files", ".venv"]
+exclude = [".venv"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP"]

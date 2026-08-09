@@ -30,8 +30,8 @@ Thumbs.db
 *.docx
 !docs/**/*.docx
 
-# Dados gerados (histórico de POPs)
-data/
+# Dados gerados (histórico de POPs) — apenas na raiz; fluxo-sev/data é versionado
+/data/
 
 # Artefatos de QA (Playwright MCP)
 .playwright-mcp/
