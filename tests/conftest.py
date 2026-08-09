@@ -1,8 +1,11 @@
+import logging
 from datetime import date
 
 import pytest
 
 from gerapop.models import PopData
+
+logging.getLogger("streamlit.runtime.scriptrunner_utils.script_run_context").setLevel(logging.ERROR)
 
 
 @pytest.fixture
