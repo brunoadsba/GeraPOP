@@ -35,3 +35,6 @@ data/
 
 # Artefatos de QA (Playwright MCP)
 .playwright-mcp/
+
+# Artefatos locais de planejamento (OhMyOpenCode)
+.omo/
