@@ -45,7 +45,7 @@ python harness/ui_loop.py --pages home,form --iterations 3 --score-threshold 8.5
 - `--virtual-time-budget` no Chromium ajuda, mas não garante que o Streamlit (que renderiza via
   websocket) terminou de desenhar antes do screenshot. Se as imagens saírem "picadas"
   (spinner, skeleton), aumente o valor ou migre para Playwright com `wait_for_selector` — dá mais
-  controle, mas adiciona uma dependência que hoje o projeto não tem (o `ambiente-frontend.md`
+  controle, mas adiciona uma dependência que hoje o projeto não tem (o `obsoleto/ambiente-fronend.md`
   menciona QA visual manual via chromium headless, sem Playwright integrado).
 - O crítico "alucina" às vezes, como qualquer LLM — trate `critique.json` como sugestão, não
   verdade absoluta. O `AGENTS.md` já instrui o DeepSeek a só mexer em P0/P1 por rodada,

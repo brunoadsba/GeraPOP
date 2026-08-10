@@ -42,14 +42,21 @@ gerapop/
 ├── gerapop/
 │   ├── constants.py            # Constantes e enums
 │   ├── models.py               # Domínio e validação
-│   ├── session.py              # Estado da sessão Streamlit
+│   ├── session_codigo.py       # Unicidade de código + estado de edição
+│   ├── session_draft.py        # Estado da sessão Streamlit + rascunho
 │   ├── storage.py              # Histórico em disco (pop.json + pop.docx)
 │   ├── backup.py               # CLI de backup (python -m gerapop.backup)
 │   ├── services/
-│   │   └── docx/               # Geração do .docx
+│   │   ├── documento.py        # Modelo neutro de blocos (docx/pdf)
+│   │   ├── docx/               # Geração do .docx
+│   │   └── pdf/                # Geração do .pdf
 │   └── ui/
 │       ├── main.py             # Orquestração da interface
-│       └── form_sections.py    # Seções do formulário
+│       ├── home.py             # Dashboard (KPIs, stepper, cards)
+│       ├── downloads.py        # Botões .docx/.pdf reutilizáveis
+│       ├── historico.py        # Histórico + backup zip
+│       ├── preview.py          # Tela de leitura do POP
+│       └── form/               # Seções do formulário
 ├── fluxo-sev/                  # Diagrama interativo do fluxo SEV
 ├── tests/
 ├── docs/plano.md

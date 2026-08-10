@@ -57,7 +57,7 @@ GeraPOP (Projeto 2)  →  dados estruturados  →  Fluxo Interativo SEV (Projeto
 
 **Persistência (v1.1):** POPs gerados são salvos automaticamente em `data/pops/<id>/` (`pop.json` + `pop.docx`) e listados no app (seção Histórico). Backup = botão "Backup (.zip)" no app ou `python -m gerapop.backup` (gera `data/backups/gerapop_YYYYMMDD_HHMMSS.zip`). `data/` é ignorado pelo git (apenas na raiz).
 
-**Rascunho persistente (v1.1):** o formulário salva rascunho a cada alteração (`session.py`); ao voltar, o usuário escolhe continuar o rascunho ou recomeçar. O rascunho é restaurado se o `pop_id` de origem ainda existir no histórico.
+**Rascunho persistente (v1.1):** o formulário salva rascunho a cada alteração (`session_draft.py`); ao voltar, o usuário escolhe continuar o rascunho ou recomeçar. O rascunho é restaurado se o `pop_id` de origem ainda existir no histórico.
 
 **Unicidade de código (v1.1):** a geração é bloqueada se o código já existe no histórico, com exceção para a edição do POP carregado (permissão `{loaded_from_id} ∪ {SAVED_POP_ID}`). Ver `SessionKey.LOADED_FROM_ID`, `session.encontrar_codigo_duplicado`, `verificar_codigo_duplicado`. No Histórico, POPs com códigos repetidos exibem sufixo ` ⚠ (N)`.
 
@@ -82,22 +82,30 @@ gerapop/
 │   ├── __init__.py                 # Exporta PopData, gerar_docx, gerar_pdf
 │   ├── constants.py                # SessionKey, ValidationMessage, estilos docx/pdf, MIME
 │   ├── models.py                   # PopData, TypedDicts, validação, factories
-│   ├── session.py                  # Estado Streamlit (listas dinâmicas, rascunho, unicidade)
+│   ├── session_codigo.py           # Unicidade de código + estado de edição (LOADED_FROM)
+│   ├── session_draft.py            # Estado Streamlit (listas dinâmicas, geração, rascunho)
 │   ├── storage.py                  # Persistência em disco (pop.json + pop.docx)
 │   ├── backup.py                   # CLI de backup zip (python -m gerapop.backup)
 │   ├── assets/                     # Logos CODEBA (light/dark) usados na sidebar
 │   ├── services/
+│   │   ├── documento.py            # Modelo neutro de blocos (Titulo/Paragrafo/Aviso/Tabela)
 │   │   ├── docx/
 │   │   │   ├── styles.py           # Formatação de células Word
-│   │   │   └── builder.py          # Montagem do documento por seções
+│   │   │   └── builder.py          # Renderiza os blocos neutros em .docx
 │   │   └── pdf/
-│   │       └── builder.py          # Mesma estrutura do .docx em PDF (reportlab)
+│   │       └── builder.py          # Renderiza os blocos neutros em PDF (reportlab)
 │   └── ui/
-│       ├── main.py                 # Orquestração (sidebar + navegação + form + histórico)
+│       ├── main.py                 # Orquestração (sidebar + navegação + form + download)
 │       ├── home.py                 # Dashboard: hero, KPIs, stepper, cards do fluxo SEV
-│       ├── form_sections.py        # Uma função por seção do formulário
+│       ├── downloads.py            # Botões .docx/.pdf reutilizáveis (MIME + nomes)
+│       ├── historico.py            # Histórico: listagem, download, edição e backup zip
 │       ├── simulacao.py            # Simulação RPA de preenchimento (demo)
 │       ├── preview.py              # Tela de leitura do POP (modo documento)
+│       ├── form/                   # Formulário por área
+│       │   ├── widgets.py          # Badges OBRIGATÓRIO/OPCIONAL + cabeçalho
+│       │   ├── identificacao.py    # Identificação (nome, código, versão, data, área, aviso)
+│       │   ├── conteudo.py         # Objetivo/escopo/consulta + build_pop + try_generate
+│       │   └── dinamicas.py        # Definições, procedimento, regras, revisões
 │       └── theme.py / theme.css    # Tokens __VAR__ light/dark + estilos custom
 ├── harnessfiles/                   # Harness de UX/UI (AGENTS.md, design_system.md, ui_loop.py)
 ├── fluxo-sev/                      # Projeto 1 — diagrama interativo (HTML/CSS/JS puro)
@@ -120,7 +128,7 @@ gerapop/
 │   ├── plano.md                    # Roadmap completo
 │   ├── piloto.md                   # Roteiro do piloto com a equipe (GATE aguarda usuário)
 │   └── deploy.md                   # Opções de hospedagem (Cloud efêmero vs Docker)
-├── obsoleto/                       # Arquivamento versionado (ex.: ideia-files/)
+├── obsoleto/                       # Arquivamento versionado (ideia-files/, telas-recriadas.html, ambiente-fronend.md)
 ├── Makefile
 ├── pyproject.toml
 ├── requirements.txt
@@ -135,7 +143,7 @@ gerapop/
 | Entrada | `app.py` | Bootstrap Streamlit |
 | Domínio | `models.py` | `PopData`, validação, normalização |
 | Constantes | `constants.py` | Enums, magic strings, config docx |
-| Sessão | `session.py` | `st.session_state`, listas dinâmicas, rascunho, unicidade |
+| Sessão | `session_codigo.py`, `session_draft.py` | `st.session_state`, listas dinâmicas, rascunho, unicidade |
 | Serviço | `services/docx/` | Geração `.docx` (sem dependência de Streamlit) |
 | Persistência | `storage.py`, `backup.py` | Disco + backup zip (CLI) |
 | UI | `ui/` | Formulário, histórico e download (depende de Streamlit) |
@@ -230,6 +238,8 @@ Seguir estas regras ao continuar o projeto:
 > Detalhes da limpeza: `ideia-files/` (protótipo original) movido para `obsoleto/ideia-files/` (pasta versionada de arquivamento — convenção §7.9); `.gitignore` `data/` → `/data/` (só raiz) para que `fluxo-sev/data/` (essencial ao `test_fluxo_sev.py`) fosse versionado; referências a `ideia-files/` removidas de `pyproject.toml` (ruff exclude) e `.ruffignore`; lixo local não versionado removido (`gerapop.egg-info/`, caches).
 
 **Fora do repo (estado local):** CI do GitHub desativado por pedido do usuário (`gh workflow disable 330472653` — reativar com `gh workflow enable 330472653 --repo brunoadsba/GeraPOP`).
+
+**Em andamento (local, não pushado):** refactor de clean code — modelo neutro de blocos em `services/documento.py` consumido por `docx/builder.py` e `pdf/builder.py` (elimina duplicação); botões de download unificados em `ui/downloads.py`; `form_sections.py` → pacote `ui/form/` (widgets, identificacao, conteudo, dinamicas); `ui/historico.py` extraído de `main.py`; `session.py` → `session_codigo.py` + `session_draft.py`; `home.py` enxuto (helpers de card); `telas-recriadas.html` e `ambiente-fronend.md` arquivados em `obsoleto/`. 72 testes verdes + ruff limpo. Commitado localmente em 8 commits semânticos; pendente: push para `main` (com aval do usuário).
 
 **Nota sobre o harness:** `harnessfiles/` contém o loop de crítica visual (screenshot → LLM com visão → correção) e o `changelog.md` acumulado. O `AGENTS.md` dele rege mudanças de UX/UI: cores novas sempre como `__VAR__` com light/dark, 72 testes verdes antes de finalizar, mudanças estruturais exigem confirmação do usuário.
 

@@ -20,9 +20,11 @@ existente.
 |---|---|
 | gerapop/ui/main.py | navegação, formulário, download, histórico |
 | gerapop/ui/home.py | dashboard: hero, KPIs, stepper, cards |
-| gerapop/ui/form_sections.py | formulário guiado (badges OBRIGATÓRIO/OPCIONAL) |
+| gerapop/ui/form/ | formulário guiado (widgets, identificacao, conteudo, dinamicas) |
 | gerapop/ui/simulacao.py | simulação RPA de preenchimento |
 | gerapop/ui/preview.py | tela de leitura do POP |
+| gerapop/ui/downloads.py | botões .docx/.pdf reutilizáveis |
+| gerapop/ui/historico.py | histórico de POPs + backup zip |
 | gerapop/ui/theme.py / theme.css | tokens de tema e estilos |
 
 ## Regras inegociáveis
