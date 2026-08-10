@@ -12,10 +12,11 @@ from collections.abc import Callable
 
 import streamlit as st
 
-from gerapop.constants import DOCX_MIME, PDF_MIME, SessionKey
+from gerapop.constants import SessionKey
 from gerapop.models import PopData
 from gerapop.services.docx import gerar_docx
 from gerapop.services.pdf import gerar_pdf
+from gerapop.ui.downloads import render_downloads
 
 
 def abrir_preview(tipo: str, ref: str) -> None:
@@ -63,20 +64,12 @@ def render_preview(pop: PopData, on_editar: Callable[[], None] | None = None) ->
         on_click=fechar_preview,
     )
     with col_acoes:
-        col_docx, col_pdf = st.columns(2)
-        col_docx.download_button(
-            "Baixar .docx",
-            data=gerar_docx(pop),
-            file_name=pop.output_filename(),
-            mime=DOCX_MIME,
-            key="preview_docx",
-        )
-        col_pdf.download_button(
-            "Baixar .pdf",
-            data=gerar_pdf(pop),
-            file_name=pop.output_filename().removesuffix(".docx") + ".pdf",
-            mime=PDF_MIME,
-            key="preview_pdf",
+        render_downloads(
+            gerar_docx(pop),
+            gerar_pdf(pop),
+            pop.output_filename(),
+            key_docx="preview_docx",
+            key_pdf="preview_pdf",
         )
 
     st.markdown(
