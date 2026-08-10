@@ -3,7 +3,7 @@
 from collections import Counter
 
 from gerapop.session_codigo import encontrar_codigo_duplicado
-from gerapop.ui.main import _historico_label
+from gerapop.ui.historico import _historico_label
 
 
 def _record(pop_id: str, codigo: str, nome: str = "Registro de Manobras") -> dict:

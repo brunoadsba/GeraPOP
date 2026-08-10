@@ -1,12 +1,10 @@
 """Orquestração da interface Streamlit."""
 
 import io
-from collections import Counter
-from datetime import datetime
 
 import streamlit as st
 
-from gerapop.constants import DOCX_MIME, PDF_MIME, SessionKey
+from gerapop.constants import SessionKey
 from gerapop.models import PopData
 from gerapop.services.docx import gerar_docx
 from gerapop.services.pdf import gerar_pdf
@@ -26,14 +24,9 @@ from gerapop.session_draft import (
     salvar_rascunho,
     set_generated_docx,
 )
-from gerapop.storage import (
-    gerar_backup_zip,
-    get_docx_bytes,
-    get_pop,
-    list_pops,
-    save_pop,
-)
+from gerapop.storage import save_pop
 from gerapop.ui import theme
+from gerapop.ui.downloads import botao_docx, botao_pdf
 from gerapop.ui.form import (
     ConteudoFields,
     IdentificacaoFields,
@@ -47,6 +40,7 @@ from gerapop.ui.form import (
     render_revisoes,
     try_generate,
 )
+from gerapop.ui.historico import render_historico
 from gerapop.ui.home import (
     MODELO_POP_REF,
     PAGINA_FORM,
@@ -157,90 +151,19 @@ def render_download() -> None:
         set_generated_docx(docx)
         _salvar_generated(pop, docx)
     col_docx, col_pdf = st.columns(2)
-    col_docx.download_button(
-        "Baixar POP (.docx)",
-        data=docx,
-        file_name=pop.output_filename(),
-        mime=DOCX_MIME,
-        type="primary",
+    botao_docx(
+        docx,
+        pop.output_filename(),
+        label="Baixar POP (.docx)",
+        primary=True,
+        container=col_docx,
     )
-    col_pdf.download_button(
-        "Baixar POP (.pdf)",
-        data=gerar_pdf(pop),
-        file_name=pop.output_filename().removesuffix(".docx") + ".pdf",
-        mime=PDF_MIME,
+    botao_pdf(
+        gerar_pdf(pop),
+        pop.output_filename(),
+        label="Baixar POP (.pdf)",
+        container=col_pdf,
     )
-
-
-def _historico_label(record: dict, contagem_codigos: Counter[str]) -> str:
-    """Rótulo do selectbox do histórico, com marca de código repetido."""
-    codigo = record["codigo"] or "POP"
-    label = f"{record['created_at'][:19]} — {codigo} — {record['nome_pop'][:40]}"
-    if contagem_codigos[record["codigo"]] > 1:
-        label += f" ⚠ ({contagem_codigos[record['codigo']]})"
-    return label
-
-
-def _ver_pop_salvo(pop_id: str) -> None:
-    """Abre a preview do POP salvo e navega para a home."""
-    st.session_state[SessionKey.PREVIEW] = {"tipo": "salvo", "ref": pop_id}
-    st.session_state[SessionKey.PAGE] = PAGINA_HOME
-
-
-def render_historico() -> None:
-    st.divider()
-    with st.expander("Histórico de POPs gerados"):
-        records = list_pops()
-        if not records:
-            st.caption("Nenhum POP salvo ainda. Gere um POP para vê-lo aqui.")
-            return
-        contagem_codigos = Counter(record["codigo"] for record in records)
-        labels = {record["id"]: _historico_label(record, contagem_codigos) for record in records}
-        selected = st.selectbox(
-            "POP salvo",
-            [record["id"] for record in records],
-            format_func=lambda pop_id: labels[pop_id],
-        )
-        col_download, col_load = st.columns([2, 2])
-        docx_bytes = get_docx_bytes(selected)
-        record = next(r for r in records if r["id"] == selected)
-        if docx_bytes is not None:
-            col_docx, col_pdf = col_download.columns(2)
-            col_docx.download_button(
-                "Baixar .docx",
-                data=docx_bytes,
-                file_name=record["filename"],
-                mime=DOCX_MIME,
-            )
-            pop = get_pop(selected)
-            if pop is not None:
-                col_pdf.download_button(
-                    "Baixar .pdf",
-                    data=gerar_pdf(pop),
-                    file_name=record["filename"].removesuffix(".docx") + ".pdf",
-                    mime=PDF_MIME,
-                )
-        col_ver, col_editar = col_load.columns(2)
-        col_ver.button(
-            "Visualizar",
-            key="historico_ver",
-            on_click=_ver_pop_salvo,
-            args=(selected,),
-        )
-        if col_editar.button("Carregar para editar"):
-            pop = get_pop(selected)
-            if pop is not None:
-                set_loaded_from(selected)
-                preencher_formulario(pop)
-                st.rerun()
-
-        st.divider()
-        st.download_button(
-            "Baixar backup (.zip)",
-            data=gerar_backup_zip(),
-            file_name=f"gerapop_backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}.zip",
-            mime="application/zip",
-        )
 
 
 def _render_navegacao() -> str:
