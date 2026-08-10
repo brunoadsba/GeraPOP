@@ -9,12 +9,13 @@ from __future__ import annotations
 
 import html
 import json
+from collections.abc import Callable
 from functools import partial
 from pathlib import Path
 
 import streamlit as st
 
-from gerapop.constants import DOCX_MIME, PDF_MIME, SessionKey
+from gerapop.constants import SessionKey
 from gerapop.models import PopData
 from gerapop.services.docx import gerar_docx
 from gerapop.services.pdf import gerar_pdf
@@ -24,6 +25,8 @@ from gerapop.session_draft import (
     preparar_novo_pop,
     reset_widgets_formulario,
 )
+from gerapop.storage import get_pop
+from gerapop.ui.downloads import botao_docx, botao_pdf
 from gerapop.ui.preview import (
     fechar_preview,
     get_preview_estado,
@@ -140,57 +143,72 @@ def _render_stepper(fluxo: dict) -> None:
     )
 
 
+def _render_grade(nos: list[dict], chip_cls: str, corpo: Callable[[dict], None]) -> None:
+    """Renderiza os cards em grade de 2 colunas; `corpo` recebe cada nó."""
+    for i in range(0, len(nos), 2):
+        col_esq, col_dir = st.columns(2)
+        for col, no in zip((col_esq, col_dir), nos[i : i + 2]):
+            with col:
+                with st.container(border=True):
+                    st.markdown(
+                        f"**{html.escape(str(no['rotulo']))}**"
+                        f"<span class='pop-dash-chip {chip_cls}'>etapa {no['etapa']}</span>",
+                        unsafe_allow_html=True,
+                    )
+                    st.caption(no["descricao"])
+                    corpo(no)
+
+
+def _corpo_card_gerado(no: dict) -> None:
+    pop_ref = no["pop_ref"]
+    pop = carregar_pop_fluxo(pop_ref)
+    if pop is None:
+        st.warning(f"POP referenciado `{pop_ref}` não encontrado em fluxo-sev/data/pops.")
+        return
+    if st.button(
+        "Visualizar POP",
+        key=f"ver_{no['id']}",
+        on_click=_abrir_preview_fluxo,
+        args=(pop_ref,),
+    ):
+        pass
+    col_docx, col_pdf, col_editar = st.columns(3)
+    botao_docx(
+        gerar_docx(pop),
+        pop.output_filename(),
+        key=f"docx_{no['id']}",
+        container=col_docx,
+    )
+    botao_pdf(
+        gerar_pdf(pop),
+        pop.output_filename(),
+        key=f"pdf_{no['id']}",
+        container=col_pdf,
+    )
+    col_editar.button(
+        "Editar POP",
+        key=f"editar_{no['id']}",
+        on_click=_editar_pop_e_ir,
+        args=(pop,),
+    )
+
+
 def _render_gerados(gerados: list[dict]) -> None:
     st.header(f"📄 POPs gerados ({len(gerados)})")
     if not gerados:
         st.caption("Nenhuma etapa do fluxo possui POP vinculado ainda.")
         return
-    for i in range(0, len(gerados), 2):
-        col_esq, col_dir = st.columns(2)
-        for col, no in zip((col_esq, col_dir), gerados[i : i + 2]):
-            with col:
-                with st.container(border=True):
-                    st.markdown(
-                        f"**{html.escape(str(no['rotulo']))}**"
-                        f"<span class='pop-dash-chip gerado'>etapa {no['etapa']}</span>",
-                        unsafe_allow_html=True,
-                    )
-                    st.caption(no["descricao"])
-                    pop_ref = no["pop_ref"]
-                    pop = carregar_pop_fluxo(pop_ref)
-                    if pop is None:
-                        st.warning(
-                            f"POP referenciado `{pop_ref}` não encontrado em fluxo-sev/data/pops."
-                        )
-                        continue
-                    if st.button(
-                        "Visualizar POP",
-                        key=f"ver_{no['id']}",
-                        on_click=_abrir_preview_fluxo,
-                        args=(pop_ref,),
-                    ):
-                        pass
-                    col_docx, col_pdf, col_editar = st.columns(3)
-                    col_docx.download_button(
-                        "Baixar .docx",
-                        data=gerar_docx(pop),
-                        file_name=pop.output_filename(),
-                        mime=DOCX_MIME,
-                        key=f"docx_{no['id']}",
-                    )
-                    col_pdf.download_button(
-                        "Baixar .pdf",
-                        data=gerar_pdf(pop),
-                        file_name=pop.output_filename().removesuffix(".docx") + ".pdf",
-                        mime=PDF_MIME,
-                        key=f"pdf_{no['id']}",
-                    )
-                    col_editar.button(
-                        "Editar POP",
-                        key=f"editar_{no['id']}",
-                        on_click=_editar_pop_e_ir,
-                        args=(pop,),
-                    )
+    _render_grade(gerados, "gerado", _corpo_card_gerado)
+
+
+def _corpo_card_pendente(no: dict) -> None:
+    st.button(
+        "Criar POP",
+        type="primary",
+        key=f"criar_{no['id']}",
+        on_click=_criar_pop_e_ir,
+        args=(no["rotulo"], no["descricao"]),
+    )
 
 
 def _render_pendentes(pendentes: list[dict]) -> None:
@@ -198,24 +216,7 @@ def _render_pendentes(pendentes: list[dict]) -> None:
     if not pendentes:
         st.success("Todas as etapas do fluxo já possuem POP.")
         return
-    for i in range(0, len(pendentes), 2):
-        col_esq, col_dir = st.columns(2)
-        for col, no in zip((col_esq, col_dir), pendentes[i : i + 2]):
-            with col:
-                with st.container(border=True):
-                    st.markdown(
-                        f"**{html.escape(str(no['rotulo']))}**"
-                        f"<span class='pop-dash-chip pendente'>etapa {no['etapa']}</span>",
-                        unsafe_allow_html=True,
-                    )
-                    st.caption(no["descricao"])
-                    st.button(
-                        "Criar POP",
-                        type="primary",
-                        key=f"criar_{no['id']}",
-                        on_click=_criar_pop_e_ir,
-                        args=(no["rotulo"], no["descricao"]),
-                    )
+    _render_grade(pendentes, "pendente", _corpo_card_pendente)
 
 
 def _ver_modelo(pop: PopData) -> None:
@@ -239,13 +240,7 @@ def _render_modelo() -> None:
             on_click=_ver_modelo,
             args=(pop,),
         )
-        col_docx.download_button(
-            "Baixar .docx",
-            data=gerar_docx(pop),
-            file_name=pop.output_filename(),
-            mime=DOCX_MIME,
-            key="modelo_docx",
-        )
+        botao_docx(gerar_docx(pop), pop.output_filename(), key="modelo_docx", container=col_docx)
 
 
 def _abrir_preview_fluxo(pop_ref: str) -> None:
@@ -256,8 +251,6 @@ def _editar_preview_e_ir(pop: PopData, pop_id: str | None = None) -> None:
     """Fecha a preview e abre o POP no formulário (pop_id = registro salvo)."""
     fechar_preview()
     if pop_id is not None:
-        from gerapop.session_codigo import set_loaded_from
-
         set_loaded_from(pop_id)
     _editar_pop_e_ir(pop)
 
@@ -268,8 +261,6 @@ def _render_preview_ativa() -> None:
     if estado is None:
         return
     if estado.get("tipo") == "salvo":
-        from gerapop.storage import get_pop
-
         pop = get_pop(estado["ref"])
         on_editar = partial(_editar_preview_e_ir, pop, estado["ref"])
     else:
