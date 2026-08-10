@@ -34,7 +34,7 @@ from gerapop.storage import (
     save_pop,
 )
 from gerapop.ui import theme
-from gerapop.ui.form_sections import (
+from gerapop.ui.form import (
     ConteudoFields,
     IdentificacaoFields,
     render_consulta,
