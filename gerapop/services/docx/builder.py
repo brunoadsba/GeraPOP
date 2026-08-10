@@ -8,7 +8,6 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.shared import Cm, Pt
 
 from gerapop.constants import (
-    AVISO_PREFIX,
     DOCX_TITLE,
     FONT_HEADING_PT,
     FONT_SUBTITLE_PT,
@@ -17,11 +16,11 @@ from gerapop.constants import (
     MARGIN_LEFT_CM,
     MARGIN_RIGHT_CM,
     MARGIN_TOP_CM,
-    PASSO_COL_WIDTH_CM,
     SHADING_AVISO,
     SHADING_HEADER,
 )
 from gerapop.models import PopData
+from gerapop.services.documento import Aviso, Bloco, Paragrafo, Tabela, Titulo, montar_conteudo
 from gerapop.services.docx.styles import set_cell_shading, style_header_cell
 
 
@@ -56,12 +55,12 @@ def _add_metadata_table(doc: Document, pop: PopData) -> None:
     table.rows[1].cells[3].text = pop.area
 
 
-def _add_aviso(doc: Document, aviso: str) -> None:
+def _add_aviso(doc: Document, texto: str) -> None:
     table = doc.add_table(rows=1, cols=1)
     table.style = "Table Grid"
     cell = table.rows[0].cells[0]
     cell.text = ""
-    run = cell.paragraphs[0].add_run(f"{AVISO_PREFIX}{aviso}")
+    run = cell.paragraphs[0].add_run(texto)
     run.bold = True
     set_cell_shading(cell, SHADING_AVISO)
 
@@ -73,107 +72,36 @@ def _add_heading(doc: Document, numero: int, texto: str) -> None:
     run.font.size = Pt(FONT_HEADING_PT)
 
 
-def _add_definicoes(doc: Document, pop: PopData, numero: int) -> int:
-    if not any(item["termo"].strip() for item in pop.definicoes):
-        return numero
-
-    _add_heading(doc, numero, "Definições")
-    numero += 1
-    table = doc.add_table(rows=1, cols=2)
-    table.style = "Table Grid"
-    style_header_cell(table.rows[0].cells[0], "Termo", shading=SHADING_HEADER)
-    style_header_cell(table.rows[0].cells[1], "Definição", shading=SHADING_HEADER)
-
-    for item in pop.definicoes:
-        if item["termo"].strip():
-            row = table.add_row()
-            row.cells[0].text = item["termo"]
-            row.cells[1].text = item["definicao"]
-    return numero
-
-
-def _add_procedimento(doc: Document, pop: PopData, numero: int) -> int:
-    for secao in pop.secoes:
-        if not secao["titulo"].strip():
-            continue
-
-        _add_heading(doc, numero, secao["titulo"])
-        numero += 1
-
-        passos_table = doc.add_table(rows=0, cols=2)
-        passos_table.style = "Table Grid"
-        passos_table.columns[0].width = Cm(PASSO_COL_WIDTH_CM)
-
-        for passo_idx, passo in enumerate(secao["passos"], start=1):
-            if passo.strip():
-                row = passos_table.add_row()
-                row.cells[0].text = str(passo_idx)
-                row.cells[1].text = passo
-
-        campos = secao.get("campos", [])
-        if any(item["campo"].strip() for item in campos):
-            legenda = doc.add_paragraph()
-            run = legenda.add_run(f"Campos obrigatórios – {secao['titulo']}:")
-            run.bold = True
-            campos_table = doc.add_table(rows=1, cols=2)
-            campos_table.style = "Table Grid"
-            style_header_cell(campos_table.rows[0].cells[0], "Campo", shading=SHADING_HEADER)
-            style_header_cell(
-                campos_table.rows[0].cells[1], "Descrição / Instruções", shading=SHADING_HEADER
-            )
-            for item in campos:
-                if item["campo"].strip():
-                    row = campos_table.add_row()
-                    row.cells[0].text = item["campo"]
-                    row.cells[1].text = item["descricao"]
-    return numero
-
-
-def _add_regras(doc: Document, pop: PopData, numero: int) -> int:
-    if not any(regra.strip() for regra in pop.regras):
-        return numero
-
-    _add_heading(doc, numero, "Regras e Restrições")
-    numero += 1
-    for regra in pop.regras:
-        if regra.strip():
-            table = doc.add_table(rows=1, cols=2)
-            table.style = "Table Grid"
-            table.rows[0].cells[0].text = "R"
-            table.rows[0].cells[1].text = regra
-    return numero
-
-
-def _add_consulta(doc: Document, pop: PopData, numero: int) -> int:
-    if not pop.consulta:
-        return numero
-
-    _add_heading(doc, numero, "Consulta e Relatórios")
-    numero += 1
-    table = doc.add_table(rows=1, cols=1)
-    table.style = "Table Grid"
-    table.rows[0].cells[0].text = pop.consulta
-    return numero
-
-
-def _add_revisoes(doc: Document, pop: PopData, numero: int) -> int:
-    _add_heading(doc, numero, "Histórico de Revisões")
-    numero += 1
-    table = doc.add_table(rows=1, cols=4)
+def _add_tabela(doc: Document, tabela: Tabela) -> None:
+    tem_cabecalho = tabela.cabecalho is not None and tabela.com_cabecalho_docx
+    colunas = len(tabela.cabecalho) if tabela.cabecalho else len(tabela.linhas[0])
+    table = doc.add_table(rows=1 if tem_cabecalho else 0, cols=colunas)
     table.style = "Table Grid"
 
-    colunas = ["Revisão", "Data", "Descrição", "Responsável"]
-    for idx, titulo in enumerate(colunas):
-        style_header_cell(table.rows[0].cells[idx], titulo, shading=SHADING_HEADER)
+    if tabela.largura_col0_docx_cm is not None:
+        table.columns[0].width = Cm(tabela.largura_col0_docx_cm)
 
-    for revisao in pop.revisoes:
-        if revisao["revisao"].strip():
-            row = table.add_row()
-            row.cells[0].text = revisao["revisao"]
-            row.cells[1].text = revisao["data"]
-            row.cells[2].text = revisao["descricao"]
-            row.cells[3].text = revisao["responsavel"]
-    return numero
+    if tem_cabecalho:
+        for idx, label in enumerate(tabela.cabecalho):
+            style_header_cell(table.rows[0].cells[idx], label, shading=SHADING_HEADER)
+
+    for linha in tabela.linhas:
+        row = table.add_row()
+        for idx, valor in enumerate(linha):
+            row.cells[idx].text = valor
+
+
+def _render_blocos(doc: Document, blocos: list[Bloco]) -> None:
+    for bloco in blocos:
+        if isinstance(bloco, Titulo):
+            _add_heading(doc, bloco.numero, bloco.texto)
+        elif isinstance(bloco, Paragrafo):
+            run = doc.add_paragraph().add_run(bloco.texto)
+            run.bold = bloco.bold
+        elif isinstance(bloco, Aviso):
+            _add_aviso(doc, bloco.texto)
+        else:
+            _add_tabela(doc, bloco)
 
 
 def gerar_docx(pop: PopData) -> io.BytesIO:
@@ -187,22 +115,7 @@ def gerar_docx(pop: PopData) -> io.BytesIO:
     _add_metadata_table(doc, pop)
     doc.add_paragraph()
 
-    numero = 1
-    _add_heading(doc, numero, "Objetivo")
-    numero += 1
-    doc.add_paragraph(pop.objetivo)
-
-    _add_heading(doc, numero, "Escopo e Pré-condições")
-    numero += 1
-    doc.add_paragraph(pop.escopo)
-    if pop.aviso:
-        _add_aviso(doc, pop.aviso)
-
-    numero = _add_definicoes(doc, pop, numero)
-    numero = _add_procedimento(doc, pop, numero)
-    numero = _add_regras(doc, pop, numero)
-    numero = _add_consulta(doc, pop, numero)
-    _add_revisoes(doc, pop, numero)
+    _render_blocos(doc, montar_conteudo(pop))
 
     buffer = io.BytesIO()
     doc.save(buffer)
