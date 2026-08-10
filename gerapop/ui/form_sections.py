@@ -10,7 +10,8 @@ import streamlit as st
 
 from gerapop.constants import DATE_FORMAT, DEFAULT_VERSAO, SessionKey
 from gerapop.models import PopData, default_definicao, default_secao, empty_revisao
-from gerapop.session import (
+from gerapop.session_codigo import verificar_codigo_duplicado
+from gerapop.session_draft import (
     add_campo,
     add_item,
     add_passo,
@@ -22,7 +23,6 @@ from gerapop.session import (
     remove_campo,
     remove_passo,
     set_generated_pop,
-    verificar_codigo_duplicado,
 )
 
 

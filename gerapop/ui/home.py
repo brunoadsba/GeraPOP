@@ -18,7 +18,8 @@ from gerapop.constants import DOCX_MIME, PDF_MIME, SessionKey
 from gerapop.models import PopData
 from gerapop.services.docx import gerar_docx
 from gerapop.services.pdf import gerar_pdf
-from gerapop.session import (
+from gerapop.session_codigo import set_loaded_from
+from gerapop.session_draft import (
     preencher_formulario,
     preparar_novo_pop,
     reset_widgets_formulario,
@@ -255,7 +256,7 @@ def _editar_preview_e_ir(pop: PopData, pop_id: str | None = None) -> None:
     """Fecha a preview e abre o POP no formulário (pop_id = registro salvo)."""
     fechar_preview()
     if pop_id is not None:
-        from gerapop.session import set_loaded_from
+        from gerapop.session_codigo import set_loaded_from
 
         set_loaded_from(pop_id)
     _editar_pop_e_ir(pop)

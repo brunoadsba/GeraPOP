@@ -17,7 +17,7 @@ from typing import Any
 import streamlit as st
 
 from gerapop.constants import SessionKey
-from gerapop.session import reset_widgets_formulario
+from gerapop.session_draft import reset_widgets_formulario
 
 SIM_SLEEP = float(os.environ.get("GERAPOP_SIM_SLEEP", "0.9"))
 

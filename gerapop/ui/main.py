@@ -10,7 +10,8 @@ from gerapop.constants import DOCX_MIME, PDF_MIME, SessionKey
 from gerapop.models import PopData
 from gerapop.services.docx import gerar_docx
 from gerapop.services.pdf import gerar_pdf
-from gerapop.session import (
+from gerapop.session_codigo import set_loaded_from
+from gerapop.session_draft import (
     clear_generated,
     get_definicoes,
     get_generated_docx,
@@ -24,7 +25,6 @@ from gerapop.session import (
     restaurar_rascunho,
     salvar_rascunho,
     set_generated_docx,
-    set_loaded_from,
 )
 from gerapop.storage import (
     gerar_backup_zip,

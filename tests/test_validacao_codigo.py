@@ -2,7 +2,7 @@
 
 from collections import Counter
 
-from gerapop.session import encontrar_codigo_duplicado
+from gerapop.session_codigo import encontrar_codigo_duplicado
 from gerapop.ui.main import _historico_label
 
 
