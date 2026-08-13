@@ -127,5 +127,5 @@ class PopData:
 
 def _slugify(nome: str) -> str:
     """Converte um nome em slug seguro para filename (Windows/macOS/Linux)."""
-    slug = re.sub(r"[^A-Za-z0-9._-]+", "_", nome.strip()).strip("_")
+    slug = re.sub(r"[^\w.-]+", "_", nome.strip()).strip("_")
     return slug[:FILENAME_SLUG_MAX_LEN]

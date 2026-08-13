@@ -55,7 +55,14 @@ def test_output_filename_somente_whitelist(pop_minimo: PopData) -> None:
     pop_minimo.nome_pop = "Manobras / Desembarque (tarde) — urgente"
 
     slug = pop_minimo.output_filename().split("_", 1)[1].removesuffix(".docx")
-    assert re.fullmatch(r"[A-Za-z0-9._-]+", slug)
+    assert re.fullmatch(r"[\w.-]+", slug)
+
+
+def test_output_filename_preserva_acentos(pop_minimo: PopData) -> None:
+    pop_minimo.codigo = "POP-PS-002"
+    pop_minimo.nome_pop = "PS - Programação de Saída"
+
+    assert pop_minimo.output_filename() == "POP-PS-002_PS_-_Programação_de_Saída.docx"
 
 
 def test_output_filename_sem_underscores_nas_borbas(pop_minimo: PopData) -> None:
