@@ -220,6 +220,25 @@ main {
   padding-left: 1.3rem;
 }
 
+.pop-passos li.sub,
+.pop-passos li.sys {
+  list-style: none;
+  margin-left: -1.3rem;
+}
+
+.pop-passos li.sub {
+  font-weight: 700;
+  color: var(--azul-marinho);
+  background: var(--azul-claro);
+  padding: 0.3rem 0.6rem;
+  border-radius: 4px;
+}
+
+.pop-passos li.sys {
+  font-style: italic;
+  color: var(--texto-suave);
+}
+
 .pop-campos {
   border-collapse: collapse;
   width: 100%;

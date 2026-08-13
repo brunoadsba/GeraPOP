@@ -46,3 +46,12 @@ snapshot ARIA + screenshot arquivado em /tmp/opencode/.
 - Migrar para TS/framework somente se o uso real justificar (gate do piloto).
 - Sinalizar visualmente nós sem POP já implementado; falta o fluxo de
   "adicionar POP" integrado ao GeraPOP (hoje é manual: copiar o json).
+
+## Melhorias de renderização de passos (2026-08-13)
+
+O modal de POP agora aplica as convenções de texto do GeraPOP (paridade com
+docx/pdf): passo iniciando com `Tela ` vira sub-cabeçalho (`li.sub`, fundo
+azul-claro, sem número); passo iniciando com `Sistema ` vira resposta do
+sistema (`li.sys`, itálico, sem número); aspas simples emparelhadas viram
+negrito (`<b>`). Ver `app.js::renderPasso` e classes `.pop-passos li.sub/sys`
+no `style.css`.

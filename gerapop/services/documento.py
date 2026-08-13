@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from gerapop.constants import AVISO_PREFIX, PASSO_COL_WIDTH_CM
+from gerapop.constants import AVISO_PREFIX, PASSO_COL_WIDTH_CM, SISTEMA_PREFIXO, SUB_PREFIXO
 from gerapop.models import PopData
 
 
@@ -36,14 +36,15 @@ class Aviso:
 class Tabela:
     cabecalho: tuple[str, ...] | None
     linhas: tuple[tuple[str, ...], ...]
-    # Larguras (cm) por coluna; None = preencher o restante da página (PDF).
+    # Larguras (cm) por coluna; None = preencher o restante da página.
     larguras_cm: tuple[float | None, ...] | None = None
-    # Largura explícita da coluna 0 no .docx (as demais são automáticas).
-    largura_col0_docx_cm: float | None = None
     # O .docx não imprime cabeçalho em algumas tabelas (ex.: passos).
     com_cabecalho_docx: bool = True
     # O .pdf destaca a primeira célula de cada linha (ex.: rótulo "R").
     primeira_celula_bold: bool = False
+    # Estilo por linha, na mesma ordem de `linhas`: "" = normal, "sub" = sub-cabeçalho,
+    # "sys" = resposta do sistema (itálico, coluna 0 vira "—").
+    estilos_linha: tuple[str, ...] = ()
 
 
 Bloco = Titulo | Paragrafo | Aviso | Tabela
@@ -78,16 +79,30 @@ def montar_conteudo(pop: PopData) -> list[Bloco]:
         if not secao["titulo"].strip():
             continue
         titulo(secao["titulo"])
-        passos = tuple(
-            (str(idx), passo) for idx, passo in enumerate(secao["passos"], start=1) if passo.strip()
-        )
+        linhas: list[tuple[str, str]] = []
+        estilos: list[str] = []
+        passo_numero = 0
+        for passo in secao["passos"]:
+            texto = passo.strip()
+            if not texto:
+                continue
+            if texto.startswith(SUB_PREFIXO):
+                linhas.append(("", texto))
+                estilos.append("sub")
+            elif texto.startswith(SISTEMA_PREFIXO):
+                linhas.append(("—", texto))
+                estilos.append("sys")
+            else:
+                passo_numero += 1
+                linhas.append((str(passo_numero), texto))
+                estilos.append("")
         blocos.append(
             Tabela(
                 ("#", "Passo"),
-                passos,
+                tuple(linhas),
                 larguras_cm=(PASSO_COL_WIDTH_CM, None),
-                largura_col0_docx_cm=PASSO_COL_WIDTH_CM,
                 com_cabecalho_docx=False,
+                estilos_linha=tuple(estilos),
             )
         )
         campos = tuple(
@@ -104,15 +119,15 @@ def montar_conteudo(pop: PopData) -> list[Bloco]:
     regras = tuple(regra for regra in pop.regras if regra.strip())
     if regras:
         titulo("Regras e Restrições")
-        for regra in regras:
-            blocos.append(
-                Tabela(
-                    None,
-                    (("R", regra),),
-                    larguras_cm=(1.5, None),
-                    primeira_celula_bold=True,
-                )
+        linhas = tuple((f"R{idx}", regra) for idx, regra in enumerate(regras, start=1))
+        blocos.append(
+            Tabela(
+                ("Regra", "Descrição"),
+                linhas,
+                larguras_cm=(1.5, None),
+                primeira_celula_bold=True,
             )
+        )
 
     if pop.consulta:
         titulo("Consulta e Relatórios")

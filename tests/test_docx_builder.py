@@ -1,7 +1,10 @@
+import io
+
 from docx import Document
 from docx.oxml.ns import qn
+from docx.shared import Cm
 
-from gerapop.constants import ValidationMessage
+from gerapop.constants import PASSO_COL_WIDTH_CM, ValidationMessage
 from gerapop.models import PopData
 from gerapop.services.docx import gerar_docx
 from gerapop.services.docx.styles import set_cell_shading
@@ -41,7 +44,7 @@ def test_output_filename(pop_minimo: PopData) -> None:
 
 
 def _docx_estrutura(pop: PopData) -> tuple[list[str], list]:
-    doc = Document(__import__("io").BytesIO(gerar_docx(pop).getvalue()))
+    doc = Document(io.BytesIO(gerar_docx(pop).getvalue()))
     return [p.text for p in doc.paragraphs if p.text.strip()], doc.tables
 
 
@@ -75,8 +78,8 @@ def test_numercao_plana_e_aviso_no_escopo(pop_minimo: PopData) -> None:
     aviso_table = next(t for t in tables if "ATENÇÃO" in _texto_tabela(t))
     assert _texto_tabela(aviso_table) == "⚠ ATENÇÃO: Este POP não contempla o anúncio do navio."
 
-    regra_table = next(t for t in tables if len(t.columns) == 2 and _texto_tabela(t) == "R")
-    assert regra_table.rows[0].cells[1].text == "Não executar sem autorização."
+    regra_table = next(t for t in tables if len(t.columns) == 2 and _texto_tabela(t) == "Regra")
+    assert regra_table.rows[1].cells[1].text == "Não executar sem autorização."
 
     consulta_table = next(t for t in tables if len(t.columns) == 1 and "Menu" in _texto_tabela(t))
     assert consulta_table.rows[0].cells[0].text == "Menu > Operações > Manobras"
@@ -128,3 +131,132 @@ def test_secao_antiga_sem_chave_campos(pop_minimo: PopData) -> None:
     texts, _ = _docx_estrutura(pop_minimo)
 
     assert "4.  Atracação" in texts
+
+
+def _docx_completo(pop_minimo: PopData) -> Document:
+    pop_minimo.aviso = "Procedimento condicionado à janela de maré."
+    pop_minimo.definicoes = [
+        {"termo": "TOS", "definicao": "Terminal Operating System"},
+        {"termo": "SEV", "definicao": "Sistema Eletrônico de Vistorias"},
+    ]
+    pop_minimo.secoes[0]["campos"] = [
+        {"campo": "Berço", "descricao": "Número do berço designado."},
+        {"campo": "Data e Hora", "descricao": "Data e hora efetiva da atracação."},
+    ]
+    pop_minimo.regras = [
+        "Não executar sem autorização.",
+        "Usar EPI obrigatório.",
+        "Comunicar qualquer anomalia ao supervisor.",
+    ]
+    return Document(io.BytesIO(gerar_docx(pop_minimo).getvalue()))
+
+
+def _largura_util(doc: Document) -> int:
+    section = doc.sections[0]
+    return section.page_width - section.left_margin - section.right_margin
+
+
+def test_todas_tabelas_somam_a_largura_util(pop_minimo: PopData) -> None:
+    doc = _docx_completo(pop_minimo)
+    largura_util = _largura_util(doc)
+
+    assert len(doc.tables) >= 6
+    for table in doc.tables:
+        larguras = [cell.width for cell in table.rows[0].cells]
+        assert sum(larguras) == largura_util
+
+
+def test_tabela_passos_numero_estreita_e_descricao_restante(pop_minimo: PopData) -> None:
+    doc = _docx_completo(pop_minimo)
+    largura_util = _largura_util(doc)
+
+    passos_table = next(t for t in doc.tables if _texto_tabela(t) == "1")
+    largura_numero = passos_table.rows[0].cells[0].width
+    largura_descricao = passos_table.rows[0].cells[1].width
+    assert abs(largura_numero - Cm(PASSO_COL_WIDTH_CM)) < 635
+    assert abs(largura_descricao - (largura_util - Cm(PASSO_COL_WIDTH_CM))) < 635
+
+
+def test_regras_numeradas_sequencialmente(pop_minimo: PopData) -> None:
+    doc = _docx_completo(pop_minimo)
+
+    regras_table = next(t for t in doc.tables if _texto_tabela(t) == "Regra")
+    assert [row.cells[0].text for row in regras_table.rows[1:]] == ["R1", "R2", "R3"]
+    assert regras_table.rows[3].cells[1].text == "Comunicar qualquer anomalia ao supervisor."
+
+
+def test_passos_sub_cabecalho_e_resposta_sistema(pop_minimo: PopData) -> None:
+    pop_minimo.secoes[0]["passos"] = [
+        "Tela 6002 – Programação de Saída",
+        "Abrir o sistema.",
+        "Sistema exibe: 'Bem-vindo!' Clicar no botão 'Ok'.",
+    ]
+
+    _, tables = _docx_estrutura(pop_minimo)
+    passos_table = next(
+        t for t in tables if len(t.columns) == 2 and _texto_tabela(t).startswith("Tela ")
+    )
+
+    sub_cell = passos_table.rows[0].cells[0]
+    assert sub_cell.text == "Tela 6002 – Programação de Saída"
+    assert sub_cell._tc.tcPr.find(qn("w:gridSpan")) is not None
+    assert sub_cell.paragraphs[0].runs[0].bold
+
+    sys_row = passos_table.rows[2]
+    assert sys_row.cells[0].text == "—"
+    assert all(run.italic for run in sys_row.cells[1].paragraphs[0].runs)
+
+
+def test_aspas_simples_viram_negrito(pop_minimo: PopData) -> None:
+    pop_minimo.secoes[0]["passos"] = ["Clicar no botão 'Novo' e depois em 'Gravar'."]
+
+    _, tables = _docx_estrutura(pop_minimo)
+    passos_table = next(t for t in tables if len(t.columns) == 2 and _texto_tabela(t) == "1")
+
+    runs = passos_table.rows[0].cells[1].paragraphs[0].runs
+    assert [(run.text, run.bold) for run in runs] == [
+        ("Clicar no botão ", False),
+        ("Novo", True),
+        (" e depois em ", False),
+        ("Gravar", True),
+        (".", False),
+    ]
+
+
+def test_larguras_validas_com_sub_cabecalho_na_primeira_linha(pop_minimo: PopData) -> None:
+    pop_minimo.secoes[0]["passos"] = [
+        "Tela 6002 – X",
+        "Abrir.",
+        "Sistema exibe: 'ok' Clicar em 'Sair'.",
+    ]
+    doc = Document(io.BytesIO(gerar_docx(pop_minimo).getvalue()))
+    largura_util = _largura_util(doc)
+
+    passos_table = next(t for t in doc.tables if _texto_tabela(t).startswith("Tela "))
+    primeira_normal = next(
+        row
+        for row in passos_table.rows
+        if not any(
+            (c._tc.tcPr is not None and c._tc.tcPr.find(qn("w:gridSpan")) is not None)
+            for c in row.cells
+        )
+    )
+    assert sum(cell.width for cell in primeira_normal.cells) == largura_util
+    for row in passos_table.rows:
+        for cell in row.cells:
+            if cell._tc.tcPr is not None and cell._tc.tcPr.find(qn("w:gridSpan")) is not None:
+                continue
+            assert cell.width < largura_util
+
+
+def test_rodape_com_codigo_versao_e_campo_pagina(pop_minimo: PopData) -> None:
+    doc = Document(io.BytesIO(gerar_docx(pop_minimo).getvalue()))
+    paragraph = doc.sections[0].footer.paragraphs[0]
+
+    texto = "".join(node.text or "" for node in paragraph._p.iter(qn("w:t")))
+    assert "POP-OPE-001" in texto
+    assert "Registro de Manobras" in texto
+    assert "Versão 01" in texto
+
+    campos = paragraph._p.findall(qn("w:fldSimple"))
+    assert campos and campos[0].get(qn("w:instr")) == "PAGE"

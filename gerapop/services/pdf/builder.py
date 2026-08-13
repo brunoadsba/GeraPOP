@@ -12,7 +12,9 @@ from reportlab.lib.units import cm
 from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
 from gerapop.constants import (
+    COR_SUB,
     DOCX_TITLE,
+    FONT_FOOTER_PT,
     FONT_HEADER_PT,
     FONT_HEADING_PT,
     FONT_SUBTITLE_PT,
@@ -23,6 +25,7 @@ from gerapop.constants import (
     MARGIN_TOP_CM,
     SHADING_AVISO,
     SHADING_HEADER,
+    SHADING_SUB,
 )
 from gerapop.models import PopData
 from gerapop.services.documento import Aviso, Bloco, Paragrafo, Tabela, Titulo, montar_conteudo
@@ -30,6 +33,9 @@ from gerapop.services.documento import Aviso, Bloco, Paragrafo, Tabela, Titulo, 
 GRID_COLOR = colors.HexColor("#666666")
 HEADER_BG = colors.HexColor(f"#{SHADING_HEADER}")
 AVISO_BG = colors.HexColor(f"#{SHADING_AVISO}")
+SUB_BG = colors.HexColor(f"#{SHADING_SUB}")
+SUB_FG = colors.HexColor(f"#{COR_SUB}")
+FOOTER_FG = colors.HexColor("#5B6672")
 
 _PAGE_W_CM = 21.0 - MARGIN_LEFT_CM - MARGIN_RIGHT_CM
 
@@ -78,14 +84,38 @@ _CELL_BOLD = ParagraphStyle(
     parent=_CELL,
     fontName="Helvetica-Bold",
 )
+_CELL_ITALIC = ParagraphStyle(
+    "cellitalic",
+    parent=_CELL,
+    fontName="Helvetica-Oblique",
+)
+_CELL_SUB = ParagraphStyle(
+    "cellsub",
+    parent=_CELL,
+    fontName="Helvetica-Bold",
+    textColor=SUB_FG,
+)
 
 
 def _escape(text: str) -> str:
     return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
 
+def _segmentos_bold_html(texto: str) -> str:
+    partes = texto.split("'")
+    if len(partes) % 2 == 0:
+        return _escape(texto)
+    html = ""
+    for idx, parte in enumerate(partes):
+        if not parte:
+            continue
+        escaped = _escape(parte)
+        html += f"<b>{escaped}</b>" if idx % 2 == 1 else escaped
+    return html
+
+
 def _paragraph(text: str, style: ParagraphStyle = _CELL) -> Paragraph:
-    return Paragraph(_escape(text), style)
+    return Paragraph(_segmentos_bold_html(text), style)
 
 
 def _table(data: list[list], col_widths: list[float]) -> Table:
@@ -154,10 +184,18 @@ def _larguras_pdf(tabela: Tabela) -> list[float]:
 
 def _tabela_pdf(tabela: Tabela) -> Table:
     data: list[list] = []
+    spans: list[tuple[int, int, int]] = []
     if tabela.cabecalho:
         data.append([_paragraph(col, _CELL_BOLD) for col in tabela.cabecalho])
-    for linha in tabela.linhas:
-        if tabela.primeira_celula_bold:
+    estilos = tabela.estilos_linha or tuple("" for _ in tabela.linhas)
+    for linha, estilo in zip(tabela.linhas, estilos):
+        if estilo == "sub":
+            row_idx = len(data)
+            data.append([_paragraph(linha[1], _CELL_SUB)])
+            spans.append((row_idx, 0, len(linha) - 1))
+        elif estilo == "sys":
+            data.append([_paragraph(linha[0], _CELL_BOLD), _paragraph(linha[1], _CELL_ITALIC)])
+        elif tabela.primeira_celula_bold:
             data.append([_paragraph(linha[0], _CELL_BOLD), *[_paragraph(v) for v in linha[1:]]])
         else:
             data.append([_paragraph(v) for v in linha])
@@ -166,6 +204,15 @@ def _tabela_pdf(tabela: Tabela) -> Table:
     if tabela.cabecalho:
         table.setStyle(
             TableStyle([("BACKGROUND", (0, 0), (len(tabela.cabecalho) - 1, 0), HEADER_BG)])
+        )
+    for row_idx, col_start, col_end in spans:
+        table.setStyle(
+            TableStyle(
+                [
+                    ("SPAN", (col_start, row_idx), (col_end, row_idx)),
+                    ("BACKGROUND", (col_start, row_idx), (col_end, row_idx), SUB_BG),
+                ]
+            )
         )
     return table
 
@@ -185,6 +232,23 @@ def _render_blocos(story: list, blocos: list[Bloco]) -> None:
 
 def gerar_pdf(pop: PopData) -> io.BytesIO:
     buffer = io.BytesIO()
+
+    def _rodape(canvas, doc) -> None:
+        canvas.saveState()
+        canvas.setFont("Helvetica", FONT_FOOTER_PT)
+        canvas.setFillColor(FOOTER_FG)
+        canvas.drawString(
+            MARGIN_LEFT_CM * cm,
+            1.1 * cm,
+            f"{pop.codigo} · {pop.nome_pop}",
+        )
+        canvas.drawRightString(
+            A4[0] - MARGIN_RIGHT_CM * cm,
+            1.1 * cm,
+            f"Versão {pop.versao} · Pág. {doc.page}",
+        )
+        canvas.restoreState()
+
     doc = SimpleDocTemplate(
         buffer,
         pagesize=A4,
@@ -194,6 +258,8 @@ def gerar_pdf(pop: PopData) -> io.BytesIO:
         rightMargin=MARGIN_RIGHT_CM * cm,
         title=f"{DOCX_TITLE} — {pop.nome_pop}",
         author="GeraPOP CODEBA",
+        onFirstPage=_rodape,
+        onLaterPages=_rodape,
     )
     story: list = []
     story.append(Paragraph(DOCX_TITLE, _TITLE))

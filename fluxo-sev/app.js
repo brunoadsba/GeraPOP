@@ -108,6 +108,42 @@ function mostrarSemPop(no) {
   abrirModal();
 }
 
+function renderPasso(passo) {
+  const texto = passo.trim();
+  const li = criarEl("li");
+  if (texto.startsWith("Tela ")) {
+    li.className = "sub";
+    li.textContent = texto;
+    return li;
+  }
+  if (texto.startsWith("Sistema ")) li.className = "sys";
+  const partes = texto.split("'");
+  if (partes.length % 2 === 0) {
+    li.textContent = texto;
+    return li;
+  }
+  partes.forEach((parte, i) => {
+    if (!parte) return;
+    li.appendChild(criarEl(i % 2 === 1 ? "b" : "span", null, parte));
+  });
+  return li;
+}
+
+function renderizarSecao(secao) {
+  const secaoEl = document.createDocumentFragment();
+  const passos = criarEl("ol", "pop-passos");
+  for (const passo of secao.passos || []) {
+    if (passo.trim()) passos.appendChild(renderPasso(passo));
+  }
+  secaoEl.appendChild(passos);
+
+  const campos = (secao.campos || []).filter((item) => item.campo.trim());
+  if (campos.length) {
+    secaoEl.appendChild(tabelaCampos(campos));
+  }
+  return secaoEl;
+}
+
 function mostrarPop(payload) {
   const pop = payload.pop;
   const conteudo = document.createDocumentFragment();
@@ -137,18 +173,7 @@ function mostrarPop(payload) {
   }
 
   for (const secao of pop.secoes || []) {
-    const secaoEl = document.createDocumentFragment();
-    const passos = criarEl("ol", "pop-passos");
-    for (const passo of secao.passos || []) {
-      if (passo.trim()) passos.appendChild(criarEl("li", null, passo));
-    }
-    secaoEl.appendChild(passos);
-
-    const campos = (secao.campos || []).filter((item) => item.campo.trim());
-    if (campos.length) {
-      secaoEl.appendChild(tabelaCampos(campos));
-    }
-    conteudo.appendChild(blocoCom(secao.titulo || "Procedimento", secaoEl));
+    conteudo.appendChild(blocoCom(secao.titulo || "Procedimento", renderizarSecao(secao)));
   }
 
   if (pop.regras && pop.regras.length) {
