@@ -17,6 +17,7 @@ from gerapop.session_draft import (
     remove_at,
     remove_campo,
     remove_passo,
+    salvar_rascunho,
 )
 from gerapop.ui.form.widgets import _flag
 
@@ -36,6 +37,7 @@ def render_definicoes() -> None:
             key=f"termo_{index}",
             label_visibility="collapsed",
             placeholder="Termo",
+            on_change=salvar_rascunho,
         )
         item["definicao"] = col_def.text_input(
             "Definição",
@@ -43,6 +45,7 @@ def render_definicoes() -> None:
             key=f"def_{index}",
             label_visibility="collapsed",
             placeholder="Definição",
+            on_change=salvar_rascunho,
         )
         if len(get_definicoes()) > 1 and col_action.button("Remover", key=f"rm_def_{index}"):
             remove_at(SessionKey.DEFINICOES, index)
@@ -65,6 +68,7 @@ def render_procedimento() -> None:
             value=secao["titulo"],
             key=f"sec_titulo_{secao_index}",
             placeholder="Ex: Procedimento – Atracação",
+            on_change=salvar_rascunho,
         )
 
         _flag(True, "Ações na ordem em que acontecem — ex: Confirmar o horário de chegada (ETA)")
@@ -76,6 +80,7 @@ def render_procedimento() -> None:
                 key=f"passo_{secao_index}_{passo_index}",
                 label_visibility="collapsed",
                 placeholder=f"Passo {passo_index + 1}",
+                on_change=salvar_rascunho,
             )
             if len(secao["passos"]) > 1 and col_action.button(
                 "Remover", key=f"rm_passo_{secao_index}_{passo_index}"
@@ -103,6 +108,7 @@ def render_procedimento() -> None:
                 key=f"campo_{secao_index}_{campo_index}",
                 label_visibility="collapsed",
                 placeholder="Campo",
+                on_change=salvar_rascunho,
             )
             campo["descricao"] = col_desc.text_input(
                 "Descrição",
@@ -110,6 +116,7 @@ def render_procedimento() -> None:
                 key=f"campodesc_{secao_index}_{campo_index}",
                 label_visibility="collapsed",
                 placeholder="Descrição / Instruções",
+                on_change=salvar_rascunho,
             )
             if len(campos) > 1 and col_action.button(
                 "Remover", key=f"rm_campo_{secao_index}_{campo_index}"
@@ -149,6 +156,7 @@ def render_regras() -> None:
             key=f"regra_{index}",
             label_visibility="collapsed",
             placeholder="Regra",
+            on_change=salvar_rascunho,
         )
         if len(get_regras()) > 1 and col_action.button("Remover", key=f"rm_regra_{index}"):
             remove_at(SessionKey.REGRAS, index)
@@ -174,12 +182,14 @@ def render_revisoes() -> None:
             value=revisao["revisao"],
             key=f"rev_{index}",
             label_visibility="collapsed",
+            on_change=salvar_rascunho,
         )
         revisao["data"] = col_data.text_input(
             "Data",
             value=revisao["data"],
             key=f"revdata_{index}",
             label_visibility="collapsed",
+            on_change=salvar_rascunho,
         )
         revisao["descricao"] = col_desc.text_input(
             "Descrição",
@@ -187,6 +197,7 @@ def render_revisoes() -> None:
             key=f"revdesc_{index}",
             label_visibility="collapsed",
             placeholder="Descrição",
+            on_change=salvar_rascunho,
         )
         revisao["responsavel"] = col_resp.text_input(
             "Responsável",
@@ -194,6 +205,7 @@ def render_revisoes() -> None:
             key=f"revresp_{index}",
             label_visibility="collapsed",
             placeholder="Responsável",
+            on_change=salvar_rascunho,
         )
         if len(get_revisoes()) > 1 and col_action.button("Remover", key=f"rm_rev_{index}"):
             remove_at(SessionKey.REVISOES, index)

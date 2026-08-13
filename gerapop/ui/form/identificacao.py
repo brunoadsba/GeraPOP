@@ -8,6 +8,7 @@ from datetime import date
 import streamlit as st
 
 from gerapop.constants import DATE_FORMAT, DEFAULT_VERSAO, SessionKey
+from gerapop.session_draft import salvar_rascunho
 from gerapop.ui.form.widgets import _flag_help
 
 
@@ -35,6 +36,7 @@ def render_identificacao() -> IdentificacaoFields:
             "Nome do POP *",
             placeholder="Registro de Manobras no Sistema TOS – OpenPort",
             key=SessionKey.NOME_POP,
+            on_change=salvar_rascunho,
             help=_flag_help(
                 True, "Nome completo do procedimento — ex: Manobra de Atracação de Navio"
             ),
@@ -43,11 +45,13 @@ def render_identificacao() -> IdentificacaoFields:
             "Código *",
             placeholder="POP-OPE-XXX",
             key=SessionKey.CODIGO,
+            on_change=salvar_rascunho,
             help=_flag_help(True, "Código único do POP — ex: POP-MAN-001"),
         )
         versao = st.text_input(
             "Versão",
             key=SessionKey.VERSAO,
+            on_change=salvar_rascunho,
             help=_flag_help(False, "Número da versão — ex: 01, 02"),
         )
 
@@ -56,11 +60,13 @@ def render_identificacao() -> IdentificacaoFields:
             "Área *",
             placeholder="Operações Portuárias",
             key=SessionKey.AREA,
+            on_change=salvar_rascunho,
             help=_flag_help(True, "Setor responsável — ex: Operações Portuárias"),
         )
         data_pop = st.text_input(
             "Data",
             key=SessionKey.DATA,
+            on_change=salvar_rascunho,
             help=_flag_help(False, "Data de emissão — usa a data de hoje"),
         )
 
@@ -68,6 +74,7 @@ def render_identificacao() -> IdentificacaoFields:
         "Aviso / Atenção (opcional)",
         placeholder="Ex: Este POP não contempla...",
         key=SessionKey.AVISO,
+        on_change=salvar_rascunho,
         help=_flag_help(False, "Alerta importante — ex: Somente com prático credenciado a bordo"),
     )
 

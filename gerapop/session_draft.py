@@ -10,7 +10,7 @@ Responsabilidades:
 from __future__ import annotations
 
 import io
-from datetime import date
+from datetime import date, datetime
 from typing import Any
 
 import streamlit as st
@@ -27,7 +27,7 @@ from gerapop.models import (
     default_secao,
 )
 from gerapop.session_codigo import get_loaded_from, set_loaded_from
-from gerapop.storage import get_draft, list_pops, save_draft
+from gerapop.storage import DRAFT_FILENAME, get_draft, get_storage_dir, list_pops, save_draft
 
 FORM_SCALAR_KEYS = (
     SessionKey.NOME_POP,
@@ -214,6 +214,15 @@ def salvar_rascunho() -> None:
     }
     if payload != get_draft():
         save_draft(payload)
+
+
+def get_draft_saved_at() -> str | None:
+    """Horário (HH:MM:SS) do último salvamento automático; None se nunca salvo."""
+    try:
+        mtime = (get_storage_dir() / DRAFT_FILENAME).stat().st_mtime
+    except OSError:
+        return None
+    return datetime.fromtimestamp(mtime).strftime("%H:%M:%S")
 
 
 def restaurar_rascunho() -> None:

@@ -12,6 +12,7 @@ from gerapop.session_codigo import set_loaded_from
 from gerapop.session_draft import (
     clear_generated,
     get_definicoes,
+    get_draft_saved_at,
     get_generated_docx,
     get_generated_pop,
     get_regras,
@@ -102,16 +103,18 @@ def _form_matches_generated(
     conteudo: ConteudoFields,
     pop: PopData,
 ) -> bool:
+    # PopData.from_form normaliza com .strip(); comparar com a mesma
+    # normalização para não descartar um POP por whitespace nas pontas.
     fields_match = (
-        identificacao.nome_pop == pop.nome_pop
-        and identificacao.codigo == pop.codigo
-        and identificacao.versao == pop.versao
-        and identificacao.data == pop.data
-        and identificacao.area == pop.area
-        and identificacao.aviso == pop.aviso
-        and conteudo.objetivo == pop.objetivo
-        and conteudo.escopo == pop.escopo
-        and conteudo.consulta == pop.consulta
+        identificacao.nome_pop.strip() == pop.nome_pop
+        and identificacao.codigo.strip() == pop.codigo
+        and identificacao.versao.strip() == pop.versao
+        and identificacao.data.strip() == pop.data
+        and identificacao.area.strip() == pop.area
+        and identificacao.aviso.strip() == pop.aviso
+        and conteudo.objetivo.strip() == pop.objetivo
+        and conteudo.escopo.strip() == pop.escopo
+        and conteudo.consulta.strip() == pop.consulta
     )
     lists_match = (
         get_definicoes() == pop.definicoes
@@ -184,3 +187,9 @@ def run() -> None:
     render_download()
     render_historico()
     salvar_rascunho()
+    saved_at = get_draft_saved_at()
+    if saved_at is not None:
+        st.caption(
+            f"💾 Rascunho salvo automaticamente às {saved_at} — se o servidor cair, "
+            "seus dados continuam em `data/draft.json`"
+        )

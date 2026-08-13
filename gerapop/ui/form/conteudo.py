@@ -15,6 +15,7 @@ from gerapop.session_draft import (
     get_regras,
     get_revisoes,
     get_secoes,
+    salvar_rascunho,
     set_generated_pop,
 )
 from gerapop.ui.form.identificacao import IdentificacaoFields
@@ -34,6 +35,7 @@ def render_objetivo_escopo() -> tuple[str, str]:
         "Descreva o objetivo do procedimento *",
         height=100,
         key=SessionKey.OBJETIVO,
+        on_change=salvar_rascunho,
         help=_flag_help(
             True, "O que o procedimento padroniza — ex: Padronizar a manobra de atracação de navios"
         ),
@@ -44,6 +46,7 @@ def render_objetivo_escopo() -> tuple[str, str]:
         "A quem se aplica / condições prévias",
         height=100,
         key=SessionKey.ESCOPO,
+        on_change=salvar_rascunho,
         help=_flag_help(
             False,
             "A quem se aplica e condições prévias — ex: Equipe de operações, práticos, rebocadores",
@@ -59,6 +62,7 @@ def render_consulta() -> str:
         "Caminho / menu para consulta (opcional)",
         height=70,
         key=SessionKey.CONSULTA,
+        on_change=salvar_rascunho,
         help=_flag_help(False, "Onde o registro é consultado — ex: Menu > Operações > Manobras"),
     )
 
