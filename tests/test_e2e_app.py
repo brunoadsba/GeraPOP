@@ -62,6 +62,29 @@ def test_e2e_fluxo_completo_gera_docx() -> None:
     assert "Padronizar o registro de manobras." in texts
 
 
+def test_e2e_geracao_com_whitespace_nas_pontas_nao_descarta_pop() -> None:
+    """Regressão: campos com \n/espaços nas pontas (comum em text_area)
+    eram normalizados por PopData.from_form (.strip) e a comparação
+    pós-geração descartava o POP gerado (botão 'Gerar POP' sem efeito)."""
+    at = AppTest.from_file(APP_PATH, default_timeout=10)
+    at.run()
+
+    _abrir_formulario(at)
+    _fill_obrigatorios(at)
+    at.text_area(key="escopo").set_value("Aplica-se à equipe de operações.\n\n")
+    at.text_input(key="nome_pop").set_value("Registro de Manobras \n")
+
+    _gerar_pop(at)
+
+    assert not at.exception
+    assert [success.value for success in at.success] == ["POP gerado com sucesso."]
+    assert len(_download_pop_atual(at)) == 1
+
+    pop = at.session_state[SessionKey.GENERATED_POP]
+    assert pop.escopo == "Aplica-se à equipe de operações."
+    assert pop.nome_pop == "Registro de Manobras"
+
+
 def test_e2e_validacao_impede_geracao() -> None:
     at = AppTest.from_file(APP_PATH, default_timeout=10)
     at.run()
@@ -336,6 +359,61 @@ def test_e2e_historico() -> None:
     assert at.text_input[0].value == "Registro de Manobras no Sistema TOS"
     assert at.session_state[SessionKey.OBJETIVO] == "Padronizar o registro de manobras."
     assert len(at.session_state[SessionKey.REVISOES]) == 1
+
+
+def test_e2e_historico_excluir_remove_pop() -> None:
+    at = AppTest.from_file(APP_PATH, default_timeout=10)
+    at.run()
+
+    _abrir_formulario(at)
+    _fill_obrigatorios(at)
+    _gerar_pop(at)
+    at.run()  # re-render limpo após o st.rerun do try_generate
+
+    records = list_pops()
+    assert len(records) == 1
+    pop_id = records[0]["id"]
+
+    _button(at, "Excluir").click()
+    at.run()
+    assert "não pode ser desfeita" in at.warning[0].value
+
+    _button(at, "Sim, excluir").click()
+    at.run()
+    at.run()  # re-render limpo após o st.rerun da exclusão
+
+    assert list_pops() == []
+    assert get_docx_bytes(pop_id) is None
+    assert not at.exception
+
+
+def test_e2e_home_excluir_pop_salvo() -> None:
+    at = AppTest.from_file(APP_PATH, default_timeout=10)
+    at.run()
+
+    _abrir_formulario(at)
+    _fill_obrigatorios(at)
+    _gerar_pop(at)
+    at.run()  # re-render limpo após o st.rerun do try_generate
+
+    records = list_pops()
+    assert len(records) == 1
+    pop_id = records[0]["id"]
+
+    at.sidebar.radio[0].set_value(home.PAGINA_HOME)
+    at.run()
+    assert at.button(key=f"excluir_salvo_{pop_id}") is not None
+
+    at.button(key=f"excluir_salvo_{pop_id}").click()
+    at.run()
+    assert "não pode ser desfeita" in at.warning[0].value
+
+    _button(at, "Sim, excluir").click()
+    at.run()
+    at.run()  # re-render limpo após o st.rerun da exclusão
+
+    assert list_pops() == []
+    assert not at.exception
 
 
 def test_e2e_historico_visualizar_abre_preview() -> None:

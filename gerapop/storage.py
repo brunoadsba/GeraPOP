@@ -5,6 +5,7 @@ from __future__ import annotations
 import io
 import json
 import os
+import shutil
 import uuid
 import zipfile
 from dataclasses import asdict
@@ -95,6 +96,24 @@ def get_pop_json_bytes(pop_id: str) -> bytes | None:
         return path.read_bytes()
     except OSError:
         return None
+
+
+def delete_pop(pop_id: str) -> bool:
+    """Exclui um POP salvo (pasta `data/pops/<pop_id>` com pop.json + pop.docx).
+
+    Retorna ``True`` quando a pasta existia e foi removida; ``False`` quando o
+    POP não existe. Levanta ``ValueError`` se o id escapar de ``data/pops/``
+    (defesa contra path traversal — ids vêm do selectbox do histórico).
+    """
+    target = _pop_dir(pop_id)
+    pops_dir = _pops_dir()
+    target_resolved = target.resolve()
+    if pops_dir.resolve() not in target_resolved.parents:
+        raise ValueError(f"pop_id inválido: {pop_id!r}")
+    if not target_resolved.exists():
+        return False
+    shutil.rmtree(target_resolved)
+    return True
 
 
 def _draft_path() -> Path:

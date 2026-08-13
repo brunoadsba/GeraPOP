@@ -25,8 +25,9 @@ from gerapop.session_draft import (
     preparar_novo_pop,
     reset_widgets_formulario,
 )
-from gerapop.storage import get_pop
+from gerapop.storage import get_docx_bytes, get_pop, list_pops
 from gerapop.ui.downloads import botao_docx, botao_pdf
+from gerapop.ui.exclusao import CONFIRM_EXCLUIR_KEY, confirmar_exclusao
 from gerapop.ui.preview import (
     fechar_preview,
     get_preview_estado,
@@ -88,11 +89,11 @@ def _editar_pop_e_ir(pop: PopData) -> None:
     _ir_para_formulario()
 
 
-def _render_hero(fluxo: dict, total: int, gerados: int, pendentes: int) -> None:
+def _render_hero(fluxo: dict, total: int, gerados: int, pendentes: int, pops_salvos: int) -> None:
     concluido = round(gerados / total * 100) if total else 0
     kpis = (
         ("📋", str(total), "Etapas"),
-        ("📄", str(gerados), "POPs gerados"),
+        ("📄", str(pops_salvos), "POPs gerados"),
         ("⏳", str(pendentes), "Pendentes"),
         ("✅", f"{concluido}%", "Concluído"),
     )
@@ -144,18 +145,26 @@ def _render_stepper(fluxo: dict) -> None:
 
 
 def _render_grade(nos: list[dict], chip_cls: str, corpo: Callable[[dict], None]) -> None:
-    """Renderiza os cards em grade de 2 colunas; `corpo` recebe cada nó."""
+    """Renderiza os cards em grade de 2 colunas; `corpo` recebe cada nó.
+
+    Aceita nós do fluxo (rotulo/etapa/descricao) e registros salvos
+    (nome_pop/codigo/created_at) — campos ausentes caem nos fallbacks.
+    """
     for i in range(0, len(nos), 2):
         col_esq, col_dir = st.columns(2)
         for col, no in zip((col_esq, col_dir), nos[i : i + 2]):
             with col:
                 with st.container(border=True):
+                    titulo = no.get("rotulo") or no.get("nome_pop", "?")
+                    chip = no.get("etapa") or no.get("codigo", "")
+                    descricao = no.get("descricao") or no.get("created_at", "")
                     st.markdown(
-                        f"**{html.escape(str(no['rotulo']))}**"
-                        f"<span class='pop-dash-chip {chip_cls}'>etapa {no['etapa']}</span>",
+                        f"**{html.escape(str(titulo))}**"
+                        f"<span class='pop-dash-chip {chip_cls}'>"
+                        f"{html.escape(str(chip))}</span>",
                         unsafe_allow_html=True,
                     )
-                    st.caption(no["descricao"])
+                    st.caption(descricao)
                     corpo(no)
 
 
@@ -193,8 +202,8 @@ def _corpo_card_gerado(no: dict) -> None:
     )
 
 
-def _render_gerados(gerados: list[dict]) -> None:
-    st.header(f"📄 POPs gerados ({len(gerados)})")
+def _render_gerados(gerados: list[dict], total_etapas: int) -> None:
+    st.header(f"📄 Etapas com POP ({len(gerados)}/{total_etapas})")
     if not gerados:
         st.caption("Nenhuma etapa do fluxo possui POP vinculado ainda.")
         return
@@ -247,6 +256,19 @@ def _abrir_preview_fluxo(pop_ref: str) -> None:
     st.session_state[SessionKey.PREVIEW] = {"tipo": "fluxo", "ref": pop_ref}
 
 
+def _abrir_preview_salvo(pop_id: str) -> None:
+    st.session_state[SessionKey.PREVIEW] = {"tipo": "salvo", "ref": pop_id}
+
+
+def _editar_pop_salvo(pop_id: str) -> None:
+    pop = get_pop(pop_id)
+    if pop is None:
+        return
+    set_loaded_from(pop_id)
+    preencher_formulario(pop)
+    _ir_para_formulario()
+
+
 def _editar_preview_e_ir(pop: PopData, pop_id: str | None = None) -> None:
     """Fecha a preview e abre o POP no formulário (pop_id = registro salvo)."""
     fechar_preview()
@@ -273,6 +295,47 @@ def _render_preview_ativa() -> None:
     render_preview(pop, on_editar=on_editar)
 
 
+def _corpo_card_salvo(record: dict) -> None:
+    pop_id = record["id"]
+    if st.button(
+        "Visualizar",
+        key=f"ver_salvo_{pop_id}",
+        on_click=_abrir_preview_salvo,
+        args=(pop_id,),
+    ):
+        pass
+    col_docx, col_pdf, col_editar = st.columns(3)
+    docx_bytes = get_docx_bytes(pop_id)
+    if docx_bytes is not None:
+        botao_docx(docx_bytes, record["filename"], key=f"docx_salvo_{pop_id}", container=col_docx)
+    pop = get_pop(pop_id)
+    if pop is not None:
+        botao_pdf(gerar_pdf(pop), record["filename"], key=f"pdf_salvo_{pop_id}", container=col_pdf)
+    col_editar.button(
+        "Editar",
+        key=f"editar_salvo_{pop_id}",
+        on_click=_editar_pop_salvo,
+        args=(pop_id,),
+    )
+    if st.session_state.get(CONFIRM_EXCLUIR_KEY) == pop_id:
+        confirmar_exclusao(record)
+    elif st.columns([3, 1])[1].button(
+        "Excluir",
+        key=f"excluir_salvo_{pop_id}",
+        help="Remove o POP do histórico (não pode ser desfeito).",
+    ):
+        st.session_state[CONFIRM_EXCLUIR_KEY] = pop_id
+        st.rerun()
+
+
+def _render_salvos(registros: list[dict]) -> None:
+    st.header(f"🗂️ POPs salvos no app ({len(registros)})")
+    if not registros:
+        st.caption("Nenhum POP salvo ainda. Gere um POP no formulário para vê-lo aqui.")
+        return
+    _render_grade(registros, "gerado", _corpo_card_salvo)
+
+
 def render_home() -> None:
     if preview_ativa():
         _render_preview_ativa()
@@ -290,9 +353,11 @@ def render_home() -> None:
 
     pendentes, gerados = classificar_nos(fluxo)
     total = len(pendentes) + len(gerados)
+    registros = list_pops()
 
-    _render_hero(fluxo, total, len(gerados), len(pendentes))
+    _render_hero(fluxo, total, len(gerados), len(pendentes), len(registros))
     _render_stepper(fluxo)
     _render_modelo()
-    _render_gerados(gerados)
+    _render_gerados(gerados, total)
     _render_pendentes(pendentes)
+    _render_salvos(registros)

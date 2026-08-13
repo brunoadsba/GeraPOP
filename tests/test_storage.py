@@ -2,9 +2,12 @@ import io
 import json
 import zipfile
 
+import pytest
+
 from gerapop.models import PopData
 from gerapop.storage import (
     clear_draft,
+    delete_pop,
     gerar_backup_zip,
     get_docx_bytes,
     get_draft,
@@ -69,6 +72,27 @@ def test_get_pop_inexistente_retorna_none() -> None:
     assert get_pop("nao_existe") is None
     assert get_docx_bytes("nao_existe") is None
     assert get_pop_json_bytes("nao_existe") is None
+
+
+def test_delete_pop_remove_arquivos_e_da_listagem(pop_minimo: PopData) -> None:
+    pop_id = save_pop(pop_minimo, b"PK fake docx")
+
+    assert delete_pop(pop_id) is True
+
+    assert get_pop(pop_id) is None
+    assert get_docx_bytes(pop_id) is None
+    assert get_pop_json_bytes(pop_id) is None
+    assert list_pops() == []
+
+
+def test_delete_pop_inexistente_retorna_false() -> None:
+    assert delete_pop("nao_existe") is False
+
+
+def test_delete_pop_rejeita_id_fora_do_diretorio(tmp_path) -> None:
+    # Path traversal: o id resolve para fora de data/pops/ — deve falhar feio.
+    with pytest.raises(ValueError):
+        delete_pop("../draft.json")
 
 
 def test_draft_round_trip() -> None:

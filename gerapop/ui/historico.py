@@ -1,4 +1,4 @@
-"""Histórico de POPs salvos — listagem, download, edição e backup."""
+"""Histórico de POPs salvos — listagem, download, edição, exclusão e backup."""
 
 from __future__ import annotations
 
@@ -13,6 +13,7 @@ from gerapop.session_codigo import set_loaded_from
 from gerapop.session_draft import preencher_formulario
 from gerapop.storage import gerar_backup_zip, get_docx_bytes, get_pop, list_pops
 from gerapop.ui.downloads import botao_docx, botao_pdf
+from gerapop.ui.exclusao import CONFIRM_EXCLUIR_KEY, confirmar_exclusao
 from gerapop.ui.home import PAGINA_HOME
 
 
@@ -66,6 +67,18 @@ def render_historico() -> None:
             if pop is not None:
                 set_loaded_from(selected)
                 preencher_formulario(pop)
+                st.rerun()
+
+        if st.session_state.get(CONFIRM_EXCLUIR_KEY) == selected:
+            confirmar_exclusao(record)
+        else:
+            col_excluir = st.columns([3, 1])[1]
+            if col_excluir.button(
+                "Excluir",
+                key="historico_excluir",
+                help="Remove o POP do histórico (não pode ser desfeito).",
+            ):
+                st.session_state[CONFIRM_EXCLUIR_KEY] = selected
                 st.rerun()
 
         st.divider()

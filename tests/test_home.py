@@ -119,3 +119,28 @@ def test_home_preview_voltar_retorna_ao_painel() -> None:
     assert not at.exception
     assert any("POPs pendentes" in el.value for el in at.header)
     assert not any(btn.key == "preview_voltar" for btn in at.button)
+
+
+def test_home_lista_pops_salvos_no_app() -> None:
+    from gerapop.models import PopData
+    from gerapop.storage import save_pop
+
+    pop = PopData(
+        nome_pop="TESTE 003",
+        codigo="POP-OPE-003",
+        versao="01",
+        data="13/08/2026",
+        area="Operações Portuárias",
+        aviso="",
+        objetivo="Testar a listagem na home.",
+        escopo="",
+    )
+    save_pop(pop, b"fake-docx")
+
+    at = AppTest.from_file(APP_PATH, default_timeout=10)
+    at.run()
+
+    assert not at.exception
+    assert any("POPs salvos no app (1)" in el.value for el in at.header)
+    assert any("TESTE 003" in el.value for el in at.markdown)
+    assert any("POP-OPE-003" in el.value for el in at.markdown)
