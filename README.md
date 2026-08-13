@@ -71,7 +71,8 @@ gerapop/
 - Formulário com cabeçalho, objetivo, escopo, definições, procedimento (seções/passos dinâmicos com campos obrigatórios), regras, consulta e histórico de revisões
 - Validação mínima (nome, código, área e objetivo) e unicidade de código (bloqueio de duplicidade com exceção para edição)
 - Gera `.docx` seguindo a estrutura do modelo `POP_Manobras_CODEBA_v2` (numeração automática das seções, aviso ⚠ no escopo, regras em tabela, fontes do modelo) — validado contra o modelo real OpenPort
-- Export `.json` do POP (`{"metadata", "pop"}`) junto com o `.docx` — na geração e no histórico
+- Export `.pdf` (reportlab) com a mesma estrutura do `.docx`
+- Dados estruturados: cada POP salvo guarda `pop.json` (`{"metadata", "pop"}`) em `data/pops/<id>/`, usado para reutilização e backup — downloads na UI são `.docx`/`.pdf`
 - Histórico de POPs gerados em `data/pops/` (JSON + .docx) com re-download e "carregar para editar" (persistente via volume no Docker)
 - Rascunho do formulário persistido entre sessões
 - Backup dos POPs em `.zip` (botão no histórico + `python -m gerapop.backup`)

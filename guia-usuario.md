@@ -39,21 +39,64 @@ O GeraPOP transforma o que você digita num documento pronto para usar.
 
 ## 3. Conhecendo a tela
 
-A tela é um **formulário com várias partes**, uma embaixo da outra. Basta ir
-preenchendo de cima para baixo.
+O GeraPOP tem **duas telas**, trocadas pelo menu lateral (barra à esquerda):
 
-Os campos marcados com **\*** (asterisco) são **obrigatórios** — sem eles, o
-documento não é gerado. Os demais são opcionais: preencha se fizer sentido
-para o seu POP.
+- **🏠 Início** — o painel do Fluxo SEV (veja a seção 4).
+- **📝 Formulário** — onde você cria e edita POPs (veja a seção 5).
+
+Na barra lateral também há o botão de **tema claro/escuro**: use o que for
+mais confortável para você.
+
+Na tela do Formulário, os campos marcados com **\*** (asterisco) são
+**obrigatórios** — sem eles, o documento não é gerado. Os demais são
+opcionais: preencha se fizer sentido para o seu POP.
 
 Ao terminar, clique no botão verde **"Gerar POP (.docx)"** (no final do
 formulário) e o documento é criado na hora.
 
 ---
 
-## 4. Passo a passo para criar um POP
+## 4. A página Início (o painel do Fluxo SEV)
 
-### 4.1 Dados principais (parte de cima)
+A página Início acompanha o **Fluxo SEV** (Desembarque): a sequência de
+etapas do processo e os POPs de cada etapa. Ela mostra:
+
+- **Indicadores no topo** — total de etapas, POPs já gerados, POPs pendentes
+  e o percentual de conclusão.
+- **A sequência de passos do fluxo** — cada etapa aparece como um passo;
+  as etapas concluídas ficam marcadas com ✓.
+- **Modelo de referência** — um POP de exemplo, já preenchido e validado.
+  Você pode baixar o `.docx` dele ou clicar em **"Ver modelo no formulário"**
+  para vê-lo na tela de edição (atenção: isso substitui o que estiver no
+  formulário).
+- **Cards de POPs gerados** — para cada etapa com POP pronto: **"Visualizar
+  POP"** (abre o documento em modo de leitura, sem baixar), baixar `.docx` /
+  `.pdf` e **"Editar POP"** (abre o POP no formulário para alterações).
+- **Cards de POPs pendentes** — etapas que ainda não têm POP, com o botão
+  **"Criar POP"** para começar (o nome e a descrição da etapa já entram
+  preenchidos no formulário).
+
+> **Visualizar POP** abre o documento em modo de leitura, com botões para
+> baixar `.docx`/`.pdf` e voltar. Use para conferir um POP sem abrir o Word.
+
+---
+
+## 5. Passo a passo para criar um POP
+
+Vá para **📝 Formulário** no menu lateral.
+
+No topo do formulário você encontra:
+
+- **Modelo de referência** — botão **"Carregar modelo"** que traz um POP de
+  exemplo preenchido (útil para ver como um POP completo fica; substitui o
+  que você tiver digitado).
+- **Simulação de preenchimento (RPA)** — um painel com o botão **"▶ Iniciar
+  simulação"**: um robô preenche o formulário automaticamente, campo a
+  campo, mostrando na prática como cada campo deve ser preenchido. Serve
+  como demonstração; você pode parar a simulação a qualquer momento e editar
+  à vontade.
+
+### 5.1 Dados principais (parte de cima)
 
 Preencha:
 
@@ -65,14 +108,14 @@ Preencha:
 - **Aviso (opcional)** — um alerta importante que deve aparecer em destaque no
   documento. Ex.: "Somente executar com autorização da coordenação."
 
-### 4.2 Objetivo e escopo
+### 5.2 Objetivo e escopo
 
 - **Objetivo \*** — para que serve o procedimento, em uma ou duas frases.
   Ex.: "Padronizar o registro de manobras no sistema."
 - **Escopo** — para quem vale o procedimento. Ex.: "Aplica-se à equipe de
   operações portuárias."
 
-### 4.3 Definições (opcional)
+### 5.3 Definições (opcional)
 
 Aqui você explica **termos técnicos** que aparecem no documento, para quem lê
 entender. Ex.: "TOS — Terminal Operating System".
@@ -82,7 +125,7 @@ entender. Ex.: "TOS — Terminal Operating System".
 - Para apagar, clique em **"Remover"** ao lado do termo (só é possível apagar
   quando há mais de um).
 
-### 4.4 Procedimento — seções e passos (a parte principal)
+### 5.4 Procedimento — seções e passos (a parte principal)
 
 O procedimento é dividido em **seções**, e cada seção tem **passos numerados**.
 
@@ -106,7 +149,27 @@ Como fazer:
 > Dica: divida o procedimento em seções curtas. Fica mais fácil de ler e de
 > seguir.
 
-### 4.5 Campos obrigatórios por seção (opcional)
+#### Passos especiais (sub-cabeçalho de tela e resposta do sistema)
+
+Dois formatos de passo recebem destaque visual no documento:
+
+- **Comece o passo com `Tela `** (ex.: `Tela 6002 – Programação de Saída`) para
+  criar um **sub-cabeçalho** dentro da tabela de passos — ele agrupa os passos
+  daquela tela, sem número, com fundo azul-claro.
+- **Comece o passo com `Sistema `** (ex.: `Sistema exibe: "Deseja liberar a
+  programação de saída?" Clique no botão 'Ok'.`) para marcar uma **resposta do
+  sistema** (mensagem/pop-up) — ela sai em itálico, sem número, com traço na
+  coluna de número.
+
+Esses passos especiais **não consomem numeração** — os passos normais seguem
+numerados em sequência.
+
+> Dica: use **aspas simples** ao redor de nomes de botões (ex.: `'Novo'`,
+> `'Gravar'`) — eles saem em **negrito** no documento, facilitando a leitura
+> rápida durante a operação. Aspas simples desemparelhadas (ex.: `d'água`) são
+> tratadas como texto normal.
+
+### 5.5 Campos obrigatórios por seção (opcional)
 
 Se a seção precisa de **informações que devem ser anotadas** durante a
 execução (ex.: data e hora, berço, nome do prático), você pode listá-las aqui.
@@ -116,19 +179,19 @@ Elas viram uma tabela **"Campos obrigatórios"** no documento.
 2. Digite o **nome do campo** (ex.: "Berço") e a **descrição ou instrução**
    (ex.: "Número do berço designado para a atracação.").
 
-### 4.6 Regras e Restrições (opcional)
+### 5.6 Regras e Restrições (opcional)
 
 Liste o que **não pode ser feito** ou o que é obrigatório cumprir.
 Ex.: "Não iniciar a manobra sem prático credenciado a bordo."
 
 - Digite a regra e clique em **"+ Adicionar regra"** para incluir outras.
 
-### 4.7 Consulta (opcional)
+### 5.7 Consulta (opcional)
 
 Se o POP estiver disponível em algum sistema ou menu, informe o caminho.
 Ex.: "Menu > Operações > Manobras".
 
-### 4.8 Histórico de revisões (opcional)
+### 5.8 Histórico de revisões (opcional)
 
 Registre as **versões** do documento:
 
@@ -141,7 +204,7 @@ Use **"+ Adicionar revisão"** para incluir outra.
 
 ---
 
-## 5. Gerando e baixando o POP
+## 6. Gerando e baixando o POP
 
 1. Preencha tudo e clique em **"Gerar POP (.docx)"**.
 2. Se faltar algum campo obrigatório, a ferramenta avisa o que falta — basta
@@ -149,8 +212,7 @@ Use **"+ Adicionar revisão"** para incluir outra.
 3. Quando der certo, aparece a mensagem **"POP gerado com sucesso."** e dois
    botões:
    - **"Baixar POP (.docx)"** — o documento do Word, pronto para usar.
-   - **"Baixar POP (.json)"** — uma cópia digital dos dados, usada por outros
-     sistemas. Não se preocupe com ela: baixe junto por segurança.
+   - **"Baixar POP (.pdf)"** — o mesmo documento em PDF.
 
 O arquivo baixado vai para a pasta de downloads do seu computador (ou para o
 local que o navegador escolher).
@@ -162,21 +224,22 @@ local que o navegador escolher).
 
 ---
 
-## 6. Histórico de POPs gerados
+## 7. Histórico de POPs gerados
 
 Os POPs gerados ficam guardados na própria ferramenta.
 
-1. No final da página, abra **"Histórico de POPs gerados"**.
+1. No final da página do Formulário, abra **"Histórico de POPs gerados"**.
 2. Escolha o POP na lista (ela mostra a data, o código e o nome).
 3. Você pode:
+   - **"Visualizar"** — abrir o POP em modo de leitura (sem baixar).
    - **"Baixar .docx"** — baixar o documento de novo.
-   - **"Baixar .json"** — baixar os dados de novo.
+   - **"Baixar .pdf"** — baixar a versão em PDF de novo.
    - **"Carregar para editar"** — trazer esse POP de volta para o formulário
      para fazer alterações. Depois de editar, gere o POP novamente.
 
 ---
 
-## 7. O rascunho automático
+## 8. O rascunho automático
 
 O GeraPOP **guarda o que você digitou automaticamente**. Se você fechar a
 página sem querer, ou abrir a ferramenta de novo no mesmo computador, o
@@ -184,7 +247,7 @@ formulário volta preenchido como estava. Nada se perde.
 
 ---
 
-## 8. Fazendo backup (cópia de segurança)
+## 9. Fazendo backup (cópia de segurança)
 
 Se a ferramenta estiver instalada no seu computador (uso local), alguém do
 setor pode fazer uma cópia de todos os POPs com o comando `make backup`.
@@ -199,18 +262,20 @@ um arquivo com todos os POPs guardados, para você salvar num lugar seguro
 
 ---
 
-## 9. Dicas rápidas
+## 10. Dicas rápidas
 
 - Preencha os campos com **\*** primeiro — sem eles, não gera.
 - Use frases curtas nos passos: cada passo é uma ação.
 - Revise o documento gerado antes de compartilhar: a ferramenta ajuda a
   escrever, mas a **revisão técnica do conteúdo é sua**.
+- Use **"Visualizar"** (no histórico ou no painel Início) para conferir o POP
+  antes de baixar ou editar.
 - O gerador cria a estrutura; quem conhece a tarefa é quem garante que o
   conteúdo está correto.
 
 ---
 
-## 10. Problemas comuns e como resolver
+## 11. Problemas comuns e como resolver
 
 | O que aconteceu | O que fazer |
 |-----------------|-------------|
@@ -220,4 +285,5 @@ um arquivo com todos os POPs guardados, para você salvar num lugar seguro
 | O histórico está vazio | Os POPs só aparecem no histórico **depois** de gerados. Gere um POP primeiro. |
 | O formulário voltou preenchido quando reabri | Isso é o rascunho automático funcionando. Se quiser começar do zero, apague o conteúdo manualmente. |
 | Não sei se um campo é obrigatório | Todo campo com \* é obrigatório. O resto é opcional. |
+| Quero só dar uma olhada no POP, sem baixar | Use o botão "Visualizar" (histórico ou painel Início). |
 | Preciso de ajuda ou algo não funciona | Fale com o responsável pelo setor de tecnologia — informe o que você estava fazendo e o que apareceu na tela. |

@@ -1,7 +1,7 @@
 # GeraPOP — Memória de Contexto para LLMs
 
 > Documento de continuidade do projeto. Leia antes de implementar qualquer feature.
-> Última atualização: 2026-08-09 (design system + dashboard/preview/simulação + PDF + harness UX/UI)
+> Última atualização: 2026-08-13 (exclusão de POP também na home — botão "Excluir" nos cards de POPs salvos, fluxo compartilhado em `ui/exclusao.py`; 87 testes)
 
 ---
 
@@ -13,7 +13,7 @@ O usuário preenche um formulário guiado e recebe um arquivo `.docx` formatado,
 
 **Repositório:** https://github.com/brunoadsba/GeraPOP.git  
 **Branch principal:** `main`  
-**Status atual:** MVP v1 completo (validação por seção, unicidade de código, rascunho persistente, backup zip, export JSON) + export **PDF** (reportlab) + **dashboard home** (KPIs/stepper do fluxo SEV) + **preview do POP** (modo leitura) + **simulação RPA** de preenchimento + **design system** (tema light/dark, harness UX/UI em `harnessfiles/`); **72 testes passando**; CI do GitHub desativado por pedido do usuário.
+**Status atual:** MVP v1 completo (validação por seção, unicidade de código, rascunho persistente, backup zip, export JSON) + export **PDF** (reportlab) + **dashboard home** (KPIs/stepper do fluxo SEV) + **preview do POP** (modo leitura) + **simulação RPA** de preenchimento + **design system** (tema light/dark, harness UX/UI em `harnessfiles/`) + **pacote de melhorias visuais v1.1** (sub-cabeçalhos de tela, respostas do sistema, negrito em aspas, cabeçalho de regras, rodapé com página — docx/pdf/fluxo-sev); **87 testes passando**; CI do GitHub desativado por pedido do usuário.
 
 ---
 
@@ -55,15 +55,19 @@ GeraPOP (Projeto 2)  →  dados estruturados  →  Fluxo Interativo SEV (Projeto
 | CI | GitHub Actions (`.github/workflows/ci.yml`) — **desativado** (`disabled_manually`, workflow id `330472653`); reativar com `gh workflow enable 330472653 --repo brunoadsba/GeraPOP` |
 | Container | Docker + docker-compose (alternativa ao venv) |
 
-**Persistência (v1.1):** POPs gerados são salvos automaticamente em `data/pops/<id>/` (`pop.json` + `pop.docx`) e listados no app (seção Histórico). Backup = botão "Backup (.zip)" no app ou `python -m gerapop.backup` (gera `data/backups/gerapop_YYYYMMDD_HHMMSS.zip`). `data/` é ignorado pelo git (apenas na raiz).
+**Persistência (v1.1):** POPs gerados são salvos automaticamente em `data/pops/<id>/` (`pop.json` + `pop.docx`) e listados no app (seção Histórico). Backup = botão "Backup (.zip)" no app ou `python -m gerapop.backup` (gera `data/backups/gerapop_YYYYMMDD_HHMMSS.zip`). `data/` é ignorado pelo git (apenas na raiz). **Exclusão (2026-08-13):** `storage.delete_pop(pop_id)` remove a pasta do POP (validação anti-traversal: o id resolvido precisa estar dentro de `data/pops/`, senão `ValueError`); na UI, botão "Excluir" disponível **no histórico (formulário) e nos cards de "POPs salvos no app" (home)**, com confirmação em 2 cliques ("Excluir" → "Sim, excluir"/"Cancelar") e limpeza de referências de sessão órfãs (`SAVED_POP_ID`, `LOADED_FROM_ID`, `PREVIEW`). Fluxo compartilhado em `ui/exclusao.py` (`CONFIRM_EXCLUIR_KEY`, `confirmar_exclusao`, `limpar_estado_orfao`) — importado por `historico.py` e `home.py` (evita import circular).
 
 **Rascunho persistente (v1.1):** o formulário salva rascunho a cada alteração (`session_draft.py`); ao voltar, o usuário escolhe continuar o rascunho ou recomeçar. O rascunho é restaurado se o `pop_id` de origem ainda existir no histórico.
 
 **Unicidade de código (v1.1):** a geração é bloqueada se o código já existe no histórico, com exceção para a edição do POP carregado (permissão `{loaded_from_id} ∪ {SAVED_POP_ID}`). Ver `SessionKey.LOADED_FROM_ID`, `session.encontrar_codigo_duplicado`, `verificar_codigo_duplicado`. No Histórico, POPs com códigos repetidos exibem sufixo ` ⚠ (N)`.
 
-**Export JSON (v1.1):** todo POP gerado pode ser baixado como `.json` (formato `{"metadata": ..., "pop": ...}`, igual ao `pop.json` do storage) — tanto na tela de geração quanto no Histórico. Habilita o Projeto 1 (Fluxo SEV).
+**Dados JSON (v1.1):** todo POP salvo gera `pop.json` em `data/pops/<id>/` (formato `{"metadata": ..., "pop": ...}`) — consumido pelo Projeto 1 (Fluxo SEV) e incluído no backup zip. **A UI atual não tem botão de download `.json`** (removido no refactor de `ui/downloads.py`; downloads são `.docx`/`.pdf`). Se o export JSON na UI voltar a ser necessário, reutilizar `get_pop_json_bytes` em `storage.py`.
 
 **Fidelidade ao modelo (v1.1):** o `.docx` segue o modelo `POP_Manobras_CODEBA_v2` (validado em 2026-08-09 com o modelo real OpenPort): numeração plana automática das seções (1..N), aviso ⚠ dentro do Escopo, regras em tabela `R | texto`, consulta em caixa, fontes 18/13pt. **Campos obrigatórios por seção implementados** (G6): cada seção do Procedimento pode declarar campos obrigatórios, renderizados como tabela (Campo/Descrição) no `.docx` e validados no formulário.
+
+**Larguras de tabela (v1.1):** todas as tabelas do `.docx` somam exatamente a largura útil da página (margem a margem). Regras obrigatórias: (1) largura total uniforme em todas as tabelas, calculada de `section.page_width - margins`; (2) passos numerados = coluna de número fixa `PASSO_COL_WIDTH_CM` (1 cm = 567 twips) + descrição preenchendo o restante; (3) `_validar_larguras_tabelas` roda antes de salvar e compensa divergências na última coluna — **mede pela primeira linha sem `gridSpan`** (linhas com sub-cabeçalho mergeado retornam width 0/None e distorceriam a soma; bug corrigido em 2026-08-13 com teste de regressão `test_larguras_validas_com_sub_cabecalho_na_primeira_linha`); (4) regras/restrições numeradas sequencialmente (R1, R2, R3...) em tabela única, nunca "R" repetido. Nota: o XML do .docx armazena larguras em twips (1 twip = 635 EMU), então leituras têm quantização de ±1 twip — os testes usam tolerância `< 635` EMU. Implementação: `services/docx/builder.py` (`_largura_util_emu`, `_larguras_tabela_emu`, `_set_col_widths`, `_validar_larguras_tabelas`) + `services/documento.py` (regras R1..RN em `montar_conteudo`).
+
+**Melhorias visuais (v1.1):** convenções de texto aplicadas na renderização (docx + pdf + fluxo-sev), sem mudar o modelo de dados: (1) passo começando com `Tela ` vira sub-cabeçalho dentro da tabela de passos (docx: célula mergeada com gridSpan + shading `SHADING_SUB`/`COR_SUB`; pdf: SPAN + background; fluxo-sev: `<li class="sub">`); (2) passo começando com `Sistema ` vira resposta do sistema em itálico com "—" na coluna de número (`estilos_linha` da Tabela: ""/sub/sys — sub e sys não consomem numeração); (3) aspas simples **emparelhadas** viram negrito (`_segmentos_bold`/`_segmentos_bold_html`; aspas ímpares = texto literal, ex. `d'água`); (4) tabela de Regras ganhou cabeçalho "Regra | Descrição"; (5) rodapé em todas as páginas com `código · nome` à esquerda e `Versão · Pág. N` à direita (docx: `w:fldSimple PAGE` + tab stop; pdf: `onFirstPage/onLaterPages`). Dados do PS-002 (draft + pop.json salvo) já transformados para as convenções. **Armadilhas conhecidas:** (a) no `montar_conteudo`, o contador de passos usa `passo_numero` — **nunca reutilizar a variável `numero` da closure `titulo()`** (loops não criam escopo em Python; reutilizar reinicia a numeração dos títulos das seções seguintes — bug real corrigido em 2026-08-13); (b) células mergeadas (gridSpan) não têm largura confiável via `cell.width` — sempre pular em medições.
 
 **O que a v1 NÃO faz (proposital):**
 - Login / multi-usuário / nuvem — sem auth, qualquer pessoa com a URL pode criar/editar (risco aceito na v1, ver `docs/deploy.md` §Segurança)
@@ -182,7 +186,7 @@ make install-dev
 make run          # http://localhost:8501
 
 # Qualidade
-make test         # 72 testes (storage + docx + pdf + models + e2e + unicidade + home + simulação + fluxo-sev)
+make test         # 87 testes (storage + docx + pdf + models + e2e + unicidade + home + simulação + fluxo-sev)
 make lint         # ruff check + format --check
 make format       # auto-format
 
@@ -239,9 +243,11 @@ Seguir estas regras ao continuar o projeto:
 
 **Fora do repo (estado local):** CI do GitHub desativado por pedido do usuário (`gh workflow disable 330472653` — reativar com `gh workflow enable 330472653 --repo brunoadsba/GeraPOP`).
 
-**Em andamento (local, não pushado):** refactor de clean code — modelo neutro de blocos em `services/documento.py` consumido por `docx/builder.py` e `pdf/builder.py` (elimina duplicação); botões de download unificados em `ui/downloads.py`; `form_sections.py` → pacote `ui/form/` (widgets, identificacao, conteudo, dinamicas); `ui/historico.py` extraído de `main.py`; `session.py` → `session_codigo.py` + `session_draft.py`; `home.py` enxuto (helpers de card); `telas-recriadas.html` e `ambiente-fronend.md` arquivados em `obsoleto/`. 72 testes verdes + ruff limpo. Commitado localmente em 8 commits semânticos; pendente: push para `main` (com aval do usuário).
+**Em andamento (local, não pushado):** refactor de clean code — modelo neutro de blocos em `services/documento.py` consumido por `docx/builder.py` e `pdf/builder.py` (elimina duplicação); botões de download unificados em `ui/downloads.py`; `form_sections.py` → pacote `ui/form/` (widgets, identificacao, conteudo, dinamicas); `ui/historico.py` extraído de `main.py`; `session.py` → `session_codigo.py` + `session_draft.py`; `home.py` enxuto (helpers de card); `telas-recriadas.html` e `ambiente-fronend.md` arquivados em `obsoleto/`. 82 testes verdes + ruff limpo. Commitado localmente em 8 commits semânticos; pendente: push para `main` (com aval do usuário).
 
-**Nota sobre o harness:** `harnessfiles/` contém o loop de crítica visual (screenshot → LLM com visão → correção) e o `changelog.md` acumulado. O `AGENTS.md` dele rege mudanças de UX/UI: cores novas sempre como `__VAR__` com light/dark, 72 testes verdes antes de finalizar, mudanças estruturais exigem confirmação do usuário.
+**Pendências não commitadas (acumuladas após os 8 commits):** autosave do rascunho + fix botão "Gerar POP" (duplo clique) + fix home (texto/KPI) + docs (README, guia-usuario, memory) + ajustes de larguras do docx + slug com acentos no nome do arquivo + **pacote de melhorias visuais v1.1** (sub-cabeçalhos `Tela `, respostas `Sistema `, negrito em aspas, cabeçalho de regras, rodapé com página, validação de larguras com gridSpan, convenções no guia-usuario). Recomendado: commit em blocos semânticos antes do push.
+
+**Nota sobre o harness:** `harnessfiles/` contém o loop de crítica visual (screenshot → LLM com visão → correção) e o `changelog.md` acumulado. O `AGENTS.md` dele rege mudanças de UX/UI: cores novas sempre como `__VAR__` com light/dark, 82 testes verdes antes de finalizar, mudanças estruturais exigem confirmação do usuário.
 
 **Próxima ação sugerida:** executar o piloto com a equipe (`docs/piloto.md`) — gate que desbloqueia nuvem e os 3 fluxos SEV restantes.
 
@@ -325,7 +331,9 @@ fluxo-sev/ (Projeto 1, HTML/CSS/JS puro), harnessfiles/ (harness de UX/UI).
 
 Estado: MVP v1 completo (validação por seção, unicidade de código, rascunho,
 backup zip, export JSON + PDF, dashboard home, preview, simulação, design system
-light/dark, harness UX/UI) — 72 testes OK. CI desativado.
+light/dark, harness UX/UI, melhorias visuais v1.1 — sub-cabeçalhos Tela/,
+respostas Sistema/, negrito em aspas, cabeçalho de regras, rodapé com página) —
+82 testes OK. CI desativado.
 Próximo passo sugerido: piloto com a equipe (docs/piloto.md) — depois os 3 fluxos
 SEV restantes e a decisão de hospedagem (docs/deploy.md).
 
