@@ -2,9 +2,9 @@ services:
   gerapop:
     build: .
     ports:
-      - "8501:8501"
+      - "8000:8000"
     volumes:
-      - ./app.py:/app/app.py:ro
+      - ./backend:/app/backend:ro
       - ./gerapop:/app/gerapop:ro
       - ./data:/app/data
     restart: unless-stopped

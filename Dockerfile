@@ -11,13 +11,13 @@ RUN pip install --upgrade pip && pip install -r requirements.txt
 
 COPY pyproject.toml README.md app.py ./
 COPY gerapop ./gerapop
-COPY .streamlit ./.streamlit
+COPY backend ./backend
 
 RUN pip install -e .
 
-EXPOSE 8501
+EXPOSE 8000
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
-  CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8501/_stcore/health')" || exit 1
+  CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health')" || exit 1
 
-CMD ["streamlit", "run", "app.py", "--server.address", "0.0.0.0", "--server.port", "8501", "--server.headless", "true"]
+CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000"]

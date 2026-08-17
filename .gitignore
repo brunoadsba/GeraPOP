@@ -39,3 +39,6 @@ Thumbs.db
 
 # Artefatos locais de planejamento (OhMyOpenCode)
 .omo/
+
+# Dados isolados de testes E2E (Playwright)
+/.e2e-data/

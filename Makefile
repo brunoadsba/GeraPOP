@@ -1,4 +1,4 @@
-.PHONY: help install install-dev run test lint format clean backup docker-build docker-run
+.PHONY: help install install-dev run run-backend run-frontend test lint format backup clean docker-build docker-run
 
 PYTHON ?= python3.11
 UV ?= uv
@@ -7,12 +7,15 @@ BIN := $(VENV)/bin
 STREAMLIT := $(BIN)/streamlit
 PYTEST := $(BIN)/pytest
 RUFF := $(BIN)/ruff
+PYTHON_BIN := $(BIN)/python
 
 help:
 	@echo "Comandos disponíveis:"
 	@echo "  make install      — cria venv (Python 3.11) e instala dependências"
 	@echo "  make install-dev  — instala dependências + ferramentas de dev"
-	@echo "  make run          — sobe o app Streamlit em http://localhost:8501"
+	@echo "  make run-backend  — sobe a API FastAPI em http://localhost:8000"
+	@echo "  make run-frontend — sobe o frontend React em http://localhost:5173"
+	@echo "  make run          — sobe backend + frontend em paralelo"
 	@echo "  make test         — executa testes"
 	@echo "  make lint         — verifica código com ruff"
 	@echo "  make format       — formata código com ruff"
@@ -30,19 +33,25 @@ install: $(VENV)/bin/python
 install-dev: install
 	$(UV) pip install -r requirements-dev.txt
 
-run: install
-	$(STREAMLIT) run app.py --server.headless true
+run-backend: install-dev
+	$(PYTHON_BIN) -m uvicorn backend.main:app --reload --host 127.0.0.1 --port 8000
+
+run-frontend:
+	cd frontend && npm run dev
+
+run: run-backend &
+	cd frontend && npm run dev
 
 test: install-dev
 	$(PYTEST) -q
 
 lint: install-dev
-	$(RUFF) check app.py gerapop tests
-	$(RUFF) format --check app.py gerapop tests
+	$(RUFF) check app.py backend gerapop tests
+	$(RUFF) format --check app.py backend gerapop tests
 
 format: install-dev
-	$(RUFF) format app.py gerapop tests
-	$(RUFF) check --fix app.py gerapop tests
+	$(RUFF) format app.py backend gerapop tests
+	$(RUFF) check --fix app.py backend gerapop tests
 
 backup: install
 	$(BIN)/python -m gerapop.backup
