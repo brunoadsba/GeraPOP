@@ -2,8 +2,7 @@
 
 from collections import Counter
 
-from gerapop.session_codigo import encontrar_codigo_duplicado
-from gerapop.ui.historico import _historico_label
+from gerapop.codigo import encontrar_codigo_duplicado, historico_label
 
 
 def _record(pop_id: str, codigo: str, nome: str = "Registro de Manobras") -> dict:
@@ -43,12 +42,12 @@ def test_retorna_o_mais_recente() -> None:
 
 def test_historico_label_sem_repeticao() -> None:
     record = _record("a1", "POP-OPE-001")
-    label = _historico_label(record, Counter({"POP-OPE-001": 1}))
+    label = historico_label(record, Counter({"POP-OPE-001": 1}))
     assert label == "2026-08-09T10:30:00 — POP-OPE-001 — Registro de Manobras"
 
 
 def test_historico_label_marca_repeticao() -> None:
     record = _record("a1", "POP-OPE-001")
-    label = _historico_label(record, Counter({"POP-OPE-001": 2}))
+    label = historico_label(record, Counter({"POP-OPE-001": 2}))
     assert "POP-OPE-001" in label
     assert "⚠ (2)" in label

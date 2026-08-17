@@ -34,9 +34,9 @@ def test_fluxo_desembarque_estrutura_valida() -> None:
     for no in fluxo["nos"]:
         assert no["etapa"] >= 1
         if no["pop_ref"] is not None:
-            assert (
-                pops_dir / f"{no['pop_ref']}.json"
-            ).exists(), f"pop_ref {no['pop_ref']} sem arquivo correspondente"
+            assert (pops_dir / f"{no['pop_ref']}.json").exists(), (
+                f"pop_ref {no['pop_ref']} sem arquivo correspondente"
+            )
 
     pop_ids = {no["id"] for no in fluxo["nos"]}
     for link in fluxo.get("links", []):

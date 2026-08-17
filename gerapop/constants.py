@@ -30,31 +30,6 @@ SUB_PREFIXO = "Tela "
 SISTEMA_PREFIXO = "Sistema "
 
 
-class SessionKey(StrEnum):
-    NOME_POP = "nome_pop"
-    CODIGO = "codigo"
-    VERSAO = "versao"
-    DATA = "data_pop"
-    AREA = "area"
-    AVISO = "aviso"
-    OBJETIVO = "objetivo"
-    ESCOPO = "escopo"
-    CONSULTA = "consulta"
-    DEFINICOES = "definicoes"
-    SECOES = "secoes"
-    REGRAS = "regras"
-    REVISOES = "revisoes"
-    GENERATED_POP = "generated_pop"
-    GENERATED_DOCX = "generated_docx"
-    SAVED_POP_ID = "saved_pop_id"
-    DRAFT_RESTORED = "draft_restored"
-    LOADED_FROM_ID = "loaded_from_id"
-    PAGE = "page"
-    SIM_ACTIVE = "sim_active"
-    SIM_STEP = "sim_step"
-    PREVIEW = "preview"
-
-
 class ValidationMessage(StrEnum):
     NOME_OBRIGATORIO = "Nome do POP é obrigatório."
     OBJETIVO_OBRIGATORIO = "Objetivo é obrigatório."
