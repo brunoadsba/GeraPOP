@@ -1,7 +1,7 @@
 # GeraPOP — Memória de Contexto para LLMs
 
 > Documento de continuidade do projeto. Leia antes de implementar qualquer feature.
-> Última atualização: 2026-08-17 (migração da UI: Streamlit → React 19 + TS + Vite 6 + FastAPI; backend/ e frontend/ novos; UI Streamlit arquivada em `obsoleto/gerapop-streamlit/`; 62 testes — inclui 14 de integração da API; testes E2E Playwright em `frontend/e2e/`)
+> Última atualização: 2026-08-17 (migração da UI concluída e **commitada/pushed**: Streamlit → React 19 + TS + Vite 6 + FastAPI; 62 pytest + 9 testes E2E Playwright; bug do rascunho e flakiness de storage corrigidos; POP-OPE-003 recuperado e replicado fielmente ao PDF de referência)
 
 ---
 
@@ -13,7 +13,7 @@ O usuário preenche um formulário guiado e recebe um arquivo `.docx` formatado,
 
 **Repositório:** https://github.com/brunoadsba/GeraPOP.git  
 **Branch principal:** `main`  
-**Status atual:** MVP v1 completo (validação por seção, unicidade de código, rascunho persistente, backup zip, export JSON) + export **PDF** (reportlab) + **dashboard home** (KPIs/stepper do fluxo SEV) + **preview do POP** (modo leitura) + **simulação RPA** de preenchimento + **design system** (tema light/dark, harness UX/UI em `harnessfiles/`) + **pacote de melhorias visuais v1.1** (sub-cabeçalhos de tela, respostas do sistema, negrito em aspas, cabeçalho de regras, rodapé com página — docx/pdf/fluxo-sev) + **migração de UI para web moderna** (React 19 + TS + Vite 6 no frontend, FastAPI no backend); **62 testes passando** (inclui 14 de integração da API); CI do GitHub desativado por pedido do usuário.
+**Status atual:** MVP v1 completo (validação por seção, unicidade de código, rascunho persistente, backup zip, export JSON) + export **PDF** (reportlab) + **dashboard home** (KPIs/stepper do fluxo SEV) + **preview do POP** (modo leitura) + **simulação RPA** de preenchimento + **design system** (tema light/dark, harness UX/UI em `harnessfiles/`) + **pacote de melhorias visuais v1.1** (sub-cabeçalhos de tela, respostas do sistema, negrito em aspas, cabeçalho de regras, rodapé com página — docx/pdf/fluxo-sev) + **migração de UI para web moderna concluída** (React 19 + TS + Vite 6 no frontend, FastAPI no backend; **commitada e pushed em `main`** — 9 commits semânticos até `e9fcdaa`); **62 pytest + 9 testes E2E Playwright passando** (inclui 14 de integração da API); CI do GitHub desativado por pedido do usuário.
 
 ---
 
@@ -194,9 +194,10 @@ make run-backend  # só a API
 make run-frontend # só o frontend
 
 # Qualidade
-make test         # 62 testes (storage + docx + pdf + models + unicidade + fluxo-sev + 14 de API)
+make test         # 62 pytest (storage + docx + pdf + models + unicidade + fluxo-sev + 14 de API)
 make lint         # ruff check + format --check (Python) e eslint (frontend)
 make format       # auto-format
+cd frontend && npm run test:e2e   # 9 testes E2E Playwright (Chrome do sistema)
 
 # Backup
 make backup       # zip com todos os POPs + rascunho
@@ -253,9 +254,15 @@ Seguir estas regras ao continuar o projeto:
 
 **Fora do repo (estado local):** CI do GitHub desativado por pedido do usuário (`gh workflow disable 330472653` — reativar com `gh workflow enable 330472653 --repo brunoadsba/GeraPOP`). O workflow roda `ruff` e `pytest` na stack nova (backend/ incluído no lint).
 
-**Em andamento (local, NÃO commitado):** **migração de UI concluída** — Stack antiga (Streamlit) → **React 19 + TS + Vite 6** (`frontend/`) consumindo **API FastAPI** (`backend/`). A migração seguiu `implementation_plan.md` (documento raiz): backend REST (CRUD, geração docx/pdf, rascunho, backup, fluxo SEV), frontend replicando dashboard/formulário/preview/histórico/simulação/tema, design system CODEBA migrado para `frontend/src/styles/`. UI Streamlit e sessões (`gerapop/ui/`, `session_draft.py`, `session_codigo.py`) **arquivadas** em `obsoleto/gerapop-streamlit/`; testes E2E AppTest em `obsoleto/tests-streamlit/`; `SessionKey` removido de `constants.py`; funções puras de codigo/fluxo promovidas para `gerapop/codigo.py` e `gerapop/fluxo.py`; `app.py` → `uvicorn backend.main:app`; `Makefile` com `run-backend`/`run-frontend`/`run`; `streamlit` movido para extra opcional do `pyproject.toml`; `requirements.txt` sem streamlit; Dockerfile/compose → API na porta 8000; CI inclui `backend/`. **E2E Playwright adicionado** (`frontend/e2e/gerapop.spec.ts` — 8 testes): cobre dashboard, tema, validação, gerar+baixar docx/pdf, simulação RPA, histórico/backup zip, código duplicado e exclusão; `playwright.config.ts` sobe backend (:8000) + frontend (:5173) com data dir isolado `.e2e-data/` (gitignored) e usa o **Chrome do sistema** via `channel: 'chrome'` (download do Chromium bloqueado na rede); scripts `npm run test:e2e`/`test:e2e:headed`. `npm install` exige `--registry https://registry.yarnpkg.com` (npmjs.org bloqueado na rede). **Pendente: commit em blocos semânticos + push para `main` (com aval do usuário).**
+**Em andamento (local, NÃO commitado):** nada — migração concluída, commitada e pushed. Durante a sessão de 2026-08-17:
+- **E2E Playwright = 9 testes** (`frontend/e2e/gerapop.spec.ts`): dashboard/KPIs, tema claro/escuro, validação de obrigatórios, gerar POP via card de etapa + baixar `.docx`/`.pdf`, simulação RPA, histórico/backup `.zip`, restauração de rascunho, código duplicado (409) e exclusão com confirmação. `playwright.config.ts` sobe backend (:8000) + frontend (:5173) com data dir isolado `.e2e-data/` (gitignored) e usa o **Chrome do sistema** via `channel: 'chrome'` (download do Chromium bloqueado na rede); scripts `npm run test:e2e`/`test:e2e:headed`; `globalSetup` limpa `.e2e-data/` por execução.
+- **Bug do rascunho corrigido** (`FormPage.tsx`): listener de `gerapop:draft:loaded` restaura o form via `LOAD_POP` (merge com `emptyPop()`), guarda `navExplicita` (não sobrescreve `novo_pop`/`carregar`/`editar_id`), ref `aplicadoDraft` (aplica só 1x) e `discard()` no sucesso do gerar e em `onDelCache`.
+- **Flakiness de storage corrigida** (`gerapop/storage.py`): `serialize_pop(pop, created_at=None)` + `_proximo_timestamp()` monotônico; `save_pop` usa timestamp estrito crescente — corrige `test_list_pops_ordena_mais_recente_primeiro` que falhava ~1/20 por empate de `created_at` no mesmo microssegundo (20/20 verde depois).
+- **Commit + push para `main`** (9 commits, working tree limpo): `1a49bfb` archive Streamlit, `4a754f2` feat backend, `51b0194` refactor módulos puros, `52c4694` fix storage, `55d6222` feat frontend + E2E, `4701f01` gitignore frontend, `da7c1ee` build infra, `8f9848a` docs, `e9fcdaa` docs guia.
+- **Guia do usuário atualizado** (`guia-usuario.md`): porta 8501→5173, botão "Carregar modelo" removido (modelo via Início), seção histórico reescrita.
+- **Recuperação e réplica do POP-OPE-003:** o `data/` original não existia mais; os dados de teste vieram de `obsoleto/tests-streamlit/test_home.py`, porém o PDF de referência guardado pelo usuário em `teste/POP-OPE-003_TESTE_003.pdf` continha o POP **completo** (objetivo "TESTE DE OBJETIVO", escopo/aviso "TESTE DE ...", área `OPERAÇÕES PORTUÁRIAS`, seção "Acesso ao Sistema OpenPort" com 16 passos + 3 campos obrigatórios, 3 definições, 3 regras, 2 revisões). Reconstruído com o conteúdo exato extraído do PDF e salvo em `data/pops/20260817_141526_714749_14a15a/` (`pop.json` + `pop.docx` regravados); diff do PDF gerado vs referência confirma conteúdo 100% idêntico, mantendo as melhorias visuais atuais (negrito em aspas, regras R1/R2/R3) por decisão do usuário. Opcionalmente, os dados originais podem ser reconstruídos de `teste/POP-OPE-003_TESTE_003.pdf` (decodificar streams ASCII85+Flate) se outra cópia for necessária.
 
-**Histórico recente (base da migração, já em `main` até `e8edbb5`):** melhorias visuais v1.1 (sub-cabeçalhos `Tela `, respostas `Sistema `, negrito em aspas, cabeçalho de regras, rodapé com página, validação de larguras com gridSpan, convenções no guia-usuario), exclusão de POP na home, guia do usuário e referência visual PS-002. Tudo o que está listado em §8/§9 como "migração" está **sem commit** — recomenda-se commit em blocos semânticos antes do push.
+**Histórico recente (base da migração, já em `main` até `e8edbb5`):** melhorias visuais v1.1 (sub-cabeçalhos `Tela `, respostas `Sistema `, negrito em aspas, cabeçalho de regras, rodapé com página, validação de larguras com gridSpan, convenções no guia-usuario), exclusão de POP na home, guia do usuário e referência visual PS-002. A migração está **commitada e pushed** (§8 acima).
 
 **Nota sobre o harness:** `harnessfiles/` contém o loop de crítica visual (screenshot → LLM com visão → correção) e o `changelog.md` acumulado. O `AGENTS.md` dele rege mudanças de UX/UI: cores novas sempre como `__VAR__` com light/dark, testes verdes antes de finalizar, mudanças estruturais exigem confirmação do usuário.
 
@@ -280,7 +287,8 @@ Seguir estas regras ao continuar o projeto:
 - [x] Simulação RPA de preenchimento
 - [x] Design system: paleta light/dark, componentes custom (hero, KPIs, stepper, badges, tooltips nativos, tabelas, container responsivo)
 - [x] Harness de UX/UI (`harnessfiles/`): AGENTS.md + design_system.md + ui_loop.py + changelog
-- [x] **Migração de UI:** Streamlit → React 19 + TS + Vite 6 (frontend) + FastAPI (backend) — `backend/`, `frontend/`, `implementation_plan.md`
+- [x] **Migração de UI:** Streamlit → React 19 + TS + Vite 6 (frontend) + FastAPI (backend) — `backend/`, `frontend/`, `implementation_plan.md` (commitada e pushed em `main`, `e9fcdaa`)
+- [x] **E2E Playwright** (9 testes, Chrome do sistema) + **fix rascunho** + **fix flaky storage** + **recuperação do POP-OPE-003** idêntico ao PDF de referência (`teste/POP-OPE-003_TESTE_003.pdf`)
 
 ### Gate de negócio (aguarda usuário/equipe)
 - [ ] **Piloto com a equipe** — `docs/piloto.md` (roteiro pronto, GATE explícito)
@@ -311,6 +319,7 @@ Seguir estas regras ao continuar o projeto:
 | Sem auth (v1) | Qualquer pessoa com a URL pode criar/editar — aceito na v1, documentado em `docs/deploy.md` |
 | CI desativado | Reativar antes de nova rodada de desenvolvimento |
 | Testes flaky de storage | `save_pop`/`serialize_pop` agora usam timestamps **monotônicos** (`_proximo_timestamp()` em `gerapop/storage.py`) — dois saves no mesmo microssegundo empatavam no `created_at` e quebrava `test_list_pops_ordena_mais_recente_primeiro` (~1/20); corrigido em 2026-08-17, 20/20 verde |
+| Perda do `data/` original | `data/` de antes da migração não existe mais e não há backups `.zip`; POPs antigos não são recuperáveis (confirmado com o usuário; POP-OPE-003 era dado de teste). Novo padrão: guardar uma cópia PDF/docx do POP em `teste/` como referência e reconstruir o JSON via extração dos streams (fonte de recuperação futura) |
 
 ---
 
@@ -324,6 +333,7 @@ Seguir estas regras ao continuar o projeto:
 | Instruções de uso | `README.md` |
 | Guia do usuário final | `guia-usuario.md` |
 | Modelo POP | `POP_Manobras_CODEBA_v2.docx` (referência externa, não no repo) |
+| Referência do POP teste | `teste/POP-OPE-003_TESTE_003.pdf` (PDF de referência do usuário; fonte para reconstruir `POP-OPE-003`) |
 | Protótipo original (arquivado) | `obsoleto/ideia-files/` (não usar) |
 | Módulo Fluxo SEV | `fluxo-sev/README.md` + `fluxo-sev/memory/000-fluxo-sev-v1.md` |
 | Plano de migração | `implementation_plan.md` (raiz) — Fases 1–6, verificação e arquivamento |
@@ -347,8 +357,10 @@ backend/ (API REST), frontend/ (dashboard, formulário, preview, histórico,
 simulação, tema light/dark), fluxo-sev/ (Projeto 1, HTML/CSS/JS puro).
 UI Streamlit antiga arquivada em obsoleto/gerapop-streamlit (não usar).
 
-Estado: migração concluída (Streamlit → React/FastAPI), domínio e geração intactos;
-62 testes OK (inclui 14 de integração da API), ruff/eslint/tsc OK. CI desativado.
+Estado: migração concluída, commitada e pushed (main até e9fcdaa); domínio e geração
+intactos; 62 pytest + 9 E2E Playwright OK; ruff/eslint/tsc OK; CI desativado.
+Dados: POP-OPE-003 (TESTE 003) recuperado e replicado em data/pops/<id>/ a partir
+do PDF de referência em teste/ (conteúdo completo; mantém melhorias visuais atuais).
 Próximo passo sugerido: validar ponta-a-ponta da nova stack com a equipe
 (docs/piloto.md) — depois os 3 fluxos SEV restantes e a decisão de hospedagem.
 
