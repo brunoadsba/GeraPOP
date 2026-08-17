@@ -42,10 +42,10 @@ def _tabela(linhas: list[tuple[str, str]]) -> str:
     if not linhas:
         return ""
     corpo = "".join(
-        f"<tr><td>{html.escape(str(chave))}</td>" f"<td>{html.escape(str(valor))}</td></tr>"
+        f"<tr><td>{html.escape(str(chave))}</td><td>{html.escape(str(valor))}</td></tr>"
         for chave, valor in linhas
     )
-    return '<table class="pop-preview-table"><tbody>' f"{corpo}</tbody></table>"
+    return f'<table class="pop-preview-table"><tbody>{corpo}</tbody></table>'
 
 
 def _secao(titulo: str) -> None:
@@ -112,8 +112,7 @@ def render_preview(pop: PopData, on_editar: Callable[[], None] | None = None) ->
             if not secao.get("titulo"):
                 continue
             st.markdown(
-                f"<h3 class='pop-preview-h3'>{indice}. "
-                f"{html.escape(str(secao['titulo']))}</h3>",
+                f"<h3 class='pop-preview-h3'>{indice}. {html.escape(str(secao['titulo']))}</h3>",
                 unsafe_allow_html=True,
             )
             passos = [p for p in secao.get("passos", []) if p]

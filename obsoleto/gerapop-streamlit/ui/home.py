@@ -107,8 +107,8 @@ def _render_hero(fluxo: dict, total: int, gerados: int, pendentes: int, pops_sal
         f"""
         <div class="pop-dash-hero">
           <span class="pop-dash-badge">Fluxo SEV</span>
-          <h1>{html.escape(str(fluxo.get('titulo', 'Fluxo SEV')))}</h1>
-          <p>{html.escape(str(fluxo.get('descricao', '')))}</p>
+          <h1>{html.escape(str(fluxo.get("titulo", "Fluxo SEV")))}</h1>
+          <p>{html.escape(str(fluxo.get("descricao", "")))}</p>
         </div>
         <div class="pop-dash-kpis">{kpi_html}</div>
         """,

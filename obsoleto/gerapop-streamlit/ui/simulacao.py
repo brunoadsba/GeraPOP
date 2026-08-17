@@ -45,7 +45,7 @@ EXEMPLO: dict[str, Any] = {
     "data": "15/03/2026",
     "area": "Operações Portuárias",
     "aviso": (
-        "Manobra de atracação somente com prático credenciado a bordo e " "rebocadores disponíveis."
+        "Manobra de atracação somente com prático credenciado a bordo e rebocadores disponíveis."
     ),
     "objetivo": (
         "Padronizar a manobra de atracação de navios no berço designado, "
