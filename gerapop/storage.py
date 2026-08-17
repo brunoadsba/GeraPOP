@@ -9,7 +9,7 @@ import shutil
 import uuid
 import zipfile
 from dataclasses import asdict
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -32,10 +32,10 @@ def _pop_dir(pop_id: str) -> Path:
     return _pops_dir() / pop_id
 
 
-def serialize_pop(pop: PopData) -> dict[str, Any]:
+def serialize_pop(pop: PopData, created_at: datetime | None = None) -> dict[str, Any]:
     """Serializa um PopData no formato reutilizável (metadata + pop)."""
     metadata = {
-        "created_at": datetime.now().isoformat(),
+        "created_at": (created_at or datetime.now()).isoformat(),
         "status": "generated",
         "codigo": pop.codigo,
         "nome_pop": pop.nome_pop,
@@ -44,11 +44,25 @@ def serialize_pop(pop: PopData) -> dict[str, Any]:
     return {"metadata": metadata, "pop": asdict(pop)}
 
 
+_ULTIMO_TIMESTAMP: datetime | None = None
+
+
+def _proximo_timestamp() -> datetime:
+    """Garante timestamps estritamente crescentes entre chamadas no mesmo processo."""
+    global _ULTIMO_TIMESTAMP
+    agora = datetime.now()
+    if _ULTIMO_TIMESTAMP is not None and agora <= _ULTIMO_TIMESTAMP:
+        agora = _ULTIMO_TIMESTAMP + timedelta(microseconds=1)
+    _ULTIMO_TIMESTAMP = agora
+    return agora
+
+
 def save_pop(pop: PopData, docx: bytes | None = None) -> str:
-    pop_id = datetime.now().strftime("%Y%m%d_%H%M%S_%f") + "_" + uuid.uuid4().hex[:6]
+    timestamp = _proximo_timestamp()
+    pop_id = timestamp.strftime("%Y%m%d_%H%M%S_%f") + "_" + uuid.uuid4().hex[:6]
     target = _pop_dir(pop_id)
     target.mkdir(parents=True, exist_ok=True)
-    payload = serialize_pop(pop)
+    payload = serialize_pop(pop, created_at=timestamp)
     _atomic_write(target / "pop.json", json.dumps(payload, ensure_ascii=False, indent=2))
     if docx is not None:
         _atomic_write(target / "pop.docx", docx)
