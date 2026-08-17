@@ -1,7 +1,7 @@
 # GeraPOP — Memória de Contexto para LLMs
 
 > Documento de continuidade do projeto. Leia antes de implementar qualquer feature.
-> Última atualização: 2026-08-13 (exclusão de POP também na home — botão "Excluir" nos cards de POPs salvos, fluxo compartilhado em `ui/exclusao.py`; 87 testes)
+> Última atualização: 2026-08-17 (migração da UI: Streamlit → React 19 + TS + Vite 6 + FastAPI; backend/ e frontend/ novos; UI Streamlit arquivada em `obsoleto/gerapop-streamlit/`; 62 testes — inclui 14 de integração da API; testes E2E Playwright em `frontend/e2e/`)
 
 ---
 
@@ -13,7 +13,7 @@ O usuário preenche um formulário guiado e recebe um arquivo `.docx` formatado,
 
 **Repositório:** https://github.com/brunoadsba/GeraPOP.git  
 **Branch principal:** `main`  
-**Status atual:** MVP v1 completo (validação por seção, unicidade de código, rascunho persistente, backup zip, export JSON) + export **PDF** (reportlab) + **dashboard home** (KPIs/stepper do fluxo SEV) + **preview do POP** (modo leitura) + **simulação RPA** de preenchimento + **design system** (tema light/dark, harness UX/UI em `harnessfiles/`) + **pacote de melhorias visuais v1.1** (sub-cabeçalhos de tela, respostas do sistema, negrito em aspas, cabeçalho de regras, rodapé com página — docx/pdf/fluxo-sev); **87 testes passando**; CI do GitHub desativado por pedido do usuário.
+**Status atual:** MVP v1 completo (validação por seção, unicidade de código, rascunho persistente, backup zip, export JSON) + export **PDF** (reportlab) + **dashboard home** (KPIs/stepper do fluxo SEV) + **preview do POP** (modo leitura) + **simulação RPA** de preenchimento + **design system** (tema light/dark, harness UX/UI em `harnessfiles/`) + **pacote de melhorias visuais v1.1** (sub-cabeçalhos de tela, respostas do sistema, negrito em aspas, cabeçalho de regras, rodapé com página — docx/pdf/fluxo-sev) + **migração de UI para web moderna** (React 19 + TS + Vite 6 no frontend, FastAPI no backend); **62 testes passando** (inclui 14 de integração da API); CI do GitHub desativado por pedido do usuário.
 
 ---
 
@@ -46,22 +46,23 @@ GeraPOP (Projeto 2)  →  dados estruturados  →  Fluxo Interativo SEV (Projeto
 | Item | Escolha |
 |------|---------|
 | Linguagem | Python 3.11 (**obrigatório no WSL** — 3.12 quebra `ctypes`) |
-| UI | Streamlit 1.41 |
+| Backend | FastAPI + uvicorn (substituiu o app Streamlit — arquivado em `obsoleto/gerapop-streamlit/`) |
+| Frontend | React 19 + TypeScript + Vite 6 + Vanilla CSS (design system CODEBA migrado para `frontend/src/styles/`) |
 | Geração doc | python-docx 1.1 |
-| Testes | pytest |
-| Lint/format | ruff |
+| Testes | pytest (`tests/` — inclui `test_api_pops.py` com TestClient; E2E AppTest arquivados em `obsoleto/tests-streamlit/`) + Playwright E2E (`frontend/e2e/` — usa Chrome do sistema via `channel: 'chrome'`) |
+| Lint/format | ruff (Python) + eslint (frontend) |
 | Ambiente | uv + Makefile |
-| Deploy v2 (futuro) | Streamlit Community Cloud (efêmero) ou Docker + volume (persistente) — ver `docs/deploy.md` |
+| Deploy v2 (futuro) | FastAPI + frontend estático em Docker + volume (persistente) — ver `docs/deploy.md` (deploy local por enquanto) |
 | CI | GitHub Actions (`.github/workflows/ci.yml`) — **desativado** (`disabled_manually`, workflow id `330472653`); reativar com `gh workflow enable 330472653 --repo brunoadsba/GeraPOP` |
 | Container | Docker + docker-compose (alternativa ao venv) |
 
-**Persistência (v1.1):** POPs gerados são salvos automaticamente em `data/pops/<id>/` (`pop.json` + `pop.docx`) e listados no app (seção Histórico). Backup = botão "Backup (.zip)" no app ou `python -m gerapop.backup` (gera `data/backups/gerapop_YYYYMMDD_HHMMSS.zip`). `data/` é ignorado pelo git (apenas na raiz). **Exclusão (2026-08-13):** `storage.delete_pop(pop_id)` remove a pasta do POP (validação anti-traversal: o id resolvido precisa estar dentro de `data/pops/`, senão `ValueError`); na UI, botão "Excluir" disponível **no histórico (formulário) e nos cards de "POPs salvos no app" (home)**, com confirmação em 2 cliques ("Excluir" → "Sim, excluir"/"Cancelar") e limpeza de referências de sessão órfãs (`SAVED_POP_ID`, `LOADED_FROM_ID`, `PREVIEW`). Fluxo compartilhado em `ui/exclusao.py` (`CONFIRM_EXCLUIR_KEY`, `confirmar_exclusao`, `limpar_estado_orfao`) — importado por `historico.py` e `home.py` (evita import circular).
+**Persistência (v1.1):** POPs gerados são salvos automaticamente em `data/pops/<id>/` (`pop.json` + `pop.docx`) e listados no app (seção Histórico). Backup = botão "Backup (.zip)" no app ou `python -m gerapop.backup` (gera `data/backups/gerapop_YYYYMMDD_HHMMSS.zip`). `data/` é ignorado pelo git (apenas na raiz). **Exclusão (2026-08-13, migrada em 2026-08-17):** `storage.delete_pop(pop_id)` remove a pasta do POP (validação anti-traversal: o id resolvido precisa estar dentro de `data/pops/`, senão `ValueError`); na UI nova, botão "Excluir" disponível **no histórico (formulário) e nos cards de "POPs salvos no app" (home)**, com confirmação em 2 cliques ("Excluir" → "Sim, excluir"/"Cancelar") via modal no React.
 
-**Rascunho persistente (v1.1):** o formulário salva rascunho a cada alteração (`session_draft.py`); ao voltar, o usuário escolhe continuar o rascunho ou recomeçar. O rascunho é restaurado se o `pop_id` de origem ainda existir no histórico.
+**Rascunho persistente (v1.1):** o formulário salva rascunho a cada alteração — via hook `useDraft` (debounce 2 s → `PUT /api/draft`, `GET /api/draft` no mount, `DELETE /api/draft` após gerar e ao resetar/excluir). Restauração implementada em 2026-08-17: o `FormPage` escuta o evento `gerapop:draft:loaded` e faz `LOAD_POP` (merge com `emptyPop`); não sobrescreve navegação explícita (`novo_pop`/`carregar`/`editar_id`) e aplica o draft apenas uma vez por montagem (ref `aplicadoDraft`). Coberto por teste E2E ("restaura rascunho persistido entre sessões").
 
-**Unicidade de código (v1.1):** a geração é bloqueada se o código já existe no histórico, com exceção para a edição do POP carregado (permissão `{loaded_from_id} ∪ {SAVED_POP_ID}`). Ver `SessionKey.LOADED_FROM_ID`, `session.encontrar_codigo_duplicado`, `verificar_codigo_duplicado`. No Histórico, POPs com códigos repetidos exibem sufixo ` ⚠ (N)`.
+**Unicidade de código (v1.1):** a geração é bloqueada se o código já existe no histórico, com exceção para a edição do POP carregado (permissão `{loaded_from_id}`). Ver `gerapop/codigo.py` (`encontrar_codigo_duplicado`, módulo puro) e `POST /api/pops/check-code`; no frontend, debounce de 400 ms no campo código + 409 do servidor como fallback. No Histórico, POPs com códigos repetidos exibem sufixo ` ⚠ (N)` (`historico_label` em `gerapop/codigo.py`).
 
-**Dados JSON (v1.1):** todo POP salvo gera `pop.json` em `data/pops/<id>/` (formato `{"metadata": ..., "pop": ...}`) — consumido pelo Projeto 1 (Fluxo SEV) e incluído no backup zip. **A UI atual não tem botão de download `.json`** (removido no refactor de `ui/downloads.py`; downloads são `.docx`/`.pdf`). Se o export JSON na UI voltar a ser necessário, reutilizar `get_pop_json_bytes` em `storage.py`.
+**Dados JSON (v1.1):** todo POP salvo gera `pop.json` em `data/pops/<id>/` (formato `{"metadata": ..., "pop": ...}`) — consumido pelo Projeto 1 (Fluxo SEV) e incluído no backup zip. **A UI não tem botão de download `.json`** (downloads são `.docx`/`.pdf`). Se o export JSON na UI voltar a ser necessário, reutilizar `get_pop_json_bytes` em `storage.py`.
 
 **Fidelidade ao modelo (v1.1):** o `.docx` segue o modelo `POP_Manobras_CODEBA_v2` (validado em 2026-08-09 com o modelo real OpenPort): numeração plana automática das seções (1..N), aviso ⚠ dentro do Escopo, regras em tabela `R | texto`, consulta em caixa, fontes 18/13pt. **Campos obrigatórios por seção implementados** (G6): cada seção do Procedimento pode declarar campos obrigatórios, renderizados como tabela (Campo/Descrição) no `.docx` e validados no formulário.
 
@@ -79,60 +80,63 @@ GeraPOP (Projeto 2)  →  dados estruturados  →  Fluxo Interativo SEV (Projeto
 
 ```
 gerapop/
-├── app.py                          # Entrada Streamlit (3 linhas → chama gerapop.ui.run)
+├── app.py                          # Entrada → uvicorn backend.main:app (porta 8000)
 ├── memory.md                       # Este arquivo
 ├── guia-usuario.md                 # Guia do usuário final (seção 10 = campos obrigatórios)
-├── gerapop/
+├── backend/                        # API FastAPI (substitui a entrada Streamlit)
+│   ├── main.py                     # App FastAPI + CORS (localhost:5173) + /api/health
+│   ├── schemas.py                  # Modelos Pydantic (PopCreateRequest, PopListItem, Draft...)
+│   ├── dependencies.py             # pop_from_request / pop_as_dict
+│   └── routers/
+│       ├── pops.py                 # CRUD + validate + check-code + fluxo
+│       ├── generate.py             # POST /api/generate + docx/pdf (+ preview sem salvar)
+│       ├── drafts.py               # Rascunho persistente (GET/PUT/DELETE /api/draft)
+│       └── backup.py               # GET /api/backup (zip)
+├── frontend/                       # React 19 + TypeScript + Vite 6
+│   ├── vite.config.ts              # Proxy /api → http://localhost:8000
+│   ├── src/
+│   │   ├── main.tsx / App.tsx      # Router (/, /formulario, /preview/:type/:ref)
+│   │   ├── api/client.ts           # Fetch wrappers tipados (listPops, generatePop, download...)
+│   │   ├── hooks/                  # useTheme, usePopForm (useReducer), useDraft (auto-save)
+│   │   ├── components/             # Layout (Sidebar), Dashboard (Hero/Kpi/Stepper/Card),
+│   │   │                           #   Form (seções do POP + DynamicList), Simulation, History, ui/
+│   │   ├── pages/                  # HomePage, FormPage, PreviewPage
+│   │   ├── types/pop.ts            # Interfaces TS espelhando PopData
+│   │   └── styles/                 # variables.css (tokens CODEBA light/dark) + global/dashboard/form/preview
+│   └── public/                     # logos + favicon (copiados de gerapop/assets/)
+├── gerapop/                        # Lógica de domínio (INALTERADA) — sem Streamlit
 │   ├── __init__.py                 # Exporta PopData, gerar_docx, gerar_pdf
-│   ├── constants.py                # SessionKey, ValidationMessage, estilos docx/pdf, MIME
+│   ├── constants.py                # ValidationMessage, estilos docx/pdf, MIME (SessionKey REMOVIDO)
+│   ├── codigo.py                   # Unicidade de código + rótulo histórico (módulos puros)
+│   ├── fluxo.py                    # carregar fluxo SEV + POP de referência (módulos puros)
 │   ├── models.py                   # PopData, TypedDicts, validação, factories
-│   ├── session_codigo.py           # Unicidade de código + estado de edição (LOADED_FROM)
-│   ├── session_draft.py            # Estado Streamlit (listas dinâmicas, geração, rascunho)
-│   ├── storage.py                  # Persistência em disco (pop.json + pop.docx)
+│   ├── storage.py                  # Persistência em disco (pop.json + pop.docx) + backup zip
 │   ├── backup.py                   # CLI de backup zip (python -m gerapop.backup)
 │   ├── assets/                     # Logos CODEBA (light/dark) usados na sidebar
-│   ├── services/
-│   │   ├── documento.py            # Modelo neutro de blocos (Titulo/Paragrafo/Aviso/Tabela)
-│   │   ├── docx/
-│   │   │   ├── styles.py           # Formatação de células Word
-│   │   │   └── builder.py          # Renderiza os blocos neutros em .docx
-│   │   └── pdf/
-│   │       └── builder.py          # Renderiza os blocos neutros em PDF (reportlab)
-│   └── ui/
-│       ├── main.py                 # Orquestração (sidebar + navegação + form + download)
-│       ├── home.py                 # Dashboard: hero, KPIs, stepper, cards do fluxo SEV
-│       ├── downloads.py            # Botões .docx/.pdf reutilizáveis (MIME + nomes)
-│       ├── historico.py            # Histórico: listagem, download, edição e backup zip
-│       ├── simulacao.py            # Simulação RPA de preenchimento (demo)
-│       ├── preview.py              # Tela de leitura do POP (modo documento)
-│       ├── form/                   # Formulário por área
-│       │   ├── widgets.py          # Badges OBRIGATÓRIO/OPCIONAL + cabeçalho
-│       │   ├── identificacao.py    # Identificação (nome, código, versão, data, área, aviso)
-│       │   ├── conteudo.py         # Objetivo/escopo/consulta + build_pop + try_generate
-│       │   └── dinamicas.py        # Definições, procedimento, regras, revisões
-│       └── theme.py / theme.css    # Tokens __VAR__ light/dark + estilos custom
-├── harnessfiles/                   # Harness de UX/UI (AGENTS.md, design_system.md, ui_loop.py)
-├── fluxo-sev/                      # Projeto 1 — diagrama interativo (HTML/CSS/JS puro)
-│   ├── index.html, app.js, style.css
-│   ├── schema/                     # fluxo.schema.json + pop.schema.json
-│   ├── data/                       # VERSIONADO (fluxo-desembarque.json + pops/pop-desembarque.json)
-│   └── memory/000-fluxo-sev-v1.md  # Decisões do módulo
+│   └── services/
+│       ├── documento.py            # Modelo neutro de blocos (Titulo/Paragrafo/Aviso/Tabela)
+│       ├── docx/
+│       │   ├── styles.py           # Formatação de células Word
+│       │   └── builder.py          # Renderiza os blocos neutros em .docx
+│       └── pdf/
+│           └── builder.py          # Renderiza os blocos neutros em PDF (reportlab)
 ├── tests/
-│   ├── conftest.py                 # Helpers E2E compartilhados (APP_PATH, _gerar_pop, downloads)
+│   ├── conftest.py                 # Fixtures (data dir tmp, pop_minimo/pop_invalido)
+│   ├── test_api_pops.py            # Integração da API FastAPI (14 testes)
 │   ├── test_docx_builder.py
-│   ├── test_e2e_app.py             # E2E via AppTest
-│   ├── test_e2e_codigo_duplicado.py# E2E unicidade de código
-│   ├── test_validacao_codigo.py    # Unit unicidade + label de histórico
+│   ├── test_validacao_codigo.py    # Unit unicidade + label de histórico (via gerapop.codigo)
 │   ├── test_fluxo_sev.py           # Valida dados estáticos do fluxo-sev
-│   ├── test_home.py                # Dashboard (hero, KPIs, stepper, cards)
 │   ├── test_models.py
-│   ├── test_simulacao.py           # Simulação RPA (fluxo de preenchimento)
 │   └── test_storage.py
+├── obsoleto/
+│   ├── ideia-files/                # Protótipo original (versionado)
+│   ├── gerapop-streamlit/          # UI Streamlit arquivada (ui/, session_draft.py, session_codigo.py)
+│   ├── tests-streamlit/            # E2E AppTest arquivados (test_e2e_app, test_home, ...)
+│   └── ambiente-fronend.md, telas-recriadas.html
 ├── docs/
 │   ├── plano.md                    # Roadmap completo
 │   ├── piloto.md                   # Roteiro do piloto com a equipe (GATE aguarda usuário)
 │   └── deploy.md                   # Opções de hospedagem (Cloud efêmero vs Docker)
-├── obsoleto/                       # Arquivamento versionado (ideia-files/, telas-recriadas.html, ambiente-fronend.md)
 ├── Makefile
 ├── pyproject.toml
 ├── requirements.txt
@@ -144,15 +148,16 @@ gerapop/
 
 | Camada | Arquivo(s) | Responsabilidade |
 |--------|-----------|------------------|
-| Entrada | `app.py` | Bootstrap Streamlit |
+| Entrada | `app.py` | Bootstrap FastAPI (uvicorn) |
+| API | `backend/` | REST: CRUD, geração docx/pdf, rascunho, backup, fluxo |
+| Frontend | `frontend/` | React/TS: dashboard, formulário, preview, histórico, simulação, tema |
 | Domínio | `models.py` | `PopData`, validação, normalização |
 | Constantes | `constants.py` | Enums, magic strings, config docx |
-| Sessão | `session_codigo.py`, `session_draft.py` | `st.session_state`, listas dinâmicas, rascunho, unicidade |
-| Serviço | `services/docx/` | Geração `.docx` (sem dependência de Streamlit) |
+| Serviço | `services/docx/`, `services/pdf/` | Geração `.docx`/`.pdf` (sem dependência de Streamlit) |
 | Persistência | `storage.py`, `backup.py` | Disco + backup zip (CLI) |
-| UI | `ui/` | Formulário, histórico e download (depende de Streamlit) |
+| Módulos puros | `codigo.py`, `fluxo.py` | Regras reutilizadas por API e frontend |
 
-**Regra:** lógica de negócio e geração de documento **nunca** devem ficar em `app.py` ou `ui/` — manter testável sem Streamlit.
+**Regra:** lógica de negócio e geração de documento **nunca** devem ficar em `app.py`, `backend/` ou `frontend/` — manter testável sem web.
 
 ---
 
@@ -172,7 +177,7 @@ Estrutura baseada em `POP_Manobras_CODEBA_v2.docx`:
 Campos obrigatórios na validação: **nome, código, área, objetivo**. Código deve ser **único** no histórico (bloqueio com exceção para edição do POP carregado).
 
 Classe principal: `PopData` em `gerapop/models.py`.  
-Chaves de sessão: enum `SessionKey` em `gerapop/constants.py`.
+Contrato frontend ↔ backend: schemas Pydantic em `backend/schemas.py` ↔ interfaces TS em `frontend/src/types/pop.ts`.
 
 ---
 
@@ -181,13 +186,16 @@ Chaves de sessão: enum `SessionKey` em `gerapop/constants.py`.
 ```bash
 # Setup (primeira vez)
 make install-dev
+cd frontend && npm install
 
 # Desenvolvimento
-make run          # http://localhost:8501
+make run          # backend (http://localhost:8000) + frontend (http://localhost:5173)
+make run-backend  # só a API
+make run-frontend # só o frontend
 
 # Qualidade
-make test         # 87 testes (storage + docx + pdf + models + e2e + unicidade + home + simulação + fluxo-sev)
-make lint         # ruff check + format --check
+make test         # 62 testes (storage + docx + pdf + models + unicidade + fluxo-sev + 14 de API)
+make lint         # ruff check + format --check (Python) e eslint (frontend)
 make format       # auto-format
 
 # Backup
@@ -197,7 +205,9 @@ make backup       # zip com todos os POPs + rascunho
 make docker-run
 ```
 
-**Problema conhecido:** Python 3.12 no WSL2 causa segfault no Streamlit (`ctypes` corrompido). Sempre usar **Python 3.11** (`.python-version` = `3.11`).
+**Notas:**
+- **Registro npm corporativo:** `registry.npmjs.org` retorna 403/timeout na rede atual — usar `npm install --registry https://registry.yarnpkg.com`.
+- **Problema conhecido:** Python 3.12 no WSL2 causa segfault no Streamlit (`ctypes` corrompido). Sempre usar **Python 3.11** (`.python-version` = `3.11`).
 
 ---
 
@@ -217,7 +227,7 @@ Seguir estas regras ao continuar o projeto:
 
 ---
 
-## 8. Estado atual do repositório (2026-08-09)
+## 8. Estado atual do repositório (2026-08-17)
 
 ### Já no GitHub (`main`) — em ordem cronológica
 - `feat(gerapop): estrutura inicial do MVP com Streamlit e geração de POP`
@@ -241,15 +251,15 @@ Seguir estas regras ao continuar o projeto:
 
 > Detalhes da limpeza: `ideia-files/` (protótipo original) movido para `obsoleto/ideia-files/` (pasta versionada de arquivamento — convenção §7.9); `.gitignore` `data/` → `/data/` (só raiz) para que `fluxo-sev/data/` (essencial ao `test_fluxo_sev.py`) fosse versionado; referências a `ideia-files/` removidas de `pyproject.toml` (ruff exclude) e `.ruffignore`; lixo local não versionado removido (`gerapop.egg-info/`, caches).
 
-**Fora do repo (estado local):** CI do GitHub desativado por pedido do usuário (`gh workflow disable 330472653` — reativar com `gh workflow enable 330472653 --repo brunoadsba/GeraPOP`).
+**Fora do repo (estado local):** CI do GitHub desativado por pedido do usuário (`gh workflow disable 330472653` — reativar com `gh workflow enable 330472653 --repo brunoadsba/GeraPOP`). O workflow roda `ruff` e `pytest` na stack nova (backend/ incluído no lint).
 
-**Em andamento (local, não pushado):** refactor de clean code — modelo neutro de blocos em `services/documento.py` consumido por `docx/builder.py` e `pdf/builder.py` (elimina duplicação); botões de download unificados em `ui/downloads.py`; `form_sections.py` → pacote `ui/form/` (widgets, identificacao, conteudo, dinamicas); `ui/historico.py` extraído de `main.py`; `session.py` → `session_codigo.py` + `session_draft.py`; `home.py` enxuto (helpers de card); `telas-recriadas.html` e `ambiente-fronend.md` arquivados em `obsoleto/`. 82 testes verdes + ruff limpo. Commitado localmente em 8 commits semânticos; pendente: push para `main` (com aval do usuário).
+**Em andamento (local, NÃO commitado):** **migração de UI concluída** — Stack antiga (Streamlit) → **React 19 + TS + Vite 6** (`frontend/`) consumindo **API FastAPI** (`backend/`). A migração seguiu `implementation_plan.md` (documento raiz): backend REST (CRUD, geração docx/pdf, rascunho, backup, fluxo SEV), frontend replicando dashboard/formulário/preview/histórico/simulação/tema, design system CODEBA migrado para `frontend/src/styles/`. UI Streamlit e sessões (`gerapop/ui/`, `session_draft.py`, `session_codigo.py`) **arquivadas** em `obsoleto/gerapop-streamlit/`; testes E2E AppTest em `obsoleto/tests-streamlit/`; `SessionKey` removido de `constants.py`; funções puras de codigo/fluxo promovidas para `gerapop/codigo.py` e `gerapop/fluxo.py`; `app.py` → `uvicorn backend.main:app`; `Makefile` com `run-backend`/`run-frontend`/`run`; `streamlit` movido para extra opcional do `pyproject.toml`; `requirements.txt` sem streamlit; Dockerfile/compose → API na porta 8000; CI inclui `backend/`. **E2E Playwright adicionado** (`frontend/e2e/gerapop.spec.ts` — 8 testes): cobre dashboard, tema, validação, gerar+baixar docx/pdf, simulação RPA, histórico/backup zip, código duplicado e exclusão; `playwright.config.ts` sobe backend (:8000) + frontend (:5173) com data dir isolado `.e2e-data/` (gitignored) e usa o **Chrome do sistema** via `channel: 'chrome'` (download do Chromium bloqueado na rede); scripts `npm run test:e2e`/`test:e2e:headed`. `npm install` exige `--registry https://registry.yarnpkg.com` (npmjs.org bloqueado na rede). **Pendente: commit em blocos semânticos + push para `main` (com aval do usuário).**
 
-**Pendências não commitadas (acumuladas após os 8 commits):** autosave do rascunho + fix botão "Gerar POP" (duplo clique) + fix home (texto/KPI) + docs (README, guia-usuario, memory) + ajustes de larguras do docx + slug com acentos no nome do arquivo + **pacote de melhorias visuais v1.1** (sub-cabeçalhos `Tela `, respostas `Sistema `, negrito em aspas, cabeçalho de regras, rodapé com página, validação de larguras com gridSpan, convenções no guia-usuario). Recomendado: commit em blocos semânticos antes do push.
+**Histórico recente (base da migração, já em `main` até `e8edbb5`):** melhorias visuais v1.1 (sub-cabeçalhos `Tela `, respostas `Sistema `, negrito em aspas, cabeçalho de regras, rodapé com página, validação de larguras com gridSpan, convenções no guia-usuario), exclusão de POP na home, guia do usuário e referência visual PS-002. Tudo o que está listado em §8/§9 como "migração" está **sem commit** — recomenda-se commit em blocos semânticos antes do push.
 
-**Nota sobre o harness:** `harnessfiles/` contém o loop de crítica visual (screenshot → LLM com visão → correção) e o `changelog.md` acumulado. O `AGENTS.md` dele rege mudanças de UX/UI: cores novas sempre como `__VAR__` com light/dark, 82 testes verdes antes de finalizar, mudanças estruturais exigem confirmação do usuário.
+**Nota sobre o harness:** `harnessfiles/` contém o loop de crítica visual (screenshot → LLM com visão → correção) e o `changelog.md` acumulado. O `AGENTS.md` dele rege mudanças de UX/UI: cores novas sempre como `__VAR__` com light/dark, testes verdes antes de finalizar, mudanças estruturais exigem confirmação do usuário.
 
-**Próxima ação sugerida:** executar o piloto com a equipe (`docs/piloto.md`) — gate que desbloqueia nuvem e os 3 fluxos SEV restantes.
+**Próxima ação sugerida:** validar ponta-a-ponta a nova stack (backend + frontend) com a equipe (`docs/piloto.md`) — gate que desbloqueia nuvem e os 3 fluxos SEV restantes.
 
 ---
 
@@ -270,12 +280,14 @@ Seguir estas regras ao continuar o projeto:
 - [x] Simulação RPA de preenchimento
 - [x] Design system: paleta light/dark, componentes custom (hero, KPIs, stepper, badges, tooltips nativos, tabelas, container responsivo)
 - [x] Harness de UX/UI (`harnessfiles/`): AGENTS.md + design_system.md + ui_loop.py + changelog
+- [x] **Migração de UI:** Streamlit → React 19 + TS + Vite 6 (frontend) + FastAPI (backend) — `backend/`, `frontend/`, `implementation_plan.md`
 
 ### Gate de negócio (aguarda usuário/equipe)
 - [ ] **Piloto com a equipe** — `docs/piloto.md` (roteiro pronto, GATE explícito)
 
 ### Médio prazo (GeraPOP v2)
-- [ ] Hospedagem: Streamlit Community Cloud (efêmero) ou Docker + volume (persistente) — `docs/deploy.md`
+- [ ] Revalidar o app novo (React) ponta-a-ponta com a equipe (piloto) e ajustar Docker/CI da stack nova se necessário
+- [ ] Hospedagem da nova stack (FastAPI + frontend estático): Docker + volume ou serviço similar — `docs/deploy.md`
 - [ ] Reativar CI (`gh workflow enable 330472653`)
 - [ ] Catálogo local de POPs (SQLite) — ideia, não iniciada
 - [ ] Vínculo integrado GeraPOP → fluxo-sev (hoje: copiar `.json` manualmente)
@@ -298,6 +310,7 @@ Seguir estas regras ao continuar o projeto:
 | Duplicar código | Manter DRY; extrair para `constants` ou `services` |
 | Sem auth (v1) | Qualquer pessoa com a URL pode criar/editar — aceito na v1, documentado em `docs/deploy.md` |
 | CI desativado | Reativar antes de nova rodada de desenvolvimento |
+| Testes flaky de storage | `save_pop`/`serialize_pop` agora usam timestamps **monotônicos** (`_proximo_timestamp()` em `gerapop/storage.py`) — dois saves no mesmo microssegundo empatavam no `created_at` e quebrava `test_list_pops_ordena_mais_recente_primeiro` (~1/20); corrigido em 2026-08-17, 20/20 verde |
 
 ---
 
@@ -313,7 +326,9 @@ Seguir estas regras ao continuar o projeto:
 | Modelo POP | `POP_Manobras_CODEBA_v2.docx` (referência externa, não no repo) |
 | Protótipo original (arquivado) | `obsoleto/ideia-files/` (não usar) |
 | Módulo Fluxo SEV | `fluxo-sev/README.md` + `fluxo-sev/memory/000-fluxo-sev-v1.md` |
-| Config Streamlit | `.streamlit/config.toml` |
+| Plano de migração | `implementation_plan.md` (raiz) — Fases 1–6, verificação e arquivamento |
+| Config backend/frontend | CORS em `backend/main.py`; proxy `/api` em `frontend/vite.config.ts` |
+| Config Streamlit (legado) | `.streamlit/config.toml` (não usado pela stack nova) |
 | CI | `.github/workflows/ci.yml` (desativado) |
 
 ---
@@ -321,21 +336,21 @@ Seguir estas regras ao continuar o projeto:
 ## 12. Prompt de continuidade (copiar para nova sessão)
 
 ```
-Contexto: Projeto GeraPOP (CODEBA) — gerador de POP em Streamlit + python-docx + reportlab.
+Contexto: Projeto GeraPOP (CODEBA) — gerador de POP com backend FastAPI + frontend
+React 19/TS/Vite 6 + python-docx + reportlab.
 Leia memory.md e docs/plano.md antes de codar.
 
-Stack: Python 3.11, Streamlit, python-docx, reportlab, pytest, ruff.
+Stack: Python 3.11, FastAPI (backend/), React+TS+Vite (frontend/), python-docx,
+reportlab, pytest, ruff, eslint.
 Arquitetura: gerapop/models (domínio), services/docx + services/pdf (geração),
-ui/ (formulário, home, preview, simulação, theme), storage/backup (persistência),
-fluxo-sev/ (Projeto 1, HTML/CSS/JS puro), harnessfiles/ (harness de UX/UI).
+backend/ (API REST), frontend/ (dashboard, formulário, preview, histórico,
+simulação, tema light/dark), fluxo-sev/ (Projeto 1, HTML/CSS/JS puro).
+UI Streamlit antiga arquivada em obsoleto/gerapop-streamlit (não usar).
 
-Estado: MVP v1 completo (validação por seção, unicidade de código, rascunho,
-backup zip, export JSON + PDF, dashboard home, preview, simulação, design system
-light/dark, harness UX/UI, melhorias visuais v1.1 — sub-cabeçalhos Tela/,
-respostas Sistema/, negrito em aspas, cabeçalho de regras, rodapé com página) —
-82 testes OK. CI desativado.
-Próximo passo sugerido: piloto com a equipe (docs/piloto.md) — depois os 3 fluxos
-SEV restantes e a decisão de hospedagem (docs/deploy.md).
+Estado: migração concluída (Streamlit → React/FastAPI), domínio e geração intactos;
+62 testes OK (inclui 14 de integração da API), ruff/eslint/tsc OK. CI desativado.
+Próximo passo sugerido: validar ponta-a-ponta da nova stack com a equipe
+(docs/piloto.md) — depois os 3 fluxos SEV restantes e a decisão de hospedagem.
 
-NÃO implementar: nuvem, auth, multi-agente, migração de stack antes do piloto.
+NÃO implementar: nuvem, auth, multi-agente, migração de stack adicional sem validação.
 ```
