@@ -1,0 +1,126 @@
+/* ============================================================
+   Preview — modo leitura do POP
+   ============================================================ */
+
+.preview-hero {
+  background: linear-gradient(135deg, var(--hero-g1), var(--hero-g2));
+  border-radius: 12px;
+  padding: 1.2rem 1.4rem;
+  margin: 0.6rem 0 1rem;
+  color: #ffffff;
+  animation: fade-in 0.3s ease;
+}
+
+.preview-hero h1 {
+  margin: 0 0 0.5rem;
+  font-size: 1.35rem;
+  line-height: 1.25;
+  color: #ffffff;
+}
+
+.preview-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.preview-chip {
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 999px;
+  padding: 0.15rem 0.65rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  font-family: var(--mono);
+}
+
+.preview-aviso {
+  background: var(--hover);
+  border-left: 3px solid var(--accent);
+  border-radius: 6px;
+  padding: 0.6rem 0.9rem;
+  margin: 0.6rem 0;
+  font-size: 0.9rem;
+  color: var(--text);
+}
+
+.preview-eyebrow {
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--accent);
+  border-top: 1px solid var(--border);
+  margin: 2rem 0 0.4rem;
+  padding-top: 1.2rem;
+}
+
+.preview-h2 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin: 0.1rem 0 0.5rem;
+  color: var(--text);
+}
+
+.preview-h3 {
+  font-size: 0.92rem;
+  font-weight: 700;
+  margin: 0.8rem 0 0.3rem;
+  color: var(--text);
+}
+
+.preview-passo {
+  padding: 0.2rem 0 0.2rem 1.1rem;
+  position: relative;
+}
+
+.preview-passo::before {
+  content: '•';
+  position: absolute;
+  left: 0.35rem;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.preview-regra {
+  padding: 0.2rem 0;
+  font-size: 0.9rem;
+}
+
+.preview-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.6rem 0 1.2rem;
+  font-size: 0.86rem;
+}
+
+.preview-table td {
+  border: none;
+  border-bottom: 1px solid var(--border);
+  padding: 0.4rem 0.6rem;
+  vertical-align: top;
+}
+
+.preview-table tr:last-child td {
+  border-bottom: none;
+}
+
+.preview-table td:first-child {
+  width: 140px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.preview-table td:last-child {
+  color: var(--muted);
+}
+
+.preview-actions {
+  display: flex;
+  gap: 0.8rem;
+  align-items: center;
+  flex-wrap: wrap;
+  margin: 0.6rem 0 1rem;
+}
