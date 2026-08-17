@@ -26,7 +26,7 @@ O GeraPOP transforma o que você digita num documento pronto para usar.
 
 1. Peça para alguém do setor de tecnologia abrir o programa.
 2. O GeraPOP abre no seu navegador de internet (Chrome, Edge, etc.), em um
-   endereço parecido com: `http://localhost:8501`.
+   endereço parecido com: `http://localhost:5173`.
 
 **Se a ferramenta está publicada na internet:**
 
@@ -87,14 +87,15 @@ Vá para **📝 Formulário** no menu lateral.
 
 No topo do formulário você encontra:
 
-- **Modelo de referência** — botão **"Carregar modelo"** que traz um POP de
-  exemplo preenchido (útil para ver como um POP completo fica; substitui o
-  que você tiver digitado).
 - **Simulação de preenchimento (RPA)** — um painel com o botão **"▶ Iniciar
   simulação"**: um robô preenche o formulário automaticamente, campo a
   campo, mostrando na prática como cada campo deve ser preenchido. Serve
   como demonstração; você pode parar a simulação a qualquer momento e editar
   à vontade.
+
+> Se quiser ver um POP de exemplo preenchido (o **modelo de referência**),
+> abra **🏠 Início** e clique em **"Ver modelo no formulário"** no card do
+> modelo — atenção: isso substitui o que estiver no formulário.
 
 ### 5.1 Dados principais (parte de cima)
 
@@ -228,7 +229,7 @@ local que o navegador escolher).
 
 Os POPs gerados ficam guardados na própria ferramenta.
 
-1. No final da página do Formulário, abra **"Histórico de POPs gerados"**.
+1. No final da página do Formulário, use **"Histórico de POPs gerados"**.
 2. Escolha o POP na lista (ela mostra a data, o código e o nome).
 3. Você pode:
    - **"Visualizar"** — abrir o POP em modo de leitura (sem baixar).
