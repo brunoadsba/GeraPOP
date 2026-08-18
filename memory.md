@@ -1,7 +1,7 @@
 # GeraPOP — Memória de Contexto para LLMs
 
 > Documento de continuidade do projeto. Leia antes de implementar qualquer feature.
-> Última atualização: 2026-08-18 (reformulação completa de UX/UI do frontend React concluída: design system com glassmorphism, Inter via Google Fonts, biblioteca de ícones SVG inline `Icons.tsx` substituindo emojis, notificações toast flutuantes `Toast.tsx`, accordions colapsáveis `Accordion.tsx` com badges, barra de progresso de preenchimento no formulário, hero decorativo com ação rápida, KPIs animados em CountUp, stepper com linhas conectoras, modais com backdrop blur; 62 pytest + 9 testes E2E Playwright 100% passando).
+> Última atualização: 2026-08-18 (reestruturação de UX/UI concluída: navegação no Sidebar com grupos semânticos "Visão Geral" e "Criação", novas páginas dedicadas `/fluxo` [Esteira do Fluxo SEV com abas de filtro] e `/pops` [Meus POPs / Biblioteca com busca em tempo real e backup], botão de edição instantânea na visualização de POPs, KPIs do dashboard alinhados com a esteira e isolamento estrito dos servidores de teste E2E; 62 pytest + 9 testes E2E Playwright 100% passando).
 
 ---
 
@@ -13,7 +13,7 @@ O usuário preenche um formulário guiado e recebe um arquivo `.docx` formatado,
 
 **Repositório:** https://github.com/brunoadsba/GeraPOP.git  
 **Branch principal:** `main`  
-**Status atual:** MVP v1 completo (validação por seção, unicidade de código, rascunho persistente, backup zip, export JSON) + export **PDF** (reportlab) + **dashboard home** (KPIs/stepper do fluxo SEV) + **preview do POP** (modo leitura) + **simulação RPA** de preenchimento + **design system v2 sênior** (tema light/dark, glassmorphism, ícones SVG inline, toasts, accordions, progresso de formulário, KPIs animados) + **pacote de melhorias visuais v1.1** (sub-cabeçalhos de tela, respostas do sistema, negrito em aspas, cabeçalho de regras, rodapé com página — docx/pdf/fluxo-sev) + **migração de UI para web moderna concluída** (React 19 + TS + Vite 6 no frontend, FastAPI no backend); **62 pytest + 9 testes E2E Playwright 100% passando** (inclui 14 de integração da API); CI do GitHub desativado por pedido do usuário.
+**Status atual:** MVP v1 completo (validação por seção, unicidade de código, rascunho persistente, backup zip, export JSON) + export **PDF** (reportlab) + **dashboard home** (KPIs/stepper do fluxo SEV) + **preview do POP** (modo leitura com botão Editar) + **simulação RPA** de preenchimento + **design system v2 sênior** (sidebar com navegação estruturada, `/fluxo` com abas, `/pops` com busca, tema light/dark, glassmorphism, ícones SVG inline, toasts, accordions, progresso de formulário) + **pacote de melhorias visuais v1.1** (sub-cabeçalhos de tela, respostas do sistema, negrito em aspas, cabeçalho de regras, rodapé com página — docx/pdf/fluxo-sev) + **migração de UI para web moderna concluída** (React 19 + TS + Vite 6 no frontend, FastAPI no backend); **62 pytest + 9 testes E2E Playwright 100% passando** (inclui 14 de integração da API); CI do GitHub desativado por pedido do usuário.
 
 ---
 

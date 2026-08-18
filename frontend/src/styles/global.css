@@ -181,6 +181,26 @@ button {
   flex-shrink: 0;
 }
 
+.sidebar-section-title {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  padding: 0.8rem 0.75rem 0.35rem;
+  opacity: 0.75;
+}
+
+.nav-link-badge {
+  margin-left: auto;
+  font-size: 0.72rem;
+  padding: 0.1rem 0.45rem;
+  border-radius: 99px;
+  background: var(--border);
+  color: var(--muted);
+  font-weight: 600;
+}
+
 .sidebar-footer {
   border-top: 1px solid var(--border);
   padding-top: 0.9rem;

@@ -30,7 +30,7 @@ export default defineConfig({
     {
       command: 'npx vite --port 5199',
       cwd: import.meta.dirname,
-      env: { VITE_API_URL: 'http://127.0.0.1:8199/api' },
+      env: { VITE_BACKEND_URL: 'http://127.0.0.1:8199' },
       url: 'http://localhost:5199',
       reuseExistingServer: false,
       timeout: 30_000,
