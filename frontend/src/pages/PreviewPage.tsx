@@ -3,7 +3,6 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import {
   downloadDocx,
   downloadPdf,
-  getDraft,
   getFluxoPop,
   getPop,
   previewDocx,
@@ -11,10 +10,9 @@ import {
   triggerDownload,
 } from '../api/client';
 import { Button } from '../components/ui/Button';
-import { IconArrowLeft, IconDownload } from '../components/ui/Icons';
+import { IconArrowLeft, IconDownload, IconEdit } from '../components/ui/Icons';
 import { showToast } from '../components/ui/Toast';
 import type { PopData } from '../types/pop';
-import { emptyPop } from '../types/pop';
 
 export function PreviewPage() {
   const { type, ref } = useParams<{ type: string; ref: string }>();
@@ -33,20 +31,10 @@ export function PreviewPage() {
     if (!ref) return;
 
     const promise = type === 'fluxo' ? getFluxoPop(ref) : getPop(ref);
-    Promise.all([promise, getDraft()])
-      .then(([data, draft]) => {
+    promise
+      .then((data) => {
         if (data) {
-          // If a draft exists for this POP (loaded_from_id matches ref, or codigo matches), overlay draft edits
-          if (
-            draft?.form &&
-            (draft.loaded_from_id === ref || (draft.form.codigo && draft.form.codigo === data.codigo))
-          ) {
-            setPop({ ...emptyPop(), ...data, ...draft.form });
-          } else {
-            setPop(data);
-          }
-        } else if (draft?.form) {
-          setPop({ ...emptyPop(), ...draft.form });
+          setPop(data);
         } else {
           setNaoEncontrado(true);
         }
@@ -61,6 +49,18 @@ export function PreviewPage() {
       document.title = 'GeraPOP — CODEBA';
     };
   }, [pop]);
+
+  const handleEditar = () => {
+    if (type === 'salvo' && ref) {
+      navigate('/formulario', { state: { editar_id: ref } });
+    } else if (type === 'fluxo' && ref) {
+      navigate('/formulario', { state: { carregar: pop } });
+    } else if (pop) {
+      navigate('/formulario', { state: { carregar: pop } });
+    } else {
+      navigate('/formulario');
+    }
+  };
 
   const baixar = async (tipo: 'docx' | 'pdf') => {
     if (!pop) return;
@@ -107,6 +107,9 @@ export function PreviewPage() {
       <div className="preview-actions">
         <Button variant="ghost" icon={<IconArrowLeft size={14} />} onClick={() => navigate('/')}>
           Voltar ao painel
+        </Button>
+        <Button icon={<IconEdit size={14} />} onClick={handleEditar}>
+          Editar POP
         </Button>
         <Button icon={<IconDownload size={14} />} onClick={() => baixar('docx')}>
           Baixar .docx

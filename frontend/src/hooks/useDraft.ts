@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { clearDraft, getDraft, saveDraft } from '../api/client';
 import type { DraftPayload, PopData } from '../types/pop';
+import { emptyPop } from '../types/pop';
 
 const DEBOUNCE_MS = 2000;
 
@@ -16,7 +17,7 @@ export function useDraft({ state, loadedFromId, enabled = true }: UseDraftOption
 
   const stateRef = useRef(state);
   const loadedFromIdRef = useRef(loadedFromId);
-  const lastSavedStateStr = useRef<string>('');
+  const lastSavedStateStr = useRef<string>(JSON.stringify(emptyPop()));
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   stateRef.current = state;
