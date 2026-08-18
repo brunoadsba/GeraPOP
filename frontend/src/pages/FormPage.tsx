@@ -144,7 +144,17 @@ export function FormPage() {
 
   const handleManualSave = async () => {
     await saveNow();
-    showToast('Rascunho salvo com sucesso!', 'success');
+    if (loadedFromId || validateLocal(state).length === 0) {
+      try {
+        const result = await generatePop(state, loadedFromId ? [loadedFromId] : []);
+        if (!loadedFromId) {
+          setLoadedFromId(result.pop_id);
+        }
+      } catch {
+        // Ignore backend validation error during manual draft save
+      }
+    }
+    showToast('Alterações salvas com sucesso!', 'success');
   };
 
   const gerar = async () => {

@@ -171,6 +171,7 @@ def gerar_backup_zip() -> bytes:
 
 
 def _atomic_write(path: Path, content: str | bytes) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
     data = content.encode("utf-8") if isinstance(content, str) else content
     tmp = path.with_suffix(path.suffix + ".tmp")
     tmp.write_bytes(data)

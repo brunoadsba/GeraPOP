@@ -3,6 +3,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import {
   downloadDocx,
   downloadPdf,
+  getDraft,
   getFluxoPop,
   getPop,
   previewDocx,
@@ -13,6 +14,7 @@ import { Button } from '../components/ui/Button';
 import { IconArrowLeft, IconDownload } from '../components/ui/Icons';
 import { showToast } from '../components/ui/Toast';
 import type { PopData } from '../types/pop';
+import { emptyPop } from '../types/pop';
 
 export function PreviewPage() {
   const { type, ref } = useParams<{ type: string; ref: string }>();
@@ -29,18 +31,32 @@ export function PreviewPage() {
       return;
     }
     if (!ref) return;
+
     const promise = type === 'fluxo' ? getFluxoPop(ref) : getPop(ref);
-    promise
-      .then((data) => {
-        if (data) setPop(data);
-        else setNaoEncontrado(true);
+    Promise.all([promise, getDraft()])
+      .then(([data, draft]) => {
+        if (data) {
+          // If a draft exists for this POP (loaded_from_id matches ref, or codigo matches), overlay draft edits
+          if (
+            draft?.form &&
+            (draft.loaded_from_id === ref || (draft.form.codigo && draft.form.codigo === data.codigo))
+          ) {
+            setPop({ ...emptyPop(), ...data, ...draft.form });
+          } else {
+            setPop(data);
+          }
+        } else if (draft?.form) {
+          setPop({ ...emptyPop(), ...draft.form });
+        } else {
+          setNaoEncontrado(true);
+        }
       })
       .catch(() => setNaoEncontrado(true));
   }, [type, ref, statePop]);
 
   useEffect(() => {
     if (!pop) return;
-    document.title = `${pop.nome_pop} — GeraPOP`;
+    document.title = `${pop.nome_pop || 'POP'} — GeraPOP`;
     return () => {
       document.title = 'GeraPOP — CODEBA';
     };
@@ -68,7 +84,9 @@ export function PreviewPage() {
     return (
       <div className="page-header">
         <h1>POP não encontrado</h1>
-        <Button icon={<IconArrowLeft size={14} />} onClick={() => navigate('/')}>Voltar ao painel</Button>
+        <Button icon={<IconArrowLeft size={14} />} onClick={() => navigate('/')}>
+          Voltar ao painel
+        </Button>
       </div>
     );
   }
@@ -90,17 +108,21 @@ export function PreviewPage() {
         <Button variant="ghost" icon={<IconArrowLeft size={14} />} onClick={() => navigate('/')}>
           Voltar ao painel
         </Button>
-        <Button icon={<IconDownload size={14} />} onClick={() => baixar('docx')}>Baixar .docx</Button>
-        <Button icon={<IconDownload size={14} />} onClick={() => baixar('pdf')}>Baixar .pdf</Button>
+        <Button icon={<IconDownload size={14} />} onClick={() => baixar('docx')}>
+          Baixar .docx
+        </Button>
+        <Button icon={<IconDownload size={14} />} onClick={() => baixar('pdf')}>
+          Baixar .pdf
+        </Button>
       </div>
 
       <div className="preview-hero">
-        <h1>{pop.nome_pop}</h1>
+        <h1>{pop.nome_pop || 'POP sem título'}</h1>
         <div className="preview-chips">
-          <span className="preview-chip">{pop.codigo}</span>
+          <span className="preview-chip">{pop.codigo || 'sem código'}</span>
           <span className="preview-chip">v{pop.versao}</span>
           <span className="preview-chip">{pop.data}</span>
-          <span className="preview-chip">{pop.area}</span>
+          <span className="preview-chip">{pop.area || 'sem área'}</span>
         </div>
       </div>
 
@@ -208,9 +230,11 @@ function Tabela({ linhas }: { linhas: [string, string][] }) {
 }
 
 function definicoesUteis(pop: PopData) {
-  return pop.definicoes.filter((d) => d.termo).map((d) => [d.termo, d.definicao] as [string, string]);
+  return pop.definicoes
+    ? pop.definicoes.filter((d) => d.termo).map((d) => [d.termo, d.definicao] as [string, string])
+    : [];
 }
 
 function slugify(texto: string): string {
-  return texto.replace(/[^\w.-]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 30);
+  return (texto || '').replace(/[^\w.-]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 30);
 }

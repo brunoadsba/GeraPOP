@@ -13,6 +13,8 @@ interface KpiGridProps {
 
 const KPI_ICONS: Record<string, React.ReactNode> = {
   'Etapas': <IconClipboard size={18} />,
+  'Com POP': <IconFileText size={18} />,
+  'Etapas com POP': <IconFileText size={18} />,
   'POPs gerados': <IconFileText size={18} />,
   'Pendentes': <IconClock size={18} />,
   'Concluído': <IconCheck size={18} />,

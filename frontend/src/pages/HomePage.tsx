@@ -122,7 +122,7 @@ export function HomePage() {
 
   const kpis = [
     { icone: '📋', valor: String(total), rotulo: 'Etapas' },
-    { icone: '📄', valor: String(salvos.length), rotulo: 'POPs gerados' },
+    { icone: '📄', valor: String(gerados.length), rotulo: 'Com POP' },
     { icone: '⏳', valor: String(pendentes.length), rotulo: 'Pendentes' },
     { icone: '✅', valor: `${concluido}%`, rotulo: 'Concluído' },
   ];
