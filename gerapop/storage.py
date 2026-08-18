@@ -57,9 +57,12 @@ def _proximo_timestamp() -> datetime:
     return agora
 
 
-def save_pop(pop: PopData, docx: bytes | None = None) -> str:
-    timestamp = _proximo_timestamp()
-    pop_id = timestamp.strftime("%Y%m%d_%H%M%S_%f") + "_" + uuid.uuid4().hex[:6]
+def save_pop(pop: PopData, docx: bytes | None = None, pop_id: str | None = None) -> str:
+    if not pop_id:
+        timestamp = _proximo_timestamp()
+        pop_id = timestamp.strftime("%Y%m%d_%H%M%S_%f") + "_" + uuid.uuid4().hex[:6]
+    else:
+        timestamp = datetime.now()
     target = _pop_dir(pop_id)
     target.mkdir(parents=True, exist_ok=True)
     payload = serialize_pop(pop, created_at=timestamp)

@@ -17,6 +17,7 @@ export function useDraft({ state, loadedFromId, enabled = true }: UseDraftOption
   const stateRef = useRef(state);
   const loadedFromIdRef = useRef(loadedFromId);
   const lastSavedStateStr = useRef<string>('');
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   stateRef.current = state;
   loadedFromIdRef.current = loadedFromId;
@@ -38,6 +39,10 @@ export function useDraft({ state, loadedFromId, enabled = true }: UseDraftOption
 
   const saveNow = useCallback(async () => {
     if (!enabled) return;
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
     const currentStr = JSON.stringify(stateRef.current);
     setIsSaving(true);
     try {
@@ -69,16 +74,27 @@ export function useDraft({ state, loadedFromId, enabled = true }: UseDraftOption
     // Don't save if state hasn't changed since last save
     if (currentStr === lastSavedStateStr.current) return;
 
-    const timer = setTimeout(() => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+
+    timerRef.current = setTimeout(() => {
       saveNow();
     }, DEBOUNCE_MS);
 
-    return () => clearTimeout(timer);
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
+    };
   }, [state, loadedFromId, enabled, saveNow]);
 
   const discard = useCallback(() => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
     clearDraft().catch(() => undefined);
-    lastSavedStateStr.current = '';
+    lastSavedStateStr.current = JSON.stringify(stateRef.current);
     setLastSavedTime(null);
   }, []);
 

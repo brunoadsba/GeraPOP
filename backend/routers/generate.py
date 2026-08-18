@@ -49,7 +49,8 @@ def gerar_pop(
             detail=[str(error) for error in pop.validate()],
         )
     _block_if_duplicado(payload, allowed_ids or [])
-    pop_id = save_pop(pop, gerar_docx(pop).getvalue())
+    target_id = allowed_ids[0] if (allowed_ids and len(allowed_ids) == 1) else None
+    pop_id = save_pop(pop, gerar_docx(pop).getvalue(), pop_id=target_id)
     return GenerateResponse(pop_id=pop_id, filename=pop.output_filename())
 
 

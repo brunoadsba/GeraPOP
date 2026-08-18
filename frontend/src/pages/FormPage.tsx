@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import {
   checkCode,
   deletePop,
@@ -25,6 +25,7 @@ import { Button } from '../components/ui/Button';
 import {
   IconCheckCircle,
   IconDownload,
+  IconEye,
   IconFileText,
   IconSave,
   IconTrash,
@@ -59,6 +60,7 @@ function calcProgress(pop: PopData): number {
 }
 
 export function FormPage() {
+  const navigate = useNavigate();
   const location = useLocation();
   const navState = location.state as NavState | null;
   const [state, dispatch] = useReducer(reducer, undefined, emptyPop);
@@ -320,6 +322,12 @@ export function FormPage() {
           <div className="form-actions">
             <Button icon={<IconSave size={15} />} onClick={handleManualSave} disabled={isSaving}>
               Salvar rascunho
+            </Button>
+            <Button
+              icon={<IconEye size={15} />}
+              onClick={() => navigate('/preview/rascunho/atual', { state: { pop: state } })}
+            >
+              Visualizar Prévia
             </Button>
             <Button variant="primary" icon={<IconZap size={15} />} onClick={gerar} loading={gerando}>
               Gerar POP (.docx)

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import {
   downloadDocx,
   downloadPdf,
@@ -20,7 +20,14 @@ export function PreviewPage() {
   const [pop, setPop] = useState<PopData | null>(null);
   const [naoEncontrado, setNaoEncontrado] = useState(false);
 
+  const location = useLocation();
+  const statePop = (location.state as { pop?: PopData } | null)?.pop;
+
   useEffect(() => {
+    if (statePop) {
+      setPop(statePop);
+      return;
+    }
     if (!ref) return;
     const promise = type === 'fluxo' ? getFluxoPop(ref) : getPop(ref);
     promise
@@ -29,7 +36,7 @@ export function PreviewPage() {
         else setNaoEncontrado(true);
       })
       .catch(() => setNaoEncontrado(true));
-  }, [type, ref]);
+  }, [type, ref, statePop]);
 
   useEffect(() => {
     if (!pop) return;
