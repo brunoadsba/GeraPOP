@@ -1,7 +1,7 @@
 # GeraPOP — Memória de Contexto para LLMs
 
 > Documento de continuidade do projeto. Leia antes de implementar qualquer feature.
-> Última atualização: 2026-08-18 (reestruturação de UX/UI concluída: navegação no Sidebar com grupos semânticos "Visão Geral" e "Criação", novas páginas dedicadas `/fluxo` [Esteira do Fluxo SEV com abas de filtro] e `/pops` [Meus POPs / Biblioteca com busca em tempo real e backup], botão de edição instantânea na visualização de POPs, KPIs do dashboard alinhados com a esteira e isolamento estrito dos servidores de teste E2E; 62 pytest + 9 testes E2E Playwright 100% passando).
+> Última atualização: 2026-08-18 (correção de tipagem TypeScript/Node no frontend [playwright.config.ts, vite.config.ts, e2e] via declarações ambientais em vite-env.d.ts e inclusão no tsconfig.json; reestruturação de UX/UI concluída com Sidebar semântico, novas páginas dedicadas `/fluxo` e `/pops`, botão Editar na visualização de POPs e isolamento estrito dos testes E2E [portas 5199/8199 e `.e2e-data/`]; 62 pytest + 9 testes E2E Playwright 100% passando; tsc/eslint/build limpos).
 
 ---
 
@@ -228,7 +228,7 @@ Seguir estas regras ao continuar o projeto:
 
 ---
 
-## 8. Estado atual do repositório (2026-08-17)
+## 8. Estado atual do repositório (2026-08-18)
 
 ### Já no GitHub (`main`) — em ordem cronológica
 - `feat(gerapop): estrutura inicial do MVP com Streamlit e geração de POP`
@@ -249,20 +249,24 @@ Seguir estas regras ao continuar o projeto:
 - `feat(pdf): gerar PDF do POP com reportlab` — `9f6cd84`
 - `feat(ui): dashboard, preview, simulacao e design system` — `d2be58d`
 - `chore(harness): harness de UX/UI, mockup e docs de frontend` — `9edab35`
+- `refactor(arch): migração completa para React 19 + TypeScript + Vite 6 + FastAPI` — `1a49bfb`..`e9fcdaa`
+- `fix(storage/preview): atualiza POP em disco na edição e adiciona botão Visualizar Prévia no formulário` — `215547c`
+- `fix(kpi/storage): alinha rótulo do KPI de etapas com POP e garante criação de diretório em escrita atômica` — `c57ec2b`
+- `feat(preview): adiciona botão Editar POP na visualização e elimina oscilação de dados` — `149a299`
+- `fix(e2e): isola portas e dados dos testes E2E para proteger dados reais em data/` — `414d45f`
+- `feat(ui): redistribui navegação no Sidebar com visões dedicadas para Fluxo SEV e Biblioteca de POPs` — `be3c7de`
 
 > Detalhes da limpeza: `ideia-files/` (protótipo original) movido para `obsoleto/ideia-files/` (pasta versionada de arquivamento — convenção §7.9); `.gitignore` `data/` → `/data/` (só raiz) para que `fluxo-sev/data/` (essencial ao `test_fluxo_sev.py`) fosse versionado; referências a `ideia-files/` removidas de `pyproject.toml` (ruff exclude) e `.ruffignore`; lixo local não versionado removido (`gerapop.egg-info/`, caches).
 
 **Fora do repo (estado local):** CI do GitHub desativado por pedido do usuário (`gh workflow disable 330472653` — reativar com `gh workflow enable 330472653 --repo brunoadsba/GeraPOP`). O workflow roda `ruff` e `pytest` na stack nova (backend/ incluído no lint).
 
-**Em andamento (local, NÃO commitado):** nada — migração concluída, commitada e pushed. Durante a sessão de 2026-08-17:
-- **E2E Playwright = 9 testes** (`frontend/e2e/gerapop.spec.ts`): dashboard/KPIs, tema claro/escuro, validação de obrigatórios, gerar POP via card de etapa + baixar `.docx`/`.pdf`, simulação RPA, histórico/backup `.zip`, restauração de rascunho, código duplicado (409) e exclusão com confirmação. `playwright.config.ts` sobe backend (:8000) + frontend (:5173) com data dir isolado `.e2e-data/` (gitignored) e usa o **Chrome do sistema** via `channel: 'chrome'` (download do Chromium bloqueado na rede); scripts `npm run test:e2e`/`test:e2e:headed`; `globalSetup` limpa `.e2e-data/` por execução.
-- **Bug do rascunho corrigido** (`FormPage.tsx`): listener de `gerapop:draft:loaded` restaura o form via `LOAD_POP` (merge com `emptyPop()`), guarda `navExplicita` (não sobrescreve `novo_pop`/`carregar`/`editar_id`), ref `aplicadoDraft` (aplica só 1x) e `discard()` no sucesso do gerar e em `onDelCache`.
-- **Flakiness de storage corrigida** (`gerapop/storage.py`): `serialize_pop(pop, created_at=None)` + `_proximo_timestamp()` monotônico; `save_pop` usa timestamp estrito crescente — corrige `test_list_pops_ordena_mais_recente_primeiro` que falhava ~1/20 por empate de `created_at` no mesmo microssegundo (20/20 verde depois).
-- **Commit + push para `main`** (9 commits, working tree limpo): `1a49bfb` archive Streamlit, `4a754f2` feat backend, `51b0194` refactor módulos puros, `52c4694` fix storage, `55d6222` feat frontend + E2E, `4701f01` gitignore frontend, `da7c1ee` build infra, `8f9848a` docs, `e9fcdaa` docs guia.
-- **Guia do usuário atualizado** (`guia-usuario.md`): porta 8501→5173, botão "Carregar modelo" removido (modelo via Início), seção histórico reescrita.
-- **Recuperação e réplica do POP-OPE-003:** o `data/` original não existia mais; os dados de teste vieram de `obsoleto/tests-streamlit/test_home.py`, porém o PDF de referência guardado pelo usuário em `teste/POP-OPE-003_TESTE_003.pdf` continha o POP **completo** (objetivo "TESTE DE OBJETIVO", escopo/aviso "TESTE DE ...", área `OPERAÇÕES PORTUÁRIAS`, seção "Acesso ao Sistema OpenPort" com 16 passos + 3 campos obrigatórios, 3 definições, 3 regras, 2 revisões). Reconstruído com o conteúdo exato extraído do PDF e salvo em `data/pops/20260817_141526_714749_14a15a/` (`pop.json` + `pop.docx` regravados); diff do PDF gerado vs referência confirma conteúdo 100% idêntico, mantendo as melhorias visuais atuais (negrito em aspas, regras R1/R2/R3) por decisão do usuário. Opcionalmente, os dados originais podem ser reconstruídos de `teste/POP-OPE-003_TESTE_003.pdf` (decodificar streams ASCII85+Flate) se outra cópia for necessária.
+**Em andamento (local, trabalhando nesta sessão):**
+- **Tipagem TypeScript e Node no frontend:** resolvidos erros de tipagem no `playwright.config.ts`, `vite.config.ts` e `e2e/global-setup.ts` sem dependência de download do `@types/node` (bloqueado na rede corporativa). Foram adicionadas declarações ambientais em `frontend/src/vite-env.d.ts` para `node:path`, `node:fs`, `process` e `import.meta.dirname`, e esses arquivos foram adicionados ao `include` do `frontend/tsconfig.json`.
+- **Limpeza de imports E2E:** removido import não utilizado `Page` em `frontend/e2e/gerapop.spec.ts` para conformidade com `noUnusedLocals`.
+- **E2E Playwright = 9 testes** (`frontend/e2e/gerapop.spec.ts`): dashboard/KPIs, tema claro/escuro, validação de obrigatórios, gerar POP via card de etapa + baixar `.docx`/`.pdf`, simulação RPA, histórico/backup `.zip`, restauração de rascunho, código duplicado (409) e exclusão com confirmação. `playwright.config.ts` sobe backend (:8199) + frontend (:5199) com data dir isolado `.e2e-data/` (gitignored) e usa o **Chrome do sistema** via `channel: 'chrome'` (download do Chromium bloqueado na rede); scripts `npm run test:e2e`/`test:e2e:headed`; `globalSetup` limpa `.e2e-data/` por execução.
+- **Validação de Qualidade:** 62 pytest + 9 E2E Playwright + `npm run typecheck` (tsc) + `npm run lint` (eslint) + `npm run build` (vite build) 100% verdes.
 
-**Histórico recente (base da migração, já em `main` até `e8edbb5`):** melhorias visuais v1.1 (sub-cabeçalhos `Tela `, respostas `Sistema `, negrito em aspas, cabeçalho de regras, rodapé com página, validação de larguras com gridSpan, convenções no guia-usuario), exclusão de POP na home, guia do usuário e referência visual PS-002. A migração está **commitada e pushed** (§8 acima).
+**Histórico recente (base da migração, já em `main` até `be3c7de`):** melhorias visuais v1.1, navegação estruturada no Sidebar (Visão Geral: Início, Esteira do Fluxo, Meus POPs / Criação: Novo POP, Carregar Modelo), páginas dedicadas `/fluxo` e `/pops`, botão "Editar POP" no preview, isolamento estrito E2E (portas 5199/8199) e persistência atômica segura.
 
 **Nota sobre o harness:** `harnessfiles/` contém o loop de crítica visual (screenshot → LLM com visão → correção) e o `changelog.md` acumulado. O `AGENTS.md` dele rege mudanças de UX/UI: cores novas sempre como `__VAR__` com light/dark, testes verdes antes de finalizar, mudanças estruturais exigem confirmação do usuário.
 
@@ -283,12 +287,13 @@ Seguir estas regras ao continuar o projeto:
 - [x] Clean code + docs (README, guia-usuario, deploy, piloto)
 - [x] Export PDF (reportlab) — mesma estrutura do .docx
 - [x] Dashboard home (KPIs, stepper, cards do fluxo SEV)
-- [x] Preview do POP em modo leitura (com .docx/.pdf baixáveis)
+- [x] Preview do POP em modo leitura (com .docx/.pdf baixáveis e botão Editar POP)
 - [x] Simulação RPA de preenchimento
 - [x] Design system: paleta light/dark, componentes custom (hero, KPIs, stepper, badges, tooltips nativos, tabelas, container responsivo)
 - [x] Harness de UX/UI (`harnessfiles/`): AGENTS.md + design_system.md + ui_loop.py + changelog
-- [x] **Migração de UI:** Streamlit → React 19 + TS + Vite 6 (frontend) + FastAPI (backend) — `backend/`, `frontend/`, `implementation_plan.md` (commitada e pushed em `main`, `e9fcdaa`)
-- [x] **E2E Playwright** (9 testes, Chrome do sistema) + **fix rascunho** + **fix flaky storage** + **recuperação do POP-OPE-003** idêntico ao PDF de referência (`teste/POP-OPE-003_TESTE_003.pdf`)
+- [x] **Migração de UI:** Streamlit → React 19 + TS + Vite 6 (frontend) + FastAPI (backend) — `backend/`, `frontend/`, `implementation_plan.md` (commitada e pushed em `main`, até `be3c7de`)
+- [x] **E2E Playwright** (9 testes, Chrome do sistema, portas isoladas 5199/8199) + **fix rascunho** + **fix flaky storage** + **recuperação do POP-OPE-003** idêntico ao PDF de referência (`teste/POP-OPE-003_TESTE_003.pdf`)
+- [x] **Tipagem TypeScript/Node completa** (`playwright.config.ts`, `vite.config.ts`, `e2e/` tipados e validados via `tsc --noEmit`)
 
 ### Gate de negócio (aguarda usuário/equipe)
 - [ ] **Piloto com a equipe** — `docs/piloto.md` (roteiro pronto, GATE explícito)
@@ -357,8 +362,9 @@ backend/ (API REST), frontend/ (dashboard, formulário, preview, histórico,
 simulação, tema light/dark), fluxo-sev/ (Projeto 1, HTML/CSS/JS puro).
 UI Streamlit antiga arquivada em obsoleto/gerapop-streamlit (não usar).
 
-Estado: migração concluída, commitada e pushed (main até e9fcdaa); domínio e geração
-intactos; 62 pytest + 9 E2E Playwright OK; ruff/eslint/tsc OK; CI desativado.
+Estado: migração e melhorias de UX/UI concluídas e commitadas (main até be3c7de);
+tipagem TypeScript/Node completa (vite-env.d.ts e tsconfig.json); 62 pytest + 9 E2E
+Playwright OK; ruff/eslint/tsc OK; CI desativado.
 Dados: POP-OPE-003 (TESTE 003) recuperado e replicado em data/pops/<id>/ a partir
 do PDF de referência em teste/ (conteúdo completo; mantém melhorias visuais atuais).
 Próximo passo sugerido: validar ponta-a-ponta da nova stack com a equipe
@@ -366,3 +372,4 @@ Próximo passo sugerido: validar ponta-a-ponta da nova stack com a equipe
 
 NÃO implementar: nuvem, auth, multi-agente, migração de stack adicional sem validação.
 ```
+

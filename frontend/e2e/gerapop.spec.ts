@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import type { APIRequestContext, Page } from '@playwright/test';
+import type { APIRequestContext } from '@playwright/test';
 
 const CODIGO_BASE = `POP-E2E-${Date.now()}`;
 
