@@ -26,6 +26,7 @@ import {
   IconCheckCircle,
   IconDownload,
   IconFileText,
+  IconSave,
   IconTrash,
   IconZap,
 } from '../components/ui/Icons';
@@ -69,7 +70,12 @@ export function FormPage() {
   const [loadedFromId, setLoadedFromId] = useState<string | null>(null);
   const [confirmandoExclusao, setConfirmandoExclusao] = useState<PopListItem | null>(null);
   const aplicadoDraft = useRef(false);
-  const { discard } = useDraft({ state, loadedFromId, enabled: !carregando && !gerado });
+
+  const { isSaving, lastSavedTime, saveNow, discard } = useDraft({
+    state,
+    loadedFromId,
+    enabled: !carregando && !gerado,
+  });
 
   const progress = useMemo(() => calcProgress(state), [state]);
 
@@ -116,8 +122,6 @@ export function FormPage() {
     setCarregando(false);
   }, [navState]);
 
-  useDraft({ state, loadedFromId, enabled: !carregando && !gerado });
-
   useEffect(() => {
     if (!state.codigo?.trim()) return;
     const timer = setTimeout(() => {
@@ -135,6 +139,11 @@ export function FormPage() {
     }, 400);
     return () => clearTimeout(timer);
   }, [state.codigo, loadedFromId]);
+
+  const handleManualSave = async () => {
+    await saveNow();
+    showToast('Rascunho salvo com sucesso!', 'success');
+  };
 
   const gerar = async () => {
     setGerando(true);
@@ -224,11 +233,22 @@ export function FormPage() {
   return (
     <>
       <div className="page-header">
-        <h1>
-          <IconFileText size={24} />
-          Formulário — GeraPOP
-        </h1>
-        <p className="subtitle">Preencha os campos e gere o documento POP formatado (.docx).</p>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.6rem' }}>
+          <div>
+            <h1>
+              <IconFileText size={24} />
+              Formulário — GeraPOP
+            </h1>
+            <p className="subtitle">Preencha os campos e gere o documento POP formatado (.docx).</p>
+          </div>
+          {isSaving ? (
+            <span className="draft-indicator">⏳ Salvando rascunho…</span>
+          ) : lastSavedTime ? (
+            <span className="draft-indicator">
+              <IconCheckCircle size={12} /> Rascunho salvo às {lastSavedTime}
+            </span>
+          ) : null}
+        </div>
       </div>
 
       {carregando ? (
@@ -261,7 +281,7 @@ export function FormPage() {
               <ObjetivoEscopoSection state={state} dispatch={dispatch} />
             </Accordion>
 
-            <Accordion title="Definições" badge={`${state.definicoes.filter(d => d.termo).length}`}>
+            <Accordion title="Definições" badge={`${state.definicoes.filter((d) => d.termo).length}`}>
               <DefinicoesSection state={state} dispatch={dispatch} />
             </Accordion>
 
@@ -298,13 +318,20 @@ export function FormPage() {
           ) : null}
 
           <div className="form-actions">
+            <Button icon={<IconSave size={15} />} onClick={handleManualSave} disabled={isSaving}>
+              Salvar rascunho
+            </Button>
             <Button variant="primary" icon={<IconZap size={15} />} onClick={gerar} loading={gerando}>
               Gerar POP (.docx)
             </Button>
             {gerado ? (
               <>
-                <Button icon={<IconDownload size={14} />} onClick={() => baixarGerado('docx')}>Baixar POP (.docx)</Button>
-                <Button icon={<IconDownload size={14} />} onClick={() => baixarGerado('pdf')}>Baixar POP (.pdf)</Button>
+                <Button icon={<IconDownload size={14} />} onClick={() => baixarGerado('docx')}>
+                  Baixar POP (.docx)
+                </Button>
+                <Button icon={<IconDownload size={14} />} onClick={() => baixarGerado('pdf')}>
+                  Baixar POP (.pdf)
+                </Button>
               </>
             ) : null}
           </div>
