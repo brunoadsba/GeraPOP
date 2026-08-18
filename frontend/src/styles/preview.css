@@ -1,53 +1,71 @@
 /* ============================================================
-   Preview — modo leitura do POP
+   Preview — modo leitura do POP (premium visual)
    ============================================================ */
 
 .preview-hero {
   background: linear-gradient(135deg, var(--hero-g1), var(--hero-g2));
-  border-radius: 12px;
-  padding: 1.2rem 1.4rem;
-  margin: 0.6rem 0 1rem;
+  border-radius: var(--radius-xl);
+  padding: 1.4rem 1.6rem;
+  margin: 0.6rem 0 1.2rem;
   color: #ffffff;
-  animation: fade-in 0.3s ease;
+  animation: fade-up 0.35s ease both;
+  position: relative;
+  overflow: hidden;
+}
+
+.preview-hero::before {
+  content: '';
+  position: absolute;
+  top: -30%;
+  right: -5%;
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
 }
 
 .preview-hero h1 {
   margin: 0 0 0.5rem;
-  font-size: 1.35rem;
+  font-size: 1.4rem;
   line-height: 1.25;
   color: #ffffff;
+  position: relative;
 }
 
 .preview-chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.6rem;
+  gap: 0.5rem;
+  position: relative;
 }
 
 .preview-chip {
   background: rgba(255, 255, 255, 0.12);
   border: 1px solid rgba(255, 255, 255, 0.22);
   border-radius: 999px;
-  padding: 0.15rem 0.65rem;
+  padding: 0.18rem 0.7rem;
   font-size: 0.68rem;
   font-weight: 600;
   letter-spacing: 0.03em;
   font-family: var(--mono);
+  backdrop-filter: blur(8px);
 }
 
 .preview-aviso {
-  background: var(--hover);
-  border-left: 3px solid var(--accent);
+  background: var(--warning-dim);
+  border-left: 3px solid var(--warning);
   border-radius: 6px;
   padding: 0.6rem 0.9rem;
   margin: 0.6rem 0;
   font-size: 0.9rem;
   color: var(--text);
+  animation: fade-up 0.3s ease both;
 }
 
 .preview-eyebrow {
   font-family: var(--mono);
-  font-size: 0.66rem;
+  font-size: 0.64rem;
   font-weight: 700;
   letter-spacing: 0.09em;
   text-transform: uppercase;
@@ -55,6 +73,18 @@
   border-top: 1px solid var(--border);
   margin: 2rem 0 0.4rem;
   padding-top: 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.preview-eyebrow::before {
+  content: '';
+  width: 4px;
+  height: 14px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, var(--accent), var(--hero-g2));
+  flex-shrink: 0;
 }
 
 .preview-h2 {
@@ -65,28 +95,70 @@
 }
 
 .preview-h3 {
-  font-size: 0.92rem;
+  font-size: 0.95rem;
   font-weight: 700;
   margin: 0.8rem 0 0.3rem;
   color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.preview-h3::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex-shrink: 0;
 }
 
 .preview-passo {
-  padding: 0.2rem 0 0.2rem 1.1rem;
+  padding: 0.35rem 0 0.35rem 1.8rem;
   position: relative;
+  line-height: 1.5;
+  transition: background var(--transition-fast);
+  border-radius: 4px;
+  margin: 0.1rem 0;
 }
 
-.preview-passo::before {
-  content: '•';
+.preview-passo:hover {
+  background: var(--hover);
+}
+
+.preview-passo-num {
   position: absolute;
-  left: 0.35rem;
-  color: var(--accent);
+  left: 0;
+  top: 0.35rem;
+  width: 1.4rem;
+  height: 1.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.66rem;
   font-weight: 700;
+  color: var(--accent);
+  background: var(--accent-dim);
+  border-radius: 5px;
+  font-family: var(--mono);
 }
 
 .preview-regra {
-  padding: 0.2rem 0;
+  padding: 0.3rem 0 0.3rem 1.4rem;
   font-size: 0.9rem;
+  position: relative;
+  line-height: 1.5;
+}
+
+.preview-regra::before {
+  content: '';
+  position: absolute;
+  left: 0.4rem;
+  top: 0.7rem;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--danger);
 }
 
 .preview-table {
@@ -94,12 +166,18 @@
   border-collapse: collapse;
   margin: 0.6rem 0 1.2rem;
   font-size: 0.86rem;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.preview-table tr:nth-child(even) {
+  background: var(--hover);
 }
 
 .preview-table td {
   border: none;
   border-bottom: 1px solid var(--border);
-  padding: 0.4rem 0.6rem;
+  padding: 0.5rem 0.7rem;
   vertical-align: top;
 }
 
@@ -108,7 +186,7 @@
 }
 
 .preview-table td:first-child {
-  width: 140px;
+  width: 160px;
   font-weight: 700;
   color: var(--text);
 }

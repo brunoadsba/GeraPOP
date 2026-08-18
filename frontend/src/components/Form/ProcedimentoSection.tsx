@@ -58,7 +58,10 @@ export function ProcedimentoSection({ state, dispatch }: ProcedimentoSectionProp
       {state.secoes.map((secao, secaoIndex) => (
         <div className="secao-block" key={secaoIndex}>
           <div className="secao-block-header">
-            <span className="secao-block-title">Seção {secaoIndex + 1}</span>
+            <span className="secao-block-title">
+              <span className="secao-block-number">{secaoIndex + 1}</span>
+              Seção {secaoIndex + 1}
+            </span>
             {state.secoes.length > 1 ? (
               <Button
                 variant="danger"

@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { IconAlertTriangle } from './Icons';
 
 interface ModalProps {
   open: boolean;
@@ -20,7 +21,10 @@ export function Modal({ open, title, children, onClose, footer }: ModalProps) {
         onClick={(event) => event.stopPropagation()}
       >
         <div className="modal-header">
-          <h3 className="modal-title">{title}</h3>
+          <h3 className="modal-title">
+            <IconAlertTriangle size={18} />
+            {title}
+          </h3>
           <button className="btn btn-ghost btn-icon" onClick={onClose} aria-label="Fechar">
             ✕
           </button>

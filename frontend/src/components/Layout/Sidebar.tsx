@@ -1,5 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import { useTheme } from '../../hooks/useTheme';
+import { IconHome, IconFileText, IconSun, IconMoon } from '../ui/Icons';
 
 export function Sidebar() {
   const { isDark, toggle } = useTheme();
@@ -13,7 +14,7 @@ export function Sidebar() {
       <nav className="sidebar-nav" aria-label="Navegação principal">
         <NavLink to="/" end className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}>
           <span className="nav-link-icon" aria-hidden="true">
-            🏠
+            <IconHome size={18} />
           </span>
           <span className="nav-link-label">Início</span>
         </NavLink>
@@ -22,7 +23,7 @@ export function Sidebar() {
           className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}
         >
           <span className="nav-link-icon" aria-hidden="true">
-            📝
+            <IconFileText size={18} />
           </span>
           <span className="nav-link-label">Formulário</span>
         </NavLink>
@@ -34,9 +35,10 @@ export function Sidebar() {
           aria-pressed={isDark}
           title="Alternar tema claro/escuro"
         >
-          <span aria-hidden="true">{isDark ? '☀️' : '🌙'}</span>
+          {isDark ? <IconSun size={15} /> : <IconMoon size={15} />}
           {isDark ? 'Tema claro' : 'Tema escuro'}
         </button>
+        <span className="sidebar-version">GeraPOP v1.1</span>
       </div>
     </aside>
   );

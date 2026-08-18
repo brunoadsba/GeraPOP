@@ -8,6 +8,8 @@ import {
   triggerDownload,
 } from '../../api/client';
 import { Button } from '../ui/Button';
+import { IconArchive, IconDownload, IconEye, IconTrash, IconUpload } from '../ui/Icons';
+import { showToast } from '../ui/Toast';
 import type { PopListItem } from '../../types/pop';
 
 interface HistoryProps {
@@ -39,8 +41,9 @@ export function History({ onCarregar, onExcluir }: HistoryProps) {
       const blob = tipo === 'docx' ? await downloadDocx(id) : await downloadPdf(id);
       const nome = tipo === 'pdf' ? record.filename.replace(/\.docx$/, '.pdf') : record.filename;
       triggerDownload(blob, nome);
+      showToast(`Arquivo ${tipo.toUpperCase()} baixado.`, 'success');
     } catch {
-      alert('Não foi possível baixar o arquivo.');
+      showToast('Não foi possível baixar o arquivo.', 'error');
     }
   };
 
@@ -49,8 +52,9 @@ export function History({ onCarregar, onExcluir }: HistoryProps) {
       const blob = await downloadBackup();
       const nome = `gerapop_backup_${new Date().toISOString().replace(/[-:T]/g, '').slice(0, 14)}.zip`;
       triggerDownload(blob, nome);
+      showToast('Backup baixado com sucesso.', 'success');
     } catch {
-      alert('Não foi possível gerar o backup.');
+      showToast('Não foi possível gerar o backup.', 'error');
     }
   };
 
@@ -72,16 +76,16 @@ export function History({ onCarregar, onExcluir }: HistoryProps) {
         </select>
       </div>
       <div className="dash-card-actions">
-        <Button onClick={() => baixar(selected, 'docx')}>Baixar .docx</Button>
-        <Button onClick={() => baixar(selected, 'pdf')}>Baixar .pdf</Button>
-        <Button onClick={() => navigate(`/preview/salvo/${selected}`)}>Visualizar</Button>
-        <Button onClick={() => onCarregar(selected)}>Carregar para editar</Button>
-        <Button variant="danger" onClick={() => onExcluir(selected)}>
+        <Button icon={<IconDownload size={14} />} onClick={() => baixar(selected, 'docx')}>Baixar .docx</Button>
+        <Button icon={<IconDownload size={14} />} onClick={() => baixar(selected, 'pdf')}>Baixar .pdf</Button>
+        <Button icon={<IconEye size={14} />} onClick={() => navigate(`/preview/salvo/${selected}`)}>Visualizar</Button>
+        <Button icon={<IconUpload size={14} />} onClick={() => onCarregar(selected)}>Carregar para editar</Button>
+        <Button variant="danger" icon={<IconTrash size={14} />} onClick={() => onExcluir(selected)}>
           Excluir
         </Button>
       </div>
       <div style={{ marginTop: '1rem' }}>
-        <Button variant="ghost" onClick={baixarBackup}>
+        <Button variant="ghost" icon={<IconArchive size={14} />} onClick={baixarBackup}>
           Baixar backup (.zip)
         </Button>
       </div>

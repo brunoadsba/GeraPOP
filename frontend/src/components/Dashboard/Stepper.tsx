@@ -1,4 +1,5 @@
 import type { FluxoNo } from '../../types/pop';
+import { IconCheck } from '../ui/Icons';
 
 interface StepperProps {
   nos: FluxoNo[];
@@ -21,7 +22,9 @@ export function Stepper({ nos }: StepperProps) {
         }
         return (
           <div className={`dash-step ${estado}`.trim()} key={no.id} role="listitem" title={no.rotulo}>
-            <div className="dash-dot">{done ? '✓' : String(no.etapa)}</div>
+            <div className="dash-dot">
+              {done ? <IconCheck size={14} /> : String(no.etapa)}
+            </div>
             <div className="dash-step-label">{no.rotulo}</div>
           </div>
         );

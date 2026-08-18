@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { Dispatch } from 'react';
 import { Button } from '../ui/Button';
+import { IconPlay, IconSquare, IconZap } from '../ui/Icons';
 import type { Action } from '../../hooks/usePopForm';
 import type { PopData } from '../../types/pop';
 
@@ -130,7 +131,10 @@ export function Simulacao({ dispatch }: { dispatch: Dispatch<Action> }) {
 
   return (
     <div className="sim-box">
-      <div className="sim-title">🤖 Simulação de preenchimento (RPA)</div>
+      <div className="sim-title">
+        <IconZap size={16} />
+        Simulação de preenchimento (RPA)
+      </div>
       {ativo ? (
         <>
           {passo < passosTotais ? (
@@ -143,8 +147,8 @@ export function Simulacao({ dispatch }: { dispatch: Dispatch<Action> }) {
             Campo {Math.min(passo + 1, passosTotais)} de {passosTotais}
           </div>
           <div style={{ marginTop: '0.6rem' }}>
-            <Button variant="danger" size="sm" onClick={() => { setAtivo(false); setPasso(0); }}>
-              ⏹ Parar simulação
+            <Button variant="danger" size="sm" icon={<IconSquare size={12} />} onClick={() => { setAtivo(false); setPasso(0); }}>
+              Parar simulação
             </Button>
           </div>
         </>
@@ -154,8 +158,8 @@ export function Simulacao({ dispatch }: { dispatch: Dispatch<Action> }) {
             Um robô preenche o formulário automaticamente, campo a campo, mostrando na prática
             como cada campo deve ser preenchido.
           </div>
-          <Button variant="primary" onClick={() => setAtivo(true)}>
-            ▶ Iniciar simulação
+          <Button variant="primary" icon={<IconPlay size={14} />} onClick={() => setAtivo(true)}>
+            Iniciar simulação
           </Button>
         </>
       )}

@@ -10,6 +10,8 @@ import {
   triggerDownload,
 } from '../api/client';
 import { Button } from '../components/ui/Button';
+import { IconArrowLeft, IconDownload } from '../components/ui/Icons';
+import { showToast } from '../components/ui/Toast';
 import type { PopData } from '../types/pop';
 
 export function PreviewPage() {
@@ -49,8 +51,9 @@ export function PreviewPage() {
         blob = tipo === 'docx' ? await previewDocx(pop) : await previewPdf(pop);
       }
       triggerDownload(blob, nome);
+      showToast(`Arquivo ${tipo.toUpperCase()} baixado.`, 'success');
     } catch {
-      alert('Não foi possível baixar o arquivo.');
+      showToast('Não foi possível baixar o arquivo.', 'error');
     }
   };
 
@@ -58,23 +61,30 @@ export function PreviewPage() {
     return (
       <div className="page-header">
         <h1>POP não encontrado</h1>
-        <Button onClick={() => navigate('/')}>← Voltar ao painel</Button>
+        <Button icon={<IconArrowLeft size={14} />} onClick={() => navigate('/')}>Voltar ao painel</Button>
       </div>
     );
   }
 
   if (!pop) {
-    return <p style={{ color: 'var(--muted)' }}>Carregando…</p>;
+    return (
+      <div className="dash-loading">
+        <span className="spinner" />
+        Carregando…
+      </div>
+    );
   }
+
+  let passoGlobal = 0;
 
   return (
     <>
       <div className="preview-actions">
-        <Button variant="ghost" onClick={() => navigate('/')}>
-          ← Voltar ao painel
+        <Button variant="ghost" icon={<IconArrowLeft size={14} />} onClick={() => navigate('/')}>
+          Voltar ao painel
         </Button>
-        <Button onClick={() => baixar('docx')}>Baixar .docx</Button>
-        <Button onClick={() => baixar('pdf')}>Baixar .pdf</Button>
+        <Button icon={<IconDownload size={14} />} onClick={() => baixar('docx')}>Baixar .docx</Button>
+        <Button icon={<IconDownload size={14} />} onClick={() => baixar('pdf')}>Baixar .pdf</Button>
       </div>
 
       <div className="preview-hero">
@@ -122,11 +132,15 @@ export function PreviewPage() {
                 <h3 className="preview-h3">
                   {indice + 1}. {secao.titulo}
                 </h3>
-                {passos.map((passo, i) => (
-                  <div className="preview-passo" key={i}>
-                    {passo}
-                  </div>
-                ))}
+                {passos.map((passo, i) => {
+                  passoGlobal++;
+                  return (
+                    <div className="preview-passo" key={i}>
+                      <span className="preview-passo-num">{passoGlobal}</span>
+                      {passo}
+                    </div>
+                  );
+                })}
                 {campos.length > 0 ? (
                   <>
                     <div className="preview-h2">Campos de registro:</div>
@@ -144,7 +158,7 @@ export function PreviewPage() {
           <div className="preview-eyebrow">Regras e Restrições</div>
           {pop.regras.filter(Boolean).map((regra, i) => (
             <div className="preview-regra" key={i}>
-              • {regra}
+              {regra}
             </div>
           ))}
         </>

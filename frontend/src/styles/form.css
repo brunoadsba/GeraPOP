@@ -1,5 +1,6 @@
 /* ============================================================
    Formulário — seções, listas dinâmicas, simulação
+   Premium UI — accordion, progress, rich interactions
    ============================================================ */
 
 .form-section {
@@ -11,14 +12,18 @@
   font-weight: 800;
   color: var(--heading);
   margin-bottom: 0.4rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
 }
 
 .form-actions {
   display: flex;
   gap: 0.8rem;
-  margin-top: 1.4rem;
-  padding-top: 1.2rem;
+  margin-top: 1.6rem;
+  padding-top: 1.4rem;
   border-top: 1px solid var(--border);
+  flex-wrap: wrap;
 }
 
 /* Listas dinâmicas */
@@ -28,7 +33,8 @@
   border-radius: var(--radius-sm);
   padding: 0.8rem;
   margin-bottom: 0.6rem;
-  animation: slide-in 0.2s ease;
+  animation: fade-up 0.25s ease both;
+  transition: border-color var(--transition-fast);
 }
 
 .dynamic-item-actions {
@@ -42,21 +48,57 @@
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 1rem;
+  padding: 1.1rem;
   margin-bottom: 1rem;
   box-shadow: var(--shadow);
+  transition: all var(--transition-normal);
+  position: relative;
+}
+
+.secao-block::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 3px;
+  border-radius: 3px 0 0 3px;
+  background: linear-gradient(180deg, var(--accent), var(--hero-g2));
+  opacity: 0.5;
+}
+
+.secao-block:hover {
+  border-color: color-mix(in srgb, var(--border) 60%, var(--accent));
 }
 
 .secao-block-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 0.6rem;
+  margin-bottom: 0.7rem;
 }
 
 .secao-block-title {
   font-weight: 700;
   color: var(--heading);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.secao-block-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: var(--accent-dim);
+  color: var(--accent);
+  font-size: 0.72rem;
+  font-weight: 800;
+  font-family: var(--mono);
+  flex-shrink: 0;
 }
 
 /* Histórico */
@@ -71,44 +113,87 @@
   margin: 0.8rem 0;
 }
 
+.history-select-row .select {
+  flex: 1;
+}
+
 /* Simulação RPA */
 .sim-box {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 1rem;
+  padding: 1.1rem;
   margin-bottom: 1.4rem;
   box-shadow: var(--shadow);
+  transition: all var(--transition-normal);
+  position: relative;
+  overflow: hidden;
+}
+
+.sim-box::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent), var(--hero-g2));
+  opacity: 0;
+  transition: opacity var(--transition-normal);
+}
+
+.sim-box:hover::before {
+  opacity: 0.6;
 }
 
 .sim-title {
   font-weight: 700;
   color: var(--heading);
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.45rem;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
 }
 
 .sim-caption {
   color: var(--muted);
   font-size: 0.82rem;
   margin-bottom: 0.6rem;
+  line-height: 1.45;
 }
 
 .progress-track {
-  height: 8px;
+  height: 6px;
   background: var(--hover);
   border-radius: 999px;
   overflow: hidden;
   margin: 0.6rem 0;
+  position: relative;
 }
 
 .progress-fill {
   height: 100%;
-  background: var(--accent);
+  background: linear-gradient(90deg, var(--accent), var(--hero-g2));
   border-radius: 999px;
-  transition: width 0.3s ease;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+/* Shimmer on progress */
+.progress-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  animation: shimmer 1.5s ease infinite;
+  background-size: 200% 100%;
 }
 
 .progress-label {
   font-size: 0.78rem;
   color: var(--muted);
+  font-family: var(--mono);
 }

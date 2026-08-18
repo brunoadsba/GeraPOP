@@ -42,3 +42,6 @@ Thumbs.db
 
 # Dados isolados de testes E2E (Playwright)
 /.e2e-data/
+
+# Pastas de testes temporários
+/teste/

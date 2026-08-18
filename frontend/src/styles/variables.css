@@ -20,12 +20,45 @@
   --danger-dim: rgba(220, 38, 38, 0.10);
   --optional: #6B7494;
   --optional-dim: rgba(107, 116, 148, 0.12);
-  --shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  --shadow-lg: 0 8px 24px rgba(15, 23, 42, 0.12);
+
+  /* Semantic colors */
+  --success: #059669;
+  --success-dim: rgba(5, 150, 105, 0.10);
+  --warning: #D97706;
+  --warning-dim: rgba(217, 119, 6, 0.10);
+  --info: #2563EB;
+  --info-dim: rgba(37, 99, 235, 0.10);
+
+  /* Shadows (multi-layer) */
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.06), 0 4px 16px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 8px 24px rgba(15, 23, 42, 0.10), 0 2px 8px rgba(15, 23, 42, 0.06);
+  --shadow-xl: 0 16px 48px rgba(15, 23, 42, 0.12), 0 4px 16px rgba(15, 23, 42, 0.08);
+  --shadow-glow: 0 0 0 3px var(--accent-dim);
+
+  /* Glass */
+  --glass-bg: rgba(255, 255, 255, 0.72);
+  --glass-border: rgba(255, 255, 255, 0.5);
+  --glass-blur: 16px;
+
+  /* Transitions */
+  --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-bounce: 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Radii */
   --radius: 10px;
   --radius-sm: 8px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+
+  /* Typography */
   --font: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
   --mono: ui-monospace, 'SF Mono', 'Cascadia Mono', monospace;
+
+  /* Sidebar gradient */
+  --sidebar-accent: linear-gradient(135deg, var(--hero-g1), var(--hero-g2));
 }
 
 :root[data-theme='dark'] {
@@ -50,10 +83,43 @@
   --danger-dim: rgba(229, 72, 77, 0.15);
   --optional: #6B7494;
   --optional-dim: rgba(107, 116, 148, 0.18);
-  --shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
-  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.35);
+
+  /* Semantic colors */
+  --success: #34D399;
+  --success-dim: rgba(52, 211, 153, 0.14);
+  --warning: #FBBF24;
+  --warning-dim: rgba(251, 191, 36, 0.14);
+  --info: #60A5FA;
+  --info-dim: rgba(96, 165, 250, 0.14);
+
+  /* Shadows (multi-layer) */
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.20), 0 1px 3px rgba(0, 0, 0, 0.16);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.24), 0 4px 16px rgba(0, 0, 0, 0.16);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.30), 0 2px 8px rgba(0, 0, 0, 0.20);
+  --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.35), 0 4px 16px rgba(0, 0, 0, 0.24);
+  --shadow-glow: 0 0 0 3px var(--accent-dim);
+
+  /* Glass */
+  --glass-bg: rgba(17, 24, 52, 0.72);
+  --glass-border: rgba(38, 47, 82, 0.6);
+  --glass-blur: 16px;
+
+  /* Transitions */
+  --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-bounce: 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Radii */
   --radius: 10px;
   --radius-sm: 8px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+
+  /* Typography */
   --font: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
   --mono: ui-monospace, 'SF Mono', 'Cascadia Mono', monospace;
+
+  /* Sidebar gradient */
+  --sidebar-accent: linear-gradient(135deg, var(--hero-g1), var(--hero-g2));
 }

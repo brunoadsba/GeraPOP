@@ -1,4 +1,4 @@
-import { useEffect, useReducer, useRef, useState } from 'react';
+import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import {
   checkCode,
@@ -20,8 +20,17 @@ import { RegrasSection } from '../components/Form/RegrasSection';
 import { RevisoesSection } from '../components/Form/RevisoesSection';
 import { History } from '../components/History/History';
 import { Simulacao } from '../components/Simulation/Simulacao';
+import { Accordion } from '../components/ui/Accordion';
 import { Button } from '../components/ui/Button';
+import {
+  IconCheckCircle,
+  IconDownload,
+  IconFileText,
+  IconTrash,
+  IconZap,
+} from '../components/ui/Icons';
 import { Modal } from '../components/ui/Modal';
+import { showToast } from '../components/ui/Toast';
 import { useDraft } from '../hooks/useDraft';
 import { reducer } from '../hooks/usePopForm';
 import type { DraftPayload, PopData, PopListItem } from '../types/pop';
@@ -42,6 +51,12 @@ const validateLocal = (pop: ReturnType<typeof emptyPop>): string[] => {
   return errors;
 };
 
+function calcProgress(pop: PopData): number {
+  const fields = [pop.nome_pop, pop.codigo, pop.area, pop.objetivo];
+  const filled = fields.filter((f) => f && f.trim().length > 0).length;
+  return Math.round((filled / fields.length) * 100);
+}
+
 export function FormPage() {
   const location = useLocation();
   const navState = location.state as NavState | null;
@@ -55,6 +70,8 @@ export function FormPage() {
   const [confirmandoExclusao, setConfirmandoExclusao] = useState<PopListItem | null>(null);
   const aplicadoDraft = useRef(false);
   const { discard } = useDraft({ state, loadedFromId, enabled: !carregando && !gerado });
+
+  const progress = useMemo(() => calcProgress(state), [state]);
 
   const navExplicita =
     Boolean(navState?.carregar) || Boolean(navState?.novo_pop) || Boolean(navState?.editar_id);
@@ -127,12 +144,14 @@ export function FormPage() {
       const errors = validateLocal(state);
       if (errors.length) {
         setErros(errors);
+        showToast('Corrija os campos obrigatórios antes de gerar.', 'error');
         return;
       }
       const result = await generatePop(state, loadedFromId ? [loadedFromId] : []);
       setGerado(result);
       setLoadedFromId(result.pop_id);
       discard();
+      showToast('POP gerado com sucesso!', 'success');
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Erro ao gerar o POP.';
       if (message.includes('código')) {
@@ -140,6 +159,7 @@ export function FormPage() {
       } else {
         setErros([message]);
       }
+      showToast(message, 'error');
     } finally {
       setGerando(false);
     }
@@ -156,12 +176,13 @@ export function FormPage() {
         const blob = await previewPdf(state);
         triggerDownload(blob, nome);
       }
+      showToast(`Arquivo ${tipo.toUpperCase()} baixado.`, 'success');
     } catch {
       try {
         const blob = tipo === 'docx' ? await previewDocx(state) : await previewPdf(state);
         triggerDownload(blob, nome);
       } catch {
-        alert('Não foi possível preparar o arquivo.');
+        showToast('Não foi possível preparar o arquivo.', 'error');
       }
     }
   };
@@ -171,6 +192,7 @@ export function FormPage() {
     getPop(id).then((pop) => {
       dispatch({ type: 'LOAD_POP', pop });
       setGerado(null);
+      showToast('POP carregado para edição.', 'info');
     });
   };
 
@@ -184,8 +206,9 @@ export function FormPage() {
     if (!confirmandoExclusao) return;
     try {
       await deletePop(confirmandoExclusao.id);
+      showToast('POP excluído.', 'success');
     } catch {
-      alert('Não foi possível excluir o POP.');
+      showToast('Não foi possível excluir o POP.', 'error');
     }
     if (loadedFromId === confirmandoExclusao.id) setLoadedFromId(null);
     setConfirmandoExclusao(null);
@@ -201,24 +224,62 @@ export function FormPage() {
   return (
     <>
       <div className="page-header">
-        <h1>📝 Formulário — GeraPOP</h1>
+        <h1>
+          <IconFileText size={24} />
+          Formulário — GeraPOP
+        </h1>
         <p className="subtitle">Preencha os campos e gere o documento POP formatado (.docx).</p>
       </div>
 
       {carregando ? (
-        <p style={{ color: 'var(--muted)' }}>Carregando…</p>
+        <div className="dash-loading">
+          <span className="spinner" />
+          Carregando…
+        </div>
       ) : (
         <>
           <Simulacao dispatch={dispatch} />
 
           <div className="form-card">
-            <IdentificacaoSection state={state} dispatch={dispatch} />
-            <ObjetivoEscopoSection state={state} dispatch={dispatch} />
-            <DefinicoesSection state={state} dispatch={dispatch} />
-            <ProcedimentoSection state={state} dispatch={dispatch} />
-            <RegrasSection state={state} dispatch={dispatch} />
-            <ConsultaSection state={state} dispatch={dispatch} />
-            <RevisoesSection state={state} dispatch={dispatch} />
+            <div className="form-progress">
+              <div
+                className="form-progress-fill"
+                style={{ width: `${progress}%` }}
+                role="progressbar"
+                aria-valuenow={progress}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-label="Progresso do preenchimento"
+              />
+            </div>
+
+            <Accordion title="Identificação" badge={state.codigo || undefined}>
+              <IdentificacaoSection state={state} dispatch={dispatch} />
+            </Accordion>
+
+            <Accordion title="Objetivo e Escopo">
+              <ObjetivoEscopoSection state={state} dispatch={dispatch} />
+            </Accordion>
+
+            <Accordion title="Definições" badge={`${state.definicoes.filter(d => d.termo).length}`}>
+              <DefinicoesSection state={state} dispatch={dispatch} />
+            </Accordion>
+
+            <Accordion title="Procedimento" badge={`${state.secoes.length} seções`}>
+              <ProcedimentoSection state={state} dispatch={dispatch} />
+            </Accordion>
+
+            <Accordion title="Regras e Restrições" badge={`${state.regras.filter(Boolean).length}`}>
+              <RegrasSection state={state} dispatch={dispatch} />
+            </Accordion>
+
+            <Accordion title="Consulta e Relatórios" defaultOpen={false}>
+              <ConsultaSection state={state} dispatch={dispatch} />
+            </Accordion>
+
+            <Accordion title="Histórico de Revisões" defaultOpen={false}>
+              <RevisoesSection state={state} dispatch={dispatch} />
+            </Accordion>
           </div>
 
           {erros.length > 0 ? (
@@ -229,16 +290,21 @@ export function FormPage() {
             </div>
           ) : null}
           {erroDuplicado ? <div className="alert alert-error">{erroDuplicado}</div> : null}
-          {gerado ? <div className="alert alert-success">POP gerado com sucesso.</div> : null}
+          {gerado ? (
+            <div className="alert alert-success">
+              <IconCheckCircle size={16} />
+              POP gerado com sucesso.
+            </div>
+          ) : null}
 
           <div className="form-actions">
-            <Button variant="primary" onClick={gerar} loading={gerando}>
+            <Button variant="primary" icon={<IconZap size={15} />} onClick={gerar} loading={gerando}>
               Gerar POP (.docx)
             </Button>
             {gerado ? (
               <>
-                <Button onClick={() => baixarGerado('docx')}>Baixar POP (.docx)</Button>
-                <Button onClick={() => baixarGerado('pdf')}>Baixar POP (.pdf)</Button>
+                <Button icon={<IconDownload size={14} />} onClick={() => baixarGerado('docx')}>Baixar POP (.docx)</Button>
+                <Button icon={<IconDownload size={14} />} onClick={() => baixarGerado('pdf')}>Baixar POP (.pdf)</Button>
               </>
             ) : null}
           </div>
@@ -256,7 +322,7 @@ export function FormPage() {
             <Button variant="ghost" onClick={() => setConfirmandoExclusao(null)}>
               Cancelar
             </Button>
-            <Button variant="danger" onClick={excluirConfirmado}>
+            <Button variant="danger" icon={<IconTrash size={14} />} onClick={excluirConfirmado}>
               Sim, excluir
             </Button>
           </>

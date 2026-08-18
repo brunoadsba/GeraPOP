@@ -39,42 +39,33 @@ O GeraPOP transforma o que você digita num documento pronto para usar.
 
 ## 3. Conhecendo a tela
 
-O GeraPOP tem **duas telas**, trocadas pelo menu lateral (barra à esquerda):
+O GeraPOP possui uma interface moderna, responsiva e com suporte a temas claros e escuros. Tem **duas telas principais**, navegáveis pelo menu lateral (barra à esquerda):
 
-- **🏠 Início** — o painel do Fluxo SEV (veja a seção 4).
-- **📝 Formulário** — onde você cria e edita POPs (veja a seção 5).
+- **🏠 Início** — o painel do Fluxo SEV com indicadores animados, indicador visual do fluxo, modelo de referência e ação rápida "Novo POP" (veja a seção 4).
+- **📝 Formulário** — onde você cria e edita POPs, organizado em seções colapsáveis (sanfonas/accordions) com indicador de progresso (veja a seção 5).
 
-Na barra lateral também há o botão de **tema claro/escuro**: use o que for
-mais confortável para você.
+Na barra lateral há o botão para alternar o **tema claro/escuro**: escolha o que for mais confortável para a sua vista.
 
-Na tela do Formulário, os campos marcados com **\*** (asterisco) são
-**obrigatórios** — sem eles, o documento não é gerado. Os demais são
-opcionais: preencha se fizer sentido para o seu POP.
+**Notificações da aplicação:**
+Ações como gerar POP, baixar arquivos ou restaurar rascunhos exibem avisos flutuantes (*toasts*) no canto inferior direito da tela, confirmando o sucesso ou informando qualquer necessidade de ajuste.
 
-Ao terminar, clique no botão verde **"Gerar POP (.docx)"** (no final do
-formulário) e o documento é criado na hora.
+Na tela do Formulário:
+- Os campos com **\*** (asterisco) são **obrigatórios** — sem eles, o documento não é gerado.
+- Há uma **barra de progresso** no topo do formulário que mostra a porcentagem de preenchimento dos campos obrigatórios.
+- Ao terminar, clique no botão **"Gerar POP (.docx)"** e o documento é criado na hora.
 
 ---
 
 ## 4. A página Início (o painel do Fluxo SEV)
 
-A página Início acompanha o **Fluxo SEV** (Desembarque): a sequência de
-etapas do processo e os POPs de cada etapa. Ela mostra:
+A página Início acompanha o **Fluxo SEV** (Desembarque): a sequência de etapas do processo e os POPs de cada etapa. Ela oferece:
 
-- **Indicadores no topo** — total de etapas, POPs já gerados, POPs pendentes
-  e o percentual de conclusão.
-- **A sequência de passos do fluxo** — cada etapa aparece como um passo;
-  as etapas concluídas ficam marcadas com ✓.
-- **Modelo de referência** — um POP de exemplo, já preenchido e validado.
-  Você pode baixar o `.docx` dele ou clicar em **"Ver modelo no formulário"**
-  para vê-lo na tela de edição (atenção: isso substitui o que estiver no
-  formulário).
-- **Cards de POPs gerados** — para cada etapa com POP pronto: **"Visualizar
-  POP"** (abre o documento em modo de leitura, sem baixar), baixar `.docx` /
-  `.pdf` e **"Editar POP"** (abre o POP no formulário para alterações).
-- **Cards de POPs pendentes** — etapas que ainda não têm POP, com o botão
-  **"Criar POP"** para começar (o nome e a descrição da etapa já entram
-  preenchidos no formulário).
+- **Hero com Ação Rápida** — botão **"Novo POP"** para ir diretamente ao formulário em branco.
+- **Indicadores (KPIs) com Animação** — contadores animados mostrando total de etapas, POPs gerados, POPs pendentes e percentual concluído.
+- **A sequência de passos do fluxo (Stepper)** — visualização em linha conectora com marcador pulsante na etapa atual e ícones de confirmação (✓) nas etapas concluídas.
+- **Modelo de referência** — um POP de exemplo, já preenchido e validado. Você pode baixar o `.docx` dele ou clicar em **"Ver modelo no formulário"** para carregá-lo na tela de edição.
+- **Cards de POPs gerados** — para cada etapa com POP pronto: botões com ícones visuais para **"Visualizar POP"** (modo leitura), baixar `.docx` / `.pdf` e **"Editar POP"**.
+- **Cards de POPs pendentes** — etapas que ainda não têm POP, com o botão **"Criar POP"** para iniciar (nome e descrição já vêm preenchidos no formulário).
 
 > **Visualizar POP** abre o documento em modo de leitura, com botões para
 > baixar `.docx`/`.pdf` e voltar. Use para conferir um POP sem abrir o Word.
@@ -87,11 +78,9 @@ Vá para **📝 Formulário** no menu lateral.
 
 No topo do formulário você encontra:
 
-- **Simulação de preenchimento (RPA)** — um painel com o botão **"▶ Iniciar
-  simulação"**: um robô preenche o formulário automaticamente, campo a
-  campo, mostrando na prática como cada campo deve ser preenchido. Serve
-  como demonstração; você pode parar a simulação a qualquer momento e editar
-  à vontade.
+- **Barra de Progresso do Preenchimento**: uma barra colorida no topo do cartão do formulário que indica o percentual de preenchimento dos campos obrigatórios em tempo real.
+- **Seções em Sanfona (Accordions)**: o formulário é dividido em blocos expansíveis/colapsáveis (*Identificação*, *Objetivo e Escopo*, *Definições*, *Procedimento*, *Regras*, *Consulta*, *Revisões*). Clique no título da seção para expandir ou recolher. As sanfonas exibem pequenos selos (*badges*) com a quantidade de itens ou status de cada seção.
+- **Simulação de preenchimento (RPA)** — um painel com o botão **"▶ Iniciar simulação"**: um robô preenche o formulário automaticamente, campo a campo, mostrando na prática como cada campo deve ser preenchido. Serve como demonstração; você pode parar a simulação a qualquer momento e editar à vontade.
 
 > Se quiser ver um POP de exemplo preenchido (o **modelo de referência**),
 > abra **🏠 Início** e clique em **"Ver modelo no formulário"** no card do

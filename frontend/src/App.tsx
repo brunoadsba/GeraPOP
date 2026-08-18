@@ -1,5 +1,6 @@
 import { Route, Routes } from 'react-router-dom';
 import { Sidebar } from './components/Layout/Sidebar';
+import { ToastContainer } from './components/ui/Toast';
 import { FormPage } from './pages/FormPage';
 import { HomePage } from './pages/HomePage';
 import { PreviewPage } from './pages/PreviewPage';
@@ -17,6 +18,7 @@ export default function App() {
           </Routes>
         </div>
       </main>
+      <ToastContainer />
     </div>
   );
 }

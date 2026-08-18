@@ -16,7 +16,19 @@ import { Hero } from '../components/Dashboard/Hero';
 import { KpiGrid } from '../components/Dashboard/KpiGrid';
 import { Stepper } from '../components/Dashboard/Stepper';
 import { Button } from '../components/ui/Button';
+import {
+  IconDownload,
+  IconEdit,
+  IconEye,
+  IconFileText,
+  IconClock,
+  IconFolder,
+  IconPin,
+  IconPlus,
+  IconTrash,
+} from '../components/ui/Icons';
 import { Modal } from '../components/ui/Modal';
+import { showToast } from '../components/ui/Toast';
 import type { Fluxo, FluxoNo, PopData, PopListItem } from '../types/pop';
 
 const MODELO_REF = 'pop-desembarque';
@@ -47,8 +59,9 @@ export function HomePage() {
       const blob = tipo === 'docx' ? await previewDocx(pop) : await previewPdf(pop);
       const nome = tipo === 'pdf' ? filename.replace(/\.docx$/, '.pdf') : filename;
       triggerDownload(blob, nome);
+      showToast(`Arquivo ${tipo.toUpperCase()} baixado com sucesso.`, 'success');
     } catch {
-      alert('Não foi possível gerar o arquivo.');
+      showToast('Não foi possível gerar o arquivo.', 'error');
     }
   };
 
@@ -57,8 +70,9 @@ export function HomePage() {
       const blob = tipo === 'docx' ? await downloadDocx(record.id) : await downloadPdf(record.id);
       const nome = tipo === 'pdf' ? record.filename.replace(/\.docx$/, '.pdf') : record.filename;
       triggerDownload(blob, nome);
+      showToast(`Arquivo ${tipo.toUpperCase()} baixado com sucesso.`, 'success');
     } catch {
-      alert('Não foi possível baixar o arquivo.');
+      showToast('Não foi possível baixar o arquivo.', 'error');
     }
   };
 
@@ -66,8 +80,9 @@ export function HomePage() {
     if (!confirmando) return;
     try {
       await deletePop(confirmando.id);
+      showToast('POP excluído com sucesso.', 'success');
     } catch {
-      alert('Não foi possível excluir o POP.');
+      showToast('Não foi possível excluir o POP.', 'error');
     }
     setConfirmando(null);
     carregar();
@@ -75,7 +90,8 @@ export function HomePage() {
 
   if (carregando) {
     return (
-      <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--muted)' }}>
+      <div className="dash-loading">
+        <span className="spinner" />
         Carregando…
       </div>
     );
@@ -84,9 +100,12 @@ export function HomePage() {
   if (!fluxo) {
     return (
       <div className="page-header">
-        <h1>🏠 Início</h1>
+        <h1>
+          <IconFileText size={24} />
+          Início
+        </h1>
         <div className="alert alert-warning">
-          Não foi possível carregar o fluxo SEV. Use o menu ‘Formulário’ para criar um POP avulso.
+          Não foi possível carregar o fluxo SEV. Use o menu 'Formulário' para criar um POP avulso.
         </div>
       </div>
     );
@@ -126,7 +145,10 @@ export function HomePage() {
       <Stepper nos={fluxo.nos} />
 
       <section className="dash-section">
-        <h2 className="dash-section-title">📌 Modelo de referência</h2>
+        <h2 className="dash-section-title">
+          <IconPin size={18} />
+          Modelo de referência
+        </h2>
         <CardGrid>
           <ModeloCard onVer={() => {
             getFluxoPop(MODELO_REF).then((pop) => {
@@ -138,7 +160,8 @@ export function HomePage() {
 
       <section className="dash-section">
         <h2 className="dash-section-title">
-          📄 Etapas com POP ({gerados.length}/{total})
+          <IconFileText size={18} />
+          Etapas com POP ({gerados.length}/{total})
         </h2>
         {gerados.length === 0 ? (
           <p className="dash-empty">Nenhuma etapa do fluxo possui POP vinculado ainda.</p>
@@ -158,7 +181,10 @@ export function HomePage() {
       </section>
 
       <section className="dash-section">
-        <h2 className="dash-section-title">⏳ POPs pendentes ({pendentes.length})</h2>
+        <h2 className="dash-section-title">
+          <IconClock size={18} />
+          POPs pendentes ({pendentes.length})
+        </h2>
         {pendentes.length === 0 ? (
           <p className="dash-empty">Todas as etapas do fluxo já possuem POP.</p>
         ) : (
@@ -171,7 +197,10 @@ export function HomePage() {
       </section>
 
       <section className="dash-section">
-        <h2 className="dash-section-title">🗂️ POPs salvos no app ({salvos.length})</h2>
+        <h2 className="dash-section-title">
+          <IconFolder size={18} />
+          POPs salvos no app ({salvos.length})
+        </h2>
         {salvos.length === 0 ? (
           <p className="dash-empty">Nenhum POP salvo ainda. Gere um POP no formulário.</p>
         ) : (
@@ -199,7 +228,7 @@ export function HomePage() {
             <Button variant="ghost" onClick={() => setConfirmando(null)}>
               Cancelar
             </Button>
-            <Button variant="danger" onClick={confirmarExclusao}>
+            <Button variant="danger" icon={<IconTrash size={14} />} onClick={confirmarExclusao}>
               Sim, excluir
             </Button>
           </>
@@ -234,9 +263,9 @@ function ModeloCard({
         Exemplo completo de POP preenchido, validado contra o modelo OpenPort.
       </div>
       <div className="dash-card-actions">
-        <Button onClick={onVer}>Ver modelo no formulário</Button>
-        <Button onClick={() => onBaixar(pop, pop.codigo ? `${pop.codigo}_${slug(pop.nome_pop)}.docx` : 'modelo.docx', 'docx')}>
-          Baixar .docx
+        <Button icon={<IconEye size={14} />} onClick={onVer}>Ver modelo no formulário</Button>
+        <Button icon={<IconDownload size={14} />} onClick={() => onBaixar(pop, pop.codigo ? `${pop.codigo}_${slug(pop.nome_pop)}.docx` : 'modelo.docx', 'docx')}>
+          .docx
         </Button>
       </div>
     </div>
@@ -267,14 +296,14 @@ function CardEtapaGerada({
       <div className="dash-card-caption">{no.descricao}</div>
       {pop ? (
         <div className="dash-card-actions">
-          <Button onClick={onVer}>Visualizar POP</Button>
-          <Button onClick={() => onBaixar(pop, pop.codigo ? `${pop.codigo}_${slug(pop.nome_pop)}.docx` : 'pop.docx', 'docx')}>
+          <Button icon={<IconEye size={14} />} onClick={onVer}>Visualizar POP</Button>
+          <Button icon={<IconDownload size={14} />} onClick={() => onBaixar(pop, pop.codigo ? `${pop.codigo}_${slug(pop.nome_pop)}.docx` : 'pop.docx', 'docx')}>
             .docx
           </Button>
-          <Button onClick={() => onBaixar(pop, pop.codigo ? `${pop.codigo}_${slug(pop.nome_pop)}.docx` : 'pop.docx', 'pdf')}>
+          <Button icon={<IconDownload size={14} />} onClick={() => onBaixar(pop, pop.codigo ? `${pop.codigo}_${slug(pop.nome_pop)}.docx` : 'pop.docx', 'pdf')}>
             .pdf
           </Button>
-          <Button onClick={onEditar}>Editar POP</Button>
+          <Button icon={<IconEdit size={14} />} onClick={onEditar}>Editar POP</Button>
         </div>
       ) : (
         <p className="dash-empty">POP referenciado não encontrado.</p>
@@ -292,7 +321,7 @@ function CardEtapaPendente({ no, onCriar }: { no: FluxoNo; onCriar: () => void }
       </div>
       <div className="dash-card-caption">{no.descricao}</div>
       <div className="dash-card-actions">
-        <Button variant="primary" onClick={onCriar}>
+        <Button variant="primary" icon={<IconPlus size={14} />} onClick={onCriar}>
           Criar POP
         </Button>
       </div>
@@ -323,11 +352,11 @@ function CardSalvo({
         {record.created_at ? formatData(record.created_at) : ''}
       </div>
       <div className="dash-card-actions">
-        <Button onClick={onVer}>Visualizar</Button>
-        <Button onClick={() => onBaixar(record, 'docx')}>.docx</Button>
-        <Button onClick={() => onBaixar(record, 'pdf')}>.pdf</Button>
-        <Button onClick={onEditar}>Editar</Button>
-        <Button variant="danger" onClick={onExcluir}>
+        <Button icon={<IconEye size={14} />} onClick={onVer}>Visualizar</Button>
+        <Button icon={<IconDownload size={14} />} onClick={() => onBaixar(record, 'docx')}>.docx</Button>
+        <Button icon={<IconDownload size={14} />} onClick={() => onBaixar(record, 'pdf')}>.pdf</Button>
+        <Button icon={<IconEdit size={14} />} onClick={onEditar}>Editar</Button>
+        <Button variant="danger" icon={<IconTrash size={14} />} onClick={onExcluir}>
           Excluir
         </Button>
       </div>
