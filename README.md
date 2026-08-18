@@ -90,7 +90,12 @@ tests/                         # pytest (inclui test_api_pops.py)
 
 ## O que a v1 faz
 
-- Formulário com cabeçalho, objetivo, escopo, definições, procedimento (seções/passos dinâmicos com campos obrigatórios), regras, consulta e histórico de revisões
+- UI moderna e sênior (React 19 + TypeScript + Vite 6 + Vanilla CSS) com tema light/dark, glassmorphism (`backdrop-filter`), fonte Inter via Google Fonts e animações fluídas
+- Biblioteca de ícones vetoriais SVG inline (`Icons.tsx`), sistema de notificações flutuantes Toast (`Toast.tsx`) e modais com confirmação e backdrop blur
+- Formulário com seções colapsáveis em sanfona (`Accordion.tsx`), selos informativos (*badges*) e barra de progresso de preenchimento em tempo real
+- Dashboard do fluxo SEV com KPIs animados em estilo *count-up*, stepper com linha conectora visual e ação rápida "Novo POP" no Hero
+- Preview do POP em modo leitura com numeração destacada, passos especiais (sub-cabeçalhos de tela e respostas do sistema) e tabelas zebradas
+- Simulação RPA de preenchimento automático para demonstração prática
 - Validação mínima (nome, código, área e objetivo) e unicidade de código (bloqueio de duplicidade com exceção para edição)
 - Gera `.docx` seguindo a estrutura do modelo `POP_Manobras_CODEBA_v2` (numeração automática das seções, aviso ⚠ no escopo, regras em tabela, fontes do modelo) — validado contra o modelo real OpenPort
 - Export `.pdf` (reportlab) com a mesma estrutura do `.docx`
@@ -98,7 +103,6 @@ tests/                         # pytest (inclui test_api_pops.py)
 - Histórico de POPs gerados em `data/pops/` (JSON + .docx) com re-download e "carregar para editar" (persistente via volume no Docker)
 - Rascunho do formulário persistido entre sessões (`/api/draft`)
 - Backup dos POPs em `.zip` (botão no histórico + `python -m gerapop.backup`)
-- Dashboard do fluxo SEV (KPIs, stepper, cards de etapas e POPs), preview em modo leitura e simulação RPA de preenchimento
 
 ## O que a v1 não faz (proposital)
 
