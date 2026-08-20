@@ -1,7 +1,7 @@
 # GeraPOP — Memória de Contexto para LLMs
 
 > Documento de continuidade do projeto. Leia antes de implementar qualquer feature.
-> Última atualização: 2026-08-20 (Branch `ajustes-finos`: Alinhamento da saída DOCX/PDF ao padrão CODEBA a partir dos modelos `teste/POP-COM-001_*.{docx,pdf}` e `teste/POP-OPE-001_*.{docx,pdf}` — matriz de responsabilidades em 2 variantes (Tela / Fluxo), passos com responsável por linha, seções 7 Registros obrigatórios / 8 Critérios de encerramento / 9 Indicadores, header "Página X de Y" a partir da página 2, rodapé "cópia não controlada", fontes Calibri no PDF; biblioteca alimentada com POP-COM-001 e POP-OPE-001 via `scripts/seed_pops.py`; 68 pytest + 9 Playwright E2E 100% passando; eslint/tsc/vite build limpos).
+> Última atualização: 2026-08-20 (Branch `ajustes-finos`: Alinhamento da saída DOCX/PDF ao padrão CODEBA a partir dos modelos `teste/POP-COM-001_*.{docx,pdf}` e `teste/POP-OPE-001_*.{docx,pdf}` — matriz de responsabilidades em 2 variantes (Tela / Fluxo), passos com responsável por linha, seções 7 Registros obrigatórios / 8 Critérios de encerramento / 9 Indicadores, header "Página X de Y" a partir da página 2, rodapé "cópia não controlada", fontes Calibri no PDF; biblioteca alimentada com POP-COM-001 e POP-OPE-001 via `scripts/seed_pops.py`; 68 pytest + 9 Playwright E2E 100% passando; eslint/tsc/vite build limpos; GNU make 4.4.1 instalado via winget e `Makefile` compatível com Windows — `make run/test/lint` validados).
 
 ---
 
@@ -193,7 +193,14 @@ cd frontend && npm install --registry https://registry.yarnpkg.com
 > **make no Windows:** instalar com `winget install -e --id ezwinports.make` (GNU make 4.4.1). O
 > `Makefile` detecta `OS=Windows_NT` e usa `.venv/Scripts/` (python.exe, pytest.exe, ruff.exe);
 > `make run` inicia o backend via `Start-Process` (detached) e `make clean` usa PowerShell.
-> Em shell novo o PATH já inclui o aliased `make`.
+> O instalador já adiciona o diretório `bin` do pacote ao **User PATH** (não é preciso mexer);
+> apenas abra um **terminal novo** para o `make` resolver.
+>
+> **Servidores persistentes fora da sessão de tooling:** processos iniciados dentro de uma
+> chamada de ferramenta (ex.: `Start-Process`) morrem com o fim dela (job object). Para manter
+> backend + frontend vivos, iniciar a árvore via WMI:
+> `Invoke-CimMethod -ClassName Win32_Process -MethodName Create -Arguments @{ CommandLine = 'cmd.exe /c "C:\Users\BRUNO~1.SAN\AppData\Local\Temp\opencode\start_gerapop.cmd"' }`
+> (o `.cmd` roda `make run` e loga em `%TEMP%\opencode\gerapop_servers.log`).
 
 # Desenvolvimento
 make run          # backend (http://localhost:8000) + frontend (http://localhost:5173)
