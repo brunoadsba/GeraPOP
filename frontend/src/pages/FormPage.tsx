@@ -17,7 +17,6 @@ import { IdentificacaoSection } from '../components/Form/IdentificacaoSection';
 import { ObjetivoEscopoSection } from '../components/Form/ObjetivoEscopoSection';
 import { ProcedimentoSection } from '../components/Form/ProcedimentoSection';
 import { RegrasSection } from '../components/Form/RegrasSection';
-import { RevisoesSection } from '../components/Form/RevisoesSection';
 import { History } from '../components/History/History';
 import { Simulacao } from '../components/Simulation/Simulacao';
 import { Accordion } from '../components/ui/Accordion';
@@ -72,6 +71,8 @@ export function FormPage() {
   const [loadedFromId, setLoadedFromId] = useState<string | null>(null);
   const [confirmandoExclusao, setConfirmandoExclusao] = useState<PopListItem | null>(null);
   const aplicadoDraft = useRef(false);
+
+  const logo = '/logo-codeba-topo.png';
 
   const { isSaving, lastSavedTime, saveNow, discard } = useDraft({
     state,
@@ -244,22 +245,32 @@ export function FormPage() {
 
   return (
     <>
-      <div className="page-header">
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.6rem' }}>
-          <div>
-            <h1>
-              <IconFileText size={24} />
-              Formulário — GeraPOP
-            </h1>
-            <p className="subtitle">Preencha os campos e gere o documento POP formatado (.docx).</p>
+      {/* Cabeçalho compacto com Logo da CODEBA no topo à esquerda */}
+      <div className="form-header-card">
+        <div className="form-header-main">
+          <div className="form-header-brand">
+            <div className="form-logo-box">
+              <img src={logo} alt="CODEBA" className="form-codeba-logo" />
+            </div>
+            <div className="form-header-titles">
+              <h1 className="form-page-title">
+                <IconFileText size={20} />
+                Formulário — GeraPOP
+              </h1>
+              <p className="form-page-subtitle">
+                Preencha os campos e gere o documento POP formatado (.docx).
+              </p>
+            </div>
           </div>
-          {isSaving ? (
-            <span className="draft-indicator">⏳ Salvando rascunho…</span>
-          ) : lastSavedTime ? (
-            <span className="draft-indicator">
-              <IconCheckCircle size={12} /> Rascunho salvo às {lastSavedTime}
-            </span>
-          ) : null}
+          <div className="form-header-status-side">
+            {isSaving ? (
+              <span className="draft-indicator">⏳ Salvando rascunho…</span>
+            ) : lastSavedTime ? (
+              <span className="draft-indicator">
+                <IconCheckCircle size={12} /> Rascunho salvo às {lastSavedTime}
+              </span>
+            ) : null}
+          </div>
         </div>
       </div>
 
@@ -272,8 +283,9 @@ export function FormPage() {
         <>
           <Simulacao dispatch={dispatch} />
 
-          <div className="form-card">
-            <div className="form-progress">
+          <div className="form-workspace">
+            {/* Barra de Progresso Superior */}
+            <div className="form-progress-strip">
               <div
                 className="form-progress-fill"
                 style={{ width: `${progress}%` }}
@@ -285,33 +297,45 @@ export function FormPage() {
               />
             </div>
 
-            <Accordion title="Identificação" badge={state.codigo || undefined}>
+            {/* Bloco Superior: Identificação + Metadados + Histórico de Revisões */}
+            <div className="form-card form-top-card">
               <IdentificacaoSection state={state} dispatch={dispatch} />
-            </Accordion>
+            </div>
 
-            <Accordion title="Objetivo e Escopo">
-              <ObjetivoEscopoSection state={state} dispatch={dispatch} />
-            </Accordion>
+            {/* Seções em Fluxo Completo e Confortável */}
+            <div className="form-sections-stack">
+              <Accordion title="Objetivo e Escopo" defaultOpen={true}>
+                <ObjetivoEscopoSection state={state} dispatch={dispatch} />
+              </Accordion>
 
-            <Accordion title="Definições" badge={`${state.definicoes.filter((d) => d.termo).length}`}>
-              <DefinicoesSection state={state} dispatch={dispatch} />
-            </Accordion>
+              <Accordion
+                title="Definições"
+                badge={`${state.definicoes.filter((d) => d.termo).length}`}
+                defaultOpen={false}
+              >
+                <DefinicoesSection state={state} dispatch={dispatch} />
+              </Accordion>
 
-            <Accordion title="Procedimento" badge={`${state.secoes.length} seções`}>
-              <ProcedimentoSection state={state} dispatch={dispatch} />
-            </Accordion>
+              <Accordion
+                title="Procedimento"
+                badge={`${state.secoes.length} seções`}
+                defaultOpen={true}
+              >
+                <ProcedimentoSection state={state} dispatch={dispatch} />
+              </Accordion>
 
-            <Accordion title="Regras e Restrições" badge={`${state.regras.filter(Boolean).length}`}>
-              <RegrasSection state={state} dispatch={dispatch} />
-            </Accordion>
+              <Accordion
+                title="Regras e Restrições"
+                badge={`${state.regras.filter(Boolean).length}`}
+                defaultOpen={false}
+              >
+                <RegrasSection state={state} dispatch={dispatch} />
+              </Accordion>
 
-            <Accordion title="Consulta e Relatórios" defaultOpen={false}>
-              <ConsultaSection state={state} dispatch={dispatch} />
-            </Accordion>
-
-            <Accordion title="Histórico de Revisões" defaultOpen={false}>
-              <RevisoesSection state={state} dispatch={dispatch} />
-            </Accordion>
+              <Accordion title="Consulta e Relatórios" defaultOpen={false}>
+                <ConsultaSection state={state} dispatch={dispatch} />
+              </Accordion>
+            </div>
           </div>
 
           {erros.length > 0 ? (

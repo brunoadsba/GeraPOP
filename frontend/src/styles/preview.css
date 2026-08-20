@@ -1,81 +1,162 @@
 /* ============================================================
-   Preview — modo leitura do POP (premium visual)
+   Preview — Modo Leitura do POP (Alta Legibilidade e Contraste)
+   Design System CODEBA — Cabeçalho Nítido, Chips de Metadados e Tabela Clara
    ============================================================ */
 
 .preview-hero {
-  background: linear-gradient(135deg, var(--hero-g1), var(--hero-g2));
-  border-radius: var(--radius-xl);
-  padding: 1.4rem 1.6rem;
-  margin: 0.6rem 0 1.2rem;
-  color: #ffffff;
-  animation: fade-up 0.35s ease both;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.4rem 1.8rem;
+  margin: 0.6rem 0 1.4rem;
+  box-shadow: var(--shadow);
+  color: var(--text);
+  animation: fade-up 0.3s ease both;
   position: relative;
-  overflow: hidden;
 }
 
-.preview-hero::before {
-  content: '';
-  position: absolute;
-  top: -30%;
-  right: -5%;
-  width: 200px;
-  height: 200px;
-  background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%);
-  border-radius: 50%;
-  pointer-events: none;
+.preview-brand-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.2rem;
+  margin-bottom: 1.1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.preview-brand-titles {
+  flex: 1;
+  text-align: center;
+}
+
+.preview-brand-spacer {
+  width: 150px;
+  flex-shrink: 0;
+}
+
+.preview-org-label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  display: block;
+  margin-bottom: 0.25rem;
+  font-family: var(--mono);
 }
 
 .preview-hero h1 {
-  margin: 0 0 0.5rem;
-  font-size: 1.4rem;
+  margin: 0;
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: var(--heading);
   line-height: 1.25;
-  color: #ffffff;
-  position: relative;
+}
+
+.preview-meta-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
 }
 
 .preview-chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
-  position: relative;
+  gap: 0.6rem;
 }
 
 .preview-chip {
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  border-radius: 999px;
-  padding: 0.18rem 0.7rem;
-  font-size: 0.68rem;
-  font-weight: 600;
-  letter-spacing: 0.03em;
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.35rem 0.8rem;
+  font-size: 0.82rem;
+  color: var(--text);
   font-family: var(--mono);
-  backdrop-filter: blur(8px);
+}
+
+.preview-chip strong {
+  color: var(--heading);
+  font-weight: 700;
+  margin-right: 0.3rem;
+}
+
+.preview-revisoes-top {
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.85rem 1.1rem;
+  margin-top: 0.3rem;
+}
+
+.preview-revisoes-title {
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--heading);
+  margin-bottom: 0.55rem;
+}
+
+.preview-table-compact {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  margin: 0;
+  background: var(--surface);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.preview-table-compact th {
+  text-align: left;
+  padding: 0.45rem 0.75rem;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--heading);
+  background: var(--hover);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid var(--border);
+}
+
+.preview-table-compact td {
+  padding: 0.5rem 0.75rem;
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
+}
+
+.preview-table-compact tr:last-child td {
+  border-bottom: none;
 }
 
 .preview-aviso {
   background: var(--warning-dim);
-  border-left: 3px solid var(--warning);
-  border-radius: 6px;
-  padding: 0.6rem 0.9rem;
-  margin: 0.6rem 0;
-  font-size: 0.9rem;
+  border-left: 4px solid var(--warning);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem 1.1rem;
+  margin: 0.8rem 0 1.2rem;
+  font-size: 0.92rem;
+  font-weight: 600;
   color: var(--text);
   animation: fade-up 0.3s ease both;
 }
 
 .preview-eyebrow {
   font-family: var(--mono);
-  font-size: 0.64rem;
-  font-weight: 700;
+  font-size: 0.7rem;
+  font-weight: 800;
   letter-spacing: 0.09em;
   text-transform: uppercase;
   color: var(--accent);
   border-top: 1px solid var(--border);
-  margin: 2rem 0 0.4rem;
+  margin: 2rem 0 0.6rem;
   padding-top: 1.2rem;
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.5rem;
 }
 
 .preview-eyebrow::before {
@@ -90,18 +171,18 @@
 .preview-h2 {
   font-size: 1.05rem;
   font-weight: 700;
-  margin: 0.1rem 0 0.5rem;
+  margin: 0.4rem 0 0.5rem;
   color: var(--text);
 }
 
 .preview-h3 {
-  font-size: 0.95rem;
-  font-weight: 700;
-  margin: 0.8rem 0 0.3rem;
-  color: var(--text);
+  font-size: 1rem;
+  font-weight: 800;
+  margin: 1rem 0 0.4rem;
+  color: var(--heading);
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.45rem;
 }
 
 .preview-h3::before {
@@ -114,12 +195,14 @@
 }
 
 .preview-passo {
-  padding: 0.35rem 0 0.35rem 1.8rem;
+  padding: 0.45rem 0 0.45rem 2.2rem;
   position: relative;
-  line-height: 1.5;
+  line-height: 1.55;
   transition: background var(--transition-fast);
-  border-radius: 4px;
-  margin: 0.1rem 0;
+  border-radius: var(--radius-sm);
+  margin: 0.2rem 0;
+  font-size: 0.92rem;
+  color: var(--text);
 }
 
 .preview-passo:hover {
@@ -128,15 +211,15 @@
 
 .preview-passo-num {
   position: absolute;
-  left: 0;
-  top: 0.35rem;
-  width: 1.4rem;
-  height: 1.4rem;
+  left: 0.2rem;
+  top: 0.45rem;
+  width: 1.5rem;
+  height: 1.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.66rem;
-  font-weight: 700;
+  font-size: 0.72rem;
+  font-weight: 800;
   color: var(--accent);
   background: var(--accent-dim);
   border-radius: 5px;
@@ -144,19 +227,20 @@
 }
 
 .preview-regra {
-  padding: 0.3rem 0 0.3rem 1.4rem;
-  font-size: 0.9rem;
+  padding: 0.4rem 0 0.4rem 1.6rem;
+  font-size: 0.92rem;
   position: relative;
   line-height: 1.5;
+  color: var(--text);
 }
 
 .preview-regra::before {
   content: '';
   position: absolute;
   left: 0.4rem;
-  top: 0.7rem;
-  width: 5px;
-  height: 5px;
+  top: 0.75rem;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
   background: var(--danger);
 }
@@ -164,10 +248,12 @@
 .preview-table {
   width: 100%;
   border-collapse: collapse;
-  margin: 0.6rem 0 1.2rem;
-  font-size: 0.86rem;
+  margin: 0.6rem 0 1.4rem;
+  font-size: 0.88rem;
   border-radius: var(--radius-sm);
   overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--border);
 }
 
 .preview-table tr:nth-child(even) {
@@ -177,7 +263,7 @@
 .preview-table td {
   border: none;
   border-bottom: 1px solid var(--border);
-  padding: 0.5rem 0.7rem;
+  padding: 0.6rem 0.85rem;
   vertical-align: top;
 }
 
@@ -186,13 +272,13 @@
 }
 
 .preview-table td:first-child {
-  width: 160px;
+  width: 180px;
   font-weight: 700;
-  color: var(--text);
+  color: var(--heading);
 }
 
 .preview-table td:last-child {
-  color: var(--muted);
+  color: var(--text);
 }
 
 .preview-actions {
@@ -200,5 +286,5 @@
   gap: 0.8rem;
   align-items: center;
   flex-wrap: wrap;
-  margin: 0.6rem 0 1rem;
+  margin: 0.6rem 0 1.2rem;
 }

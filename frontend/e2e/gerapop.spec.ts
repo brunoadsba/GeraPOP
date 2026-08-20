@@ -124,6 +124,7 @@ test('histórico: carregar para editar e baixar backup .zip', async ({ page }) =
 
 test('restaura rascunho persistido entre sessões', async ({ page }) => {
   await page.goto('/formulario');
+  await page.waitForTimeout(600);
   await page.getByLabel('Nome do POP').fill('Rascunho persistente E2E');
   await page.getByLabel('Código').fill(`${CODIGO_BASE}-DRAFT`);
   await page.waitForTimeout(2500);

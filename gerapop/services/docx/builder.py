@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import io
+from pathlib import Path
 
 from docx import Document
 from docx.enum.table import WD_TABLE_ALIGNMENT
@@ -10,23 +11,40 @@ from docx.oxml.ns import qn
 from docx.shared import Cm, Pt, RGBColor
 
 from gerapop.constants import (
+    COR_RESP_CONTROLE,
+    COR_RESP_PRESTADOR,
     COR_SUB,
     DOCX_TITLE,
     FONT_FOOTER_PT,
+    FONT_HEADER_PT,
     FONT_HEADING_PT,
+    FONT_SUBHEADING_PT,
     FONT_SUBTITLE_PT,
     FONT_TITLE_PT,
     MARGIN_BOTTOM_CM,
     MARGIN_LEFT_CM,
     MARGIN_RIGHT_CM,
     MARGIN_TOP_CM,
+    PASSO_COL_WIDTH_CM,
     SHADING_AVISO,
     SHADING_HEADER,
+    SHADING_METADATA,
     SHADING_SUB,
 )
-from gerapop.models import PopData
-from gerapop.services.documento import Aviso, Bloco, Paragrafo, Tabela, Titulo, montar_conteudo
+from gerapop.models import PopData, default_revisao
+from gerapop.services.documento import (
+    Aviso,
+    BannerResponsavel,
+    Bloco,
+    Paragrafo,
+    Subtitulo,
+    Tabela,
+    Titulo,
+    montar_conteudo,
+)
 from gerapop.services.docx.styles import set_cell_shading, style_header_cell
+
+PRIMARY_COLOR_RGB = (0x1F, 0x4E, 0x79)
 
 
 def _configure_margins(doc: Document) -> None:
@@ -73,20 +91,78 @@ def _add_segmentado(paragraph, texto: str, *, bold: bool = False, italic: bool =
 def _set_col_widths(table, larguras_emu: list[int]) -> None:
     table.autofit = False
     for idx, width in enumerate(larguras_emu):
-        table.columns[idx].width = width
-        for cell in table.columns[idx].cells:
-            tc_pr = cell._tc.tcPr
-            if tc_pr is not None and tc_pr.find(qn("w:gridSpan")) is not None:
-                continue
-            cell.width = width
+        if idx < len(table.columns):
+            table.columns[idx].width = width
+            for cell in table.columns[idx].cells:
+                tc_pr = cell._tc.tcPr
+                if tc_pr is not None and tc_pr.find(qn("w:gridSpan")) is not None:
+                    continue
+                cell.width = width
 
 
-def _add_centered_title(doc: Document, text: str, *, size: int) -> None:
-    paragraph = doc.add_paragraph()
-    paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    run = paragraph.add_run(text)
-    run.bold = True
-    run.font.size = Pt(size)
+def _obter_logo_path() -> str | None:
+    candidatos = [
+        Path("Logo CODEBA.png"),
+        Path(__file__).resolve().parent.parent.parent.parent / "Logo CODEBA.png",
+        Path(__file__).resolve().parent.parent.parent / "assets" / "logo-codeba.png",
+        Path(__file__).resolve().parent.parent.parent.parent / "frontend" / "public" / "logo-codeba-topo.png",
+    ]
+    for c in candidatos:
+        if c.is_file():
+            return str(c)
+    return None
+
+
+def _add_header_banner(doc: Document, pop: PopData, largura_util: int) -> None:
+    logo_path = _obter_logo_path()
+    table = doc.add_table(rows=1, cols=2 if logo_path else 1)
+    table.style = "Table Grid"
+    table.alignment = WD_TABLE_ALIGNMENT.CENTER
+
+    # Remove bordas da tabela do banner
+    tblPr = table._tbl.tblPr
+    tblBorders = tblPr.find(qn("w:tblBorders"))
+    if tblBorders is None:
+        tblBorders = OxmlElement("w:tblBorders")
+        tblPr.append(tblBorders)
+    for border_name in ("top", "left", "bottom", "right", "insideH", "insideV"):
+        b = OxmlElement(f"w:{border_name}")
+        b.set(qn("w:val"), "none")
+        tblBorders.append(b)
+
+    if logo_path:
+        cell_logo = table.rows[0].cells[0]
+        p_logo = cell_logo.paragraphs[0]
+        p_logo.alignment = WD_ALIGN_PARAGRAPH.LEFT
+        run_logo = p_logo.add_run()
+        run_logo.add_picture(logo_path, width=Cm(3.88))
+
+        cell_title = table.rows[0].cells[1]
+        p_title = cell_title.paragraphs[0]
+        p_title.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+        run_cat = p_title.add_run("POP – Procedimento Operacional Padrão\n")
+        run_cat.font.size = Pt(11)
+        run_cat.font.color.rgb = RGBColor(0x47, 0x55, 0x69)
+        run_name = p_title.add_run(pop.nome_pop)
+        run_name.bold = True
+        run_name.font.size = Pt(13)
+        run_name.font.color.rgb = RGBColor(*PRIMARY_COLOR_RGB)
+
+        w_logo = Cm(4.2).emu
+        _set_col_widths(table, [w_logo, largura_util - w_logo])
+    else:
+        cell_title = table.rows[0].cells[0]
+        p_title = cell_title.paragraphs[0]
+        p_title.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        run_cat = p_title.add_run("POP – Procedimento Operacional Padrão\n")
+        run_cat.font.size = Pt(11)
+        run_name = p_title.add_run(pop.nome_pop)
+        run_name.bold = True
+        run_name.font.size = Pt(14)
+        run_name.font.color.rgb = RGBColor(*PRIMARY_COLOR_RGB)
+        _set_col_widths(table, [largura_util])
+
+    doc.add_paragraph()
 
 
 def _add_metadata_table(doc: Document, pop: PopData, largura_util: int) -> None:
@@ -96,14 +172,86 @@ def _add_metadata_table(doc: Document, pop: PopData, largura_util: int) -> None:
 
     headers = [(0, 0, "Código"), (0, 2, "Versão"), (1, 0, "Data"), (1, 2, "Área")]
     for row_idx, col_idx, label in headers:
-        style_header_cell(table.rows[row_idx].cells[col_idx], label, shading=SHADING_HEADER)
+        style_header_cell(
+            table.rows[row_idx].cells[col_idx],
+            label,
+            shading=SHADING_METADATA,
+            color=(0x1E, 0x29, 0x3B),
+            size=9,
+        )
 
     table.rows[0].cells[1].text = pop.codigo
     table.rows[0].cells[3].text = pop.versao
     table.rows[1].cells[1].text = pop.data
     table.rows[1].cells[3].text = pop.area
 
-    _set_col_widths(table, [Cm(2.5).emu, Cm(5.5).emu, Cm(2.5).emu, largura_util - Cm(10.5).emu])
+    # Larguras equilibradas (15.92 cm útil total em margem 2.54)
+    w_label = Cm(2.82).emu
+    w_cod = Cm(5.67).emu
+    w_area = largura_util - (w_label * 2 + w_cod)
+    _set_col_widths(table, [w_label, w_cod, w_label, w_area])
+    doc.add_paragraph()
+
+
+def _add_revisoes_table(doc: Document, pop: PopData, largura_util: int) -> None:
+    revisoes = [r for r in pop.revisoes if r.get("revisao", "").strip()]
+    if not revisoes:
+        revisoes = [default_revisao()]
+
+    table = doc.add_table(rows=1 + len(revisoes), cols=4)
+    table.style = "Table Grid"
+    table.alignment = WD_TABLE_ALIGNMENT.CENTER
+
+    headers = ["Rev.", "Data", "Histórico de Revisões", "Responsável"]
+    for idx, label in enumerate(headers):
+        style_header_cell(
+            table.rows[0].cells[idx],
+            label,
+            shading=SHADING_HEADER,
+            color=(0xFF, 0xFF, 0xFF),
+            size=9,
+        )
+
+    for r_idx, rev in enumerate(revisoes, start=1):
+        table.rows[r_idx].cells[0].text = rev.get("revisao", "")
+        table.rows[r_idx].cells[0].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
+        table.rows[r_idx].cells[1].text = rev.get("data", "")
+        table.rows[r_idx].cells[1].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
+        table.rows[r_idx].cells[2].text = rev.get("descricao", "")
+        table.rows[r_idx].cells[3].text = rev.get("responsavel", "")
+
+    w_rev = Cm(1.23).emu
+    w_dt = Cm(2.47).emu
+    w_resp = Cm(3.53).emu
+    w_desc = largura_util - (w_rev + w_dt + w_resp)
+    _set_col_widths(table, [w_rev, w_dt, w_desc, w_resp])
+    doc.add_paragraph()
+
+
+def _add_aprovacao_table(doc: Document, pop: PopData, largura_util: int) -> None:
+    table = doc.add_table(rows=2, cols=4)
+    table.style = "Table Grid"
+    table.alignment = WD_TABLE_ALIGNMENT.CENTER
+
+    headers = ["Elaborado por", "Cargo", "Aprovado por", "Cargo"]
+    for idx, label in enumerate(headers):
+        style_header_cell(
+            table.rows[0].cells[idx],
+            label,
+            shading=SHADING_HEADER,
+            color=(0xFF, 0xFF, 0xFF),
+            size=9,
+        )
+
+    table.rows[1].cells[0].text = pop.elaborado_por or "-"
+    table.rows[1].cells[1].text = pop.elaborado_cargo or "-"
+    table.rows[1].cells[2].text = pop.aprovado_por or "[a preencher]"
+    table.rows[1].cells[3].text = pop.aprovado_cargo or "[a preencher]"
+
+    w_nome = Cm(4.94).emu
+    w_cargo = (largura_util - (w_nome * 2)) // 2
+    _set_col_widths(table, [w_nome, w_cargo, w_nome, largura_util - (w_nome * 2 + w_cargo)])
+    doc.add_paragraph()
 
 
 def _add_aviso(doc: Document, texto: str, largura_util: int) -> None:
@@ -114,24 +262,60 @@ def _add_aviso(doc: Document, texto: str, largura_util: int) -> None:
     _add_segmentado(cell.paragraphs[0], texto, bold=True)
     set_cell_shading(cell, SHADING_AVISO)
     _set_col_widths(table, [largura_util])
+    doc.add_paragraph()
+
+
+def _add_banner_responsavel(doc: Document, banner: BannerResponsavel, largura_util: int) -> None:
+    table = doc.add_table(rows=1, cols=1)
+    table.style = "Table Grid"
+    cell = table.rows[0].cells[0]
+    cell.text = ""
+    p = cell.paragraphs[0]
+    run = p.add_run(banner.texto)
+    run.bold = True
+    run.font.size = Pt(9.5)
+    run.font.color.rgb = RGBColor.from_string(banner.cor_texto)
+    set_cell_shading(cell, banner.cor_fundo)
+    _set_col_widths(table, [largura_util])
 
 
 def _add_heading(doc: Document, numero: int, texto: str) -> None:
     heading = doc.add_paragraph()
+    heading.paragraph_format.space_before = Pt(8)
+    heading.paragraph_format.space_after = Pt(3)
+    heading.paragraph_format.keep_with_next = True
     run = heading.add_run(f"{numero}.  {texto}")
     run.bold = True
     run.font.size = Pt(FONT_HEADING_PT)
+    run.font.color.rgb = RGBColor(*PRIMARY_COLOR_RGB)
+
+
+def _add_subheading(doc: Document, prefixo: str, texto: str) -> None:
+    heading = doc.add_paragraph()
+    heading.paragraph_format.space_before = Pt(6)
+    heading.paragraph_format.space_after = Pt(2)
+    heading.paragraph_format.keep_with_next = True
+    run = heading.add_run(f"{prefixo} {texto}")
+    run.bold = True
+    run.font.size = Pt(FONT_SUBHEADING_PT)
+    run.font.color.rgb = RGBColor(*PRIMARY_COLOR_RGB)
 
 
 def _add_tabela(doc: Document, tabela: Tabela, largura_util: int) -> None:
     tem_cabecalho = tabela.cabecalho is not None and tabela.com_cabecalho_docx
-    colunas = len(tabela.cabecalho) if tabela.cabecalho else len(tabela.linhas[0])
+    colunas = len(tabela.cabecalho) if tabela.cabecalho else (len(tabela.linhas[0]) if tabela.linhas else 1)
     table = doc.add_table(rows=1 if tem_cabecalho else 0, cols=colunas)
     table.style = "Table Grid"
 
-    if tem_cabecalho:
+    if tem_cabecalho and tabela.cabecalho:
         for idx, label in enumerate(tabela.cabecalho):
-            style_header_cell(table.rows[0].cells[idx], label, shading=SHADING_HEADER)
+            style_header_cell(
+                table.rows[0].cells[idx],
+                label,
+                shading=SHADING_HEADER,
+                color=(0xFF, 0xFF, 0xFF),
+                size=9,
+            )
 
     estilos = tabela.estilos_linha or tuple("" for _ in tabela.linhas)
     for linha, estilo in zip(tabela.linhas, estilos):
@@ -144,46 +328,84 @@ def _add_tabela(doc: Document, tabela: Tabela, largura_util: int) -> None:
             set_cell_shading(merged, SHADING_SUB)
             continue
         for idx, valor in enumerate(linha):
-            _add_segmentado(row.cells[idx].paragraphs[0], valor, italic=estilo == "sys")
+            p = row.cells[idx].paragraphs[0]
+            # Se for coluna de número (#) ou estilo sys/primeira célula
+            if idx == 0 and len(linha) == 2 and valor.isdigit():
+                p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                run = p.add_run(valor)
+                run.bold = True
+            elif idx == 0 and tabela.primeira_celula_bold:
+                _add_segmentado(p, valor, bold=True, italic=estilo == "sys")
+            else:
+                _add_segmentado(p, valor, italic=estilo == "sys")
 
     _set_col_widths(table, _larguras_tabela_emu(tabela, largura_util))
+    doc.add_paragraph()
 
 
 def _render_blocos(doc: Document, blocos: list[Bloco], largura_util: int) -> None:
     for bloco in blocos:
         if isinstance(bloco, Titulo):
             _add_heading(doc, bloco.numero, bloco.texto)
+        elif isinstance(bloco, Subtitulo):
+            _add_subheading(doc, bloco.prefixo, bloco.texto)
+        elif isinstance(bloco, BannerResponsavel):
+            _add_banner_responsavel(doc, bloco, largura_util)
         elif isinstance(bloco, Paragrafo):
-            _add_segmentado(doc.add_paragraph(), bloco.texto, bold=bloco.bold)
+            p = doc.add_paragraph()
+            _add_segmentado(p, bloco.texto, bold=bloco.bold)
         elif isinstance(bloco, Aviso):
             _add_aviso(doc, bloco.texto, largura_util)
         else:
             _add_tabela(doc, bloco, largura_util)
 
 
-def _add_footer(doc: Document, pop: PopData) -> None:
+def _add_header_footer(doc: Document, pop: PopData) -> None:
     section = doc.sections[0]
+    largura_util = section.page_width - section.left_margin - section.right_margin
+
+    # Header
+    header = section.header
+    header.is_linked_to_previous = False
+    p_hdr = header.paragraphs[0]
+    p_hdr.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+    run_hdr = p_hdr.add_run(f"{pop.codigo} · {pop.nome_pop} · Versão {pop.versao}")
+    run_hdr.font.size = Pt(FONT_HEADER_PT)
+    run_hdr.font.color.rgb = RGBColor(0x71, 0x80, 0x96)
+
+    # Footer
     footer = section.footer
     footer.is_linked_to_previous = False
-    paragraph = footer.paragraphs[0]
-    largura_util = section.page_width - section.left_margin - section.right_margin
-    paragraph.paragraph_format.tab_stops.add_tab_stop(largura_util, WD_TAB_ALIGNMENT.RIGHT)
-    run = paragraph.add_run(f"{pop.codigo} · {pop.nome_pop}\tVersão {pop.versao} · Pág. ")
-    run.font.size = Pt(FONT_FOOTER_PT)
-    run.font.color.rgb = RGBColor(0x5B, 0x66, 0x72)
+    p_ftr = footer.paragraphs[0]
+    p_ftr.paragraph_format.tab_stops.add_tab_stop(largura_util, WD_TAB_ALIGNMENT.RIGHT)
+    run_ftr_l = p_ftr.add_run(f"{pop.codigo} – {pop.nome_pop} · Versão {pop.versao}\tPág. ")
+    run_ftr_l.font.size = Pt(FONT_FOOTER_PT)
+    run_ftr_l.font.color.rgb = RGBColor(0x47, 0x55, 0x69)
+
+    # Campo de página
     campo_pagina = OxmlElement("w:fldSimple")
     campo_pagina.set(qn("w:instr"), "PAGE")
-    run_el = OxmlElement("w:r")
-    run_props = OxmlElement("w:rPr")
-    size = OxmlElement("w:sz")
-    size.set(qn("w:val"), str(FONT_FOOTER_PT * 2))
-    run_props.append(size)
-    run_el.append(run_props)
-    t_el = OxmlElement("w:t")
-    t_el.text = "1"
-    run_el.append(t_el)
-    campo_pagina.append(run_el)
-    paragraph._p.append(campo_pagina)
+    run_p = OxmlElement("w:r")
+    run_p_props = OxmlElement("w:rPr")
+    sz = OxmlElement("w:sz")
+    sz.set(qn("w:val"), str(FONT_FOOTER_PT * 2))
+    run_p_props.append(sz)
+    run_p.append(run_p_props)
+    t_p = OxmlElement("w:t")
+    t_p.text = "1"
+    run_p.append(t_p)
+    campo_pagina.append(run_p)
+    p_ftr._p.append(campo_pagina)
+
+    # Linha 2 de aviso cópia não controlada
+    p_aviso = footer.add_paragraph()
+    p_aviso.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    run_aviso = p_aviso.add_run(
+        "Documento impresso é uma CÓPIA NÃO CONTROLADA — verifique a versão vigente no controle de documentos antes de utilizá-la."
+    )
+    run_aviso.font.size = Pt(7.5)
+    run_aviso.italic = True
+    run_aviso.font.color.rgb = RGBColor(0x94, 0xA3, 0xB8)
 
 
 def _validar_larguras_tabelas(doc: Document, largura_util: int) -> None:
@@ -218,16 +440,23 @@ def gerar_docx(pop: PopData) -> io.BytesIO:
     _configure_margins(doc)
     largura_util = _largura_util_emu(doc)
 
-    _add_centered_title(doc, DOCX_TITLE, size=FONT_TITLE_PT)
-    _add_centered_title(doc, pop.nome_pop, size=FONT_SUBTITLE_PT)
-    doc.add_paragraph()
+    # 1. Topo: Banner (Logo + Título)
+    _add_header_banner(doc, pop, largura_util)
 
+    # 2. Topo: Metadados (2x4)
     _add_metadata_table(doc, pop, largura_util)
-    doc.add_paragraph()
 
+    # 3. Topo: Histórico de Revisões
+    _add_revisoes_table(doc, pop, largura_util)
+
+    # 4. Topo: Elaboração e Aprovação
+    _add_aprovacao_table(doc, pop, largura_util)
+
+    # 5. Seções Numeradas do Procedimento
     _render_blocos(doc, montar_conteudo(pop), largura_util)
+
     _validar_larguras_tabelas(doc, largura_util)
-    _add_footer(doc, pop)
+    _add_header_footer(doc, pop)
 
     buffer = io.BytesIO()
     doc.save(buffer)

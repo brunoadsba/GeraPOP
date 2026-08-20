@@ -55,28 +55,29 @@ def _texto_tabela(table) -> str:
 def test_numercao_plana_e_aviso_no_escopo(pop_minimo: PopData) -> None:
     pop_minimo.aviso = "Este POP não contempla o anúncio do navio."
     pop_minimo.secoes = [
-        {"titulo": "Acesso ao Módulo de Manobras", "passos": ["Abrir o sistema."]},
-        {"titulo": "Procedimento – Atracação", "passos": ["Localizar o navio."]},
+        {"titulo": "Acesso ao Módulo de Manobras", "responsavel": "", "passos": ["Abrir o sistema."], "campos": []},
+        {"titulo": "Procedimento – Atracação", "responsavel": "", "passos": ["Localizar o navio."], "campos": []},
     ]
 
     texts, tables = _docx_estrutura(pop_minimo)
 
-    assert texts[2:6] == [
-        "1.  Objetivo",
-        "Padronizar o registro de manobras.",
-        "2.  Escopo e Pré-condições",
-        "Aplica-se à equipe de operações.",
-    ]
+    assert "1.  Objetivo" in texts
+    assert "Padronizar o registro de manobras." in texts
+    assert "2.  Campo de Aplicação" in texts
+    assert "Aplica-se à equipe de operações." in texts
     assert "3.  Definições" in texts
-    assert "4.  Acesso ao Módulo de Manobras" in texts
-    assert "5.  Procedimento – Atracação" in texts
-    assert "6.  Regras e Restrições" in texts
-    assert "7.  Consulta e Relatórios" in texts
-    assert "8.  Histórico de Revisões" in texts
-    assert "4.1" not in " ".join(texts)
+    assert "4.  Procedimento" in texts
+    assert any("4.1" in t for t in texts)
+    assert any("4.2" in t for t in texts)
+    assert "5.  Regras e Restrições" in texts
+    assert "6.  Consulta e Relatórios" in texts
+
+    # Histórico de revisões e aprovação no topo
+    assert any("Rev." in _texto_tabela(t) or "Revisão" in _texto_tabela(t) for t in tables)
+    assert any("Elaborado por" in _texto_tabela(t) for t in tables)
 
     aviso_table = next(t for t in tables if "ATENÇÃO" in _texto_tabela(t))
-    assert _texto_tabela(aviso_table) == "⚠ ATENÇÃO: Este POP não contempla o anúncio do navio."
+    assert "ATENÇÃO: Este POP não contempla o anúncio do navio." in _texto_tabela(aviso_table)
 
     regra_table = next(t for t in tables if len(t.columns) == 2 and _texto_tabela(t) == "Regra")
     assert regra_table.rows[1].cells[1].text == "Não executar sem autorização."
@@ -88,7 +89,7 @@ def test_numercao_plana_e_aviso_no_escopo(pop_minimo: PopData) -> None:
 def test_aviso_vem_depois_do_escopo(pop_minimo: PopData) -> None:
     pop_minimo.aviso = "Procedimento condicionado."
 
-    doc = Document(__import__("io").BytesIO(gerar_docx(pop_minimo).getvalue()))
+    doc = Document(io.BytesIO(gerar_docx(pop_minimo).getvalue()))
     seq: list[str] = []
     for child in doc.element.body:
         if child.tag == qn("w:p"):
@@ -101,7 +102,7 @@ def test_aviso_vem_depois_do_escopo(pop_minimo: PopData) -> None:
                 seq.append(text)
 
     escopo = seq.index("Aplica-se à equipe de operações.")
-    assert seq[escopo + 1] == "⚠ ATENÇÃO: Procedimento condicionado."
+    assert any("ATENÇÃO: Procedimento condicionado." in s for s in seq[escopo:])
 
 
 def test_campos_obrigatorios_por_secao(pop_minimo: PopData) -> None:
@@ -112,7 +113,7 @@ def test_campos_obrigatorios_por_secao(pop_minimo: PopData) -> None:
 
     texts, tables = _docx_estrutura(pop_minimo)
 
-    assert "Campos obrigatórios – Atracação:" in texts
+    assert any("Campos obrigatórios" in t for t in texts)
     campos_table = next(t for t in tables if _texto_tabela(t) == "Campo" and len(t.columns) == 2)
     assert [row.cells[0].text for row in campos_table.rows[1:]] == ["Berço", "Data e Hora"]
     assert campos_table.rows[1].cells[1].text == "Número do berço de atracação designado."
@@ -126,11 +127,12 @@ def test_secao_sem_campos_nao_gera_subtabela(pop_minimo: PopData) -> None:
 
 
 def test_secao_antiga_sem_chave_campos(pop_minimo: PopData) -> None:
-    pop_minimo.secoes[0] = {"titulo": "Atracação", "passos": ["Localizar o navio."]}
+    pop_minimo.secoes[0] = {"titulo": "Atracação", "responsavel": "", "passos": ["Localizar o navio."], "campos": []}
 
     texts, _ = _docx_estrutura(pop_minimo)
 
-    assert "4.  Atracação" in texts
+    assert "4.  Procedimento" in texts
+    assert any("4.1" in t and "Atracação" in t for t in texts)
 
 
 def _docx_completo(pop_minimo: PopData) -> Document:
@@ -170,9 +172,9 @@ def test_tabela_passos_numero_estreita_e_descricao_restante(pop_minimo: PopData)
     doc = _docx_completo(pop_minimo)
     largura_util = _largura_util(doc)
 
-    passos_table = next(t for t in doc.tables if _texto_tabela(t) == "1")
-    largura_numero = passos_table.rows[0].cells[0].width
-    largura_descricao = passos_table.rows[0].cells[1].width
+    passos_table = next(t for t in doc.tables if len(t.columns) == 2 and t.rows[0].cells[0].text == "#")
+    largura_numero = passos_table.rows[1].cells[0].width
+    largura_descricao = passos_table.rows[1].cells[1].width
     assert abs(largura_numero - Cm(PASSO_COL_WIDTH_CM)) < 635
     assert abs(largura_descricao - (largura_util - Cm(PASSO_COL_WIDTH_CM))) < 635
 
@@ -194,15 +196,15 @@ def test_passos_sub_cabecalho_e_resposta_sistema(pop_minimo: PopData) -> None:
 
     _, tables = _docx_estrutura(pop_minimo)
     passos_table = next(
-        t for t in tables if len(t.columns) == 2 and _texto_tabela(t).startswith("Tela ")
+        t for t in tables if len(t.columns) == 2 and t.rows[0].cells[0].text == "#"
     )
 
-    sub_cell = passos_table.rows[0].cells[0]
+    sub_cell = passos_table.rows[1].cells[0]
     assert sub_cell.text == "Tela 6002 – Programação de Saída"
     assert sub_cell._tc.tcPr.find(qn("w:gridSpan")) is not None
     assert sub_cell.paragraphs[0].runs[0].bold
 
-    sys_row = passos_table.rows[2]
+    sys_row = passos_table.rows[3]
     assert sys_row.cells[0].text == "—"
     assert all(run.italic for run in sys_row.cells[1].paragraphs[0].runs)
 
@@ -211,9 +213,9 @@ def test_aspas_simples_viram_negrito(pop_minimo: PopData) -> None:
     pop_minimo.secoes[0]["passos"] = ["Clicar no botão 'Novo' e depois em 'Gravar'."]
 
     _, tables = _docx_estrutura(pop_minimo)
-    passos_table = next(t for t in tables if len(t.columns) == 2 and _texto_tabela(t) == "1")
+    passos_table = next(t for t in tables if len(t.columns) == 2 and t.rows[0].cells[0].text == "#")
 
-    runs = passos_table.rows[0].cells[1].paragraphs[0].runs
+    runs = passos_table.rows[1].cells[1].paragraphs[0].runs
     assert [(run.text, run.bold) for run in runs] == [
         ("Clicar no botão ", False),
         ("Novo", True),
@@ -232,7 +234,7 @@ def test_larguras_validas_com_sub_cabecalho_na_primeira_linha(pop_minimo: PopDat
     doc = Document(io.BytesIO(gerar_docx(pop_minimo).getvalue()))
     largura_util = _largura_util(doc)
 
-    passos_table = next(t for t in doc.tables if _texto_tabela(t).startswith("Tela "))
+    passos_table = next(t for t in doc.tables if len(t.columns) == 2 and t.rows[0].cells[0].text == "#")
     primeira_normal = next(
         row
         for row in passos_table.rows

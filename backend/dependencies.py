@@ -17,12 +17,20 @@ def pop_from_request(payload: PopCreateRequest) -> PopData:
         data=payload.data,
         area=payload.area,
         aviso=payload.aviso,
+        elaborado_por=payload.elaborado_por,
+        elaborado_cargo=payload.elaborado_cargo,
+        aprovado_por=payload.aprovado_por,
+        aprovado_cargo=payload.aprovado_cargo,
         objetivo=payload.objetivo,
-        escopo=payload.escopo,
+        campo_aplicacao=payload.campo_aplicacao or payload.escopo,
+        pre_condicoes=payload.pre_condicoes,
+        escopo=payload.escopo or payload.campo_aplicacao,
         definicoes=[d.model_dump() for d in payload.definicoes],
+        matriz_responsabilidades=[m.model_dump() for m in payload.matriz_responsabilidades],
         secoes=[
             {
                 "titulo": s.titulo,
+                "responsavel": s.responsavel,
                 "passos": list(s.passos),
                 "campos": [c.model_dump() for c in s.campos],
             }

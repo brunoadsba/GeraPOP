@@ -96,11 +96,11 @@ button {
 .app-main {
   flex: 1;
   min-width: 0;
-  padding: 2rem 2rem 4rem;
+  padding: 1.5rem 2rem 3.5rem;
 }
 
 .app-container {
-  max-width: clamp(720px, 88%, 1160px);
+  max-width: clamp(720px, 92%, 1160px);
   margin: 0 auto;
 }
 

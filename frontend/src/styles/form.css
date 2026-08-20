@@ -1,58 +1,345 @@
 /* ============================================================
-   Formulário — seções, listas dinâmicas, simulação
-   Premium UI — accordion, progress, rich interactions
+   Formulário — Design System CODEBA (Layout Amplo e Confortável)
+   UX/UI Premium — Cabeçalho com Logo, Metadados + Revisões no Topo, Fluxo Arejado
    ============================================================ */
 
-.form-section {
-  margin-bottom: 1.6rem;
+/* --- Cabeçalho do Formulário (Top Bar com Logo CODEBA) --- */
+.form-header-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1rem 1.4rem;
+  margin-bottom: 1.2rem;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  animation: fade-up 0.25s ease both;
 }
 
-.section-title {
-  font-size: 1.15rem;
-  font-weight: 800;
-  color: var(--heading);
-  margin-bottom: 0.4rem;
+.form-header-main {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
-}
-
-.form-actions {
-  display: flex;
-  gap: 0.8rem;
-  margin-top: 1.6rem;
-  padding-top: 1.4rem;
-  border-top: 1px solid var(--border);
+  justify-content: space-between;
+  gap: 1.2rem;
   flex-wrap: wrap;
 }
 
-/* Listas dinâmicas */
-.dynamic-item {
-  background: var(--surface);
+.form-header-brand {
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+}
+
+.form-logo-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.35rem 0.7rem;
+  background: #FFFFFF;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  padding: 0.8rem;
-  margin-bottom: 0.6rem;
-  animation: fade-up 0.25s ease both;
+  max-width: 150px;
+  height: 44px;
+}
+
+.form-codeba-logo {
+  max-height: 38px;
+  max-width: 130px;
+  width: auto;
+  object-fit: contain;
+  display: block;
+}
+
+.form-header-titles {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-page-title {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--heading);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.form-page-subtitle {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-top: 0.2rem;
+}
+
+.form-header-status-side {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+/* --- Workspace Principal do Formulário --- */
+.form-workspace {
+  position: relative;
+  margin-bottom: 1.5rem;
+}
+
+.form-progress-strip {
+  height: 4px;
+  background: var(--border);
+  border-radius: 99px;
+  margin-bottom: 1.2rem;
+  overflow: hidden;
+}
+
+.form-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--hero-g2));
+  border-radius: 99px;
+  transition: width var(--transition-slow);
+}
+
+/* --- Bloco Superior: Identificação + Metadados + Revisões --- */
+.form-top-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.4rem 1.6rem;
+  margin-bottom: 1.2rem;
+  box-shadow: var(--shadow);
+}
+
+.identificacao-section {
+  margin-bottom: 0;
+}
+
+.ident-row-top {
+  display: grid;
+  grid-template-columns: 1.8fr 1.2fr;
+  gap: 1.2rem;
+  margin-bottom: 1.2rem;
+}
+
+/* Caixa de Metadados Básicos (4 Colunas) */
+.ident-metadata-box {
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.3rem;
+  margin-bottom: 1.2rem;
+}
+
+.ident-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+}
+
+/* Caixa de Histórico de Revisões no Topo */
+.ident-revisoes-box {
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.3rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.ident-revisoes-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.8rem;
+}
+
+.ident-revisoes-title {
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: var(--heading);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.ident-revisoes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.ident-revisao-row {
+  display: grid;
+  grid-template-columns: 70px 130px 1fr 180px 36px;
+  gap: 0.65rem;
+  align-items: flex-end;
+  background: var(--surface);
+  padding: 0.65rem 0.85rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
   transition: border-color var(--transition-fast);
 }
 
-.dynamic-item-actions {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 0.5rem;
+.ident-revisao-row:hover {
+  border-color: color-mix(in srgb, var(--border) 50%, var(--accent));
 }
 
-/* Bloco de procedimento */
-.secao-block {
+.ident-rev-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.ident-rev-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-family: var(--mono);
+}
+
+.btn-remove-rev-spacious {
+  background: transparent;
+  border: none;
+  color: var(--danger);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 38px;
+  width: 36px;
+  border-radius: 6px;
+  transition: background var(--transition-fast);
+}
+
+.btn-remove-rev-spacious:hover {
+  background: var(--danger-dim);
+}
+
+.revisoes-empty {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.8rem 1rem;
+  background: var(--surface);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+/* --- Pilha de Seções em Largura Completa --- */
+.form-sections-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+/* --- Accordions e Seções --- */
+.accordion {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 1.1rem;
-  margin-bottom: 1rem;
+  border-radius: var(--radius-lg);
+  padding: 0.85rem 1.3rem;
   box-shadow: var(--shadow);
-  transition: all var(--transition-normal);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.accordion:hover {
+  border-color: color-mix(in srgb, var(--border) 65%, var(--accent));
+}
+
+.accordion-trigger {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 0.35rem 0;
+  cursor: pointer;
+  color: var(--heading);
+  font-weight: 800;
+  font-size: 1.08rem;
+  text-align: left;
+  transition: color var(--transition-fast);
+}
+
+.accordion-trigger:hover {
+  color: var(--accent);
+}
+
+.accordion-chevron {
+  display: flex;
+  align-items: center;
+  transition: transform var(--transition-normal);
+  color: var(--muted);
+}
+
+.accordion-open .accordion-chevron {
+  transform: rotate(0deg);
+}
+
+.accordion:not(.accordion-open) .accordion-chevron {
+  transform: rotate(-90deg);
+}
+
+.accordion-label {
+  flex: 1;
+}
+
+.accordion-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  background: var(--accent-dim);
+  color: var(--accent);
+  font-family: var(--mono);
+}
+
+.accordion-panel {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows var(--transition-normal);
+}
+
+.accordion:not(.accordion-open) .accordion-panel {
+  grid-template-rows: 0fr;
+}
+
+.accordion-content {
+  overflow: hidden;
+  padding-top: 0.8rem;
+}
+
+.form-section {
+  margin-bottom: 0.6rem;
+}
+
+.section-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--heading);
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+/* --- Procedimento e Blocos de Passos --- */
+.secao-block {
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.3rem;
+  margin-bottom: 1rem;
   position: relative;
+  transition: border-color var(--transition-fast);
 }
 
 .secao-block::before {
@@ -61,14 +348,9 @@
   top: 0;
   left: 0;
   bottom: 0;
-  width: 3px;
-  border-radius: 3px 0 0 3px;
-  background: linear-gradient(180deg, var(--accent), var(--hero-g2));
-  opacity: 0.5;
-}
-
-.secao-block:hover {
-  border-color: color-mix(in srgb, var(--border) 60%, var(--accent));
+  width: 4px;
+  border-radius: 4px 0 0 4px;
+  background: var(--accent);
 }
 
 .secao-block-header {
@@ -79,11 +361,12 @@
 }
 
 .secao-block-title {
-  font-weight: 700;
+  font-weight: 800;
+  font-size: 0.98rem;
   color: var(--heading);
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.5rem;
 }
 
 .secao-block-number {
@@ -95,13 +378,96 @@
   border-radius: 6px;
   background: var(--accent-dim);
   color: var(--accent);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 800;
   font-family: var(--mono);
-  flex-shrink: 0;
 }
 
-/* Histórico */
+.dynamic-item {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem 0.95rem;
+  margin-bottom: 0.65rem;
+  animation: fade-up 0.2s ease both;
+  transition: border-color var(--transition-fast);
+}
+
+.dynamic-item-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.45rem;
+}
+
+.add-btn {
+  border-style: dashed;
+  color: var(--primary);
+  font-size: 0.86rem;
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  margin-top: 0.4rem;
+}
+
+/* --- Simulação RPA --- */
+.sim-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1rem 1.4rem;
+  margin-bottom: 1.2rem;
+  box-shadow: var(--shadow);
+  transition: border-color var(--transition-fast);
+}
+
+.sim-title {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--heading);
+  margin-bottom: 0.3rem;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.sim-caption {
+  color: var(--muted);
+  font-size: 0.84rem;
+  margin-bottom: 0.6rem;
+  line-height: 1.4;
+}
+
+.progress-track {
+  height: 6px;
+  background: var(--hover);
+  border-radius: 999px;
+  overflow: hidden;
+  margin: 0.6rem 0;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--hero-g2));
+  border-radius: 999px;
+  transition: width 0.35s ease;
+}
+
+.progress-label {
+  font-size: 0.76rem;
+  color: var(--muted);
+  font-family: var(--mono);
+}
+
+/* --- Ações do Rodapé --- */
+.form-actions {
+  display: flex;
+  gap: 0.8rem;
+  margin-top: 1.6rem;
+  padding-top: 1.4rem;
+  border-top: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+/* --- Histórico Box --- */
 .history-box {
   margin-top: 2rem;
 }
@@ -117,83 +483,29 @@
   flex: 1;
 }
 
-/* Simulação RPA */
-.sim-box {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 1.1rem;
-  margin-bottom: 1.4rem;
-  box-shadow: var(--shadow);
-  transition: all var(--transition-normal);
-  position: relative;
-  overflow: hidden;
+/* --- Responsividade & Breakpoints --- */
+@media (max-width: 900px) {
+  .ident-meta-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .ident-row-top {
+    grid-template-columns: 1fr;
+  }
+
+  .ident-revisao-row {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
+
+  .ident-revisao-row .cell-desc {
+    grid-column: 1 / -1;
+  }
 }
 
-.sim-box::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, var(--accent), var(--hero-g2));
-  opacity: 0;
-  transition: opacity var(--transition-normal);
+@media (max-width: 600px) {
+  .ident-meta-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
-.sim-box:hover::before {
-  opacity: 0.6;
-}
-
-.sim-title {
-  font-weight: 700;
-  color: var(--heading);
-  margin-bottom: 0.45rem;
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
-}
-
-.sim-caption {
-  color: var(--muted);
-  font-size: 0.82rem;
-  margin-bottom: 0.6rem;
-  line-height: 1.45;
-}
-
-.progress-track {
-  height: 6px;
-  background: var(--hover);
-  border-radius: 999px;
-  overflow: hidden;
-  margin: 0.6rem 0;
-  position: relative;
-}
-
-.progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--accent), var(--hero-g2));
-  border-radius: 999px;
-  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-}
-
-/* Shimmer on progress */
-.progress-fill::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-  animation: shimmer 1.5s ease infinite;
-  background-size: 200% 100%;
-}
-
-.progress-label {
-  font-size: 0.78rem;
-  color: var(--muted);
-  font-family: var(--mono);
-}

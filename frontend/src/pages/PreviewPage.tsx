@@ -120,12 +120,24 @@ export function PreviewPage() {
       </div>
 
       <div className="preview-hero">
-        <h1>{pop.nome_pop || 'POP sem título'}</h1>
-        <div className="preview-chips">
-          <span className="preview-chip">{pop.codigo || 'sem código'}</span>
-          <span className="preview-chip">v{pop.versao}</span>
-          <span className="preview-chip">{pop.data}</span>
-          <span className="preview-chip">{pop.area || 'sem área'}</span>
+        <div className="preview-brand-header">
+          <div className="form-logo-box">
+            <img src="/logo-codeba-topo.png" alt="CODEBA" className="form-codeba-logo" />
+          </div>
+          <div className="preview-brand-titles">
+            <span className="preview-org-label">POP — PROCEDIMENTO OPERACIONAL PADRÃO</span>
+            <h1>{pop.nome_pop || 'POP sem título'}</h1>
+          </div>
+          <div className="preview-brand-spacer" aria-hidden="true" />
+        </div>
+
+        <div className="preview-meta-grid">
+          <div className="preview-chips">
+            <span className="preview-chip"><strong>Código:</strong> {pop.codigo || 'sem código'}</span>
+            <span className="preview-chip"><strong>Versão:</strong> {pop.versao}</span>
+            <span className="preview-chip"><strong>Data:</strong> {pop.data}</span>
+            <span className="preview-chip"><strong>Área:</strong> {pop.area || 'sem área'}</span>
+          </div>
         </div>
       </div>
 
@@ -206,13 +218,31 @@ export function PreviewPage() {
       {pop.revisoes.filter((r) => r.revisao).length > 0 ? (
         <>
           <div className="preview-eyebrow">Histórico de Revisões</div>
-          <Tabela
-            linhas={pop.revisoes
-              .filter((r) => r.revisao)
-              .map((r) => [r.revisao, `${r.data} — ${r.descricao}`])}
-          />
+          <table className="preview-table preview-table-compact">
+            <thead>
+              <tr>
+                <th>Rev</th>
+                <th>Data</th>
+                <th>Descrição</th>
+                <th>Responsável</th>
+              </tr>
+            </thead>
+            <tbody>
+              {pop.revisoes
+                .filter((r) => r.revisao)
+                .map((r, i) => (
+                  <tr key={i}>
+                    <td><strong>{r.revisao}</strong></td>
+                    <td>{r.data}</td>
+                    <td>{r.descricao}</td>
+                    <td>{r.responsavel}</td>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
         </>
       ) : null}
+
     </>
   );
 }

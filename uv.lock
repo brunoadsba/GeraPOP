@@ -279,7 +279,6 @@ dependencies = [
     { name = "fastapi" },
     { name = "python-docx" },
     { name = "reportlab" },
-    { name = "streamlit" },
     { name = "uvicorn", extra = ["standard"] },
 ]
 
@@ -287,6 +286,9 @@ dependencies = [
 dev = [
     { name = "pytest" },
     { name = "ruff" },
+]
+streamlit = [
+    { name = "streamlit" },
 ]
 
 [package.metadata]
@@ -296,10 +298,10 @@ requires-dist = [
     { name = "python-docx", specifier = ">=1.1.2,<2" },
     { name = "reportlab", specifier = ">=5.0.0,<6" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.8.0,<1" },
-    { name = "streamlit", specifier = ">=1.41.0,<2" },
+    { name = "streamlit", marker = "extra == 'streamlit'", specifier = ">=1.41.0,<2" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.34.0,<1" },
 ]
-provides-extras = ["dev"]
+provides-extras = ["streamlit", "dev"]
 
 [[package]]
 name = "h11"

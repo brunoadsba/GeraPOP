@@ -10,6 +10,15 @@ class DefinicaoSchema(BaseModel):
     definicao: str = ""
 
 
+class ItemMatrizSchema(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    tela: str = ""
+    nome_tela: str = ""
+    etapa: str = ""
+    responsavel: str = ""
+
+
 class CampoProcedimentoSchema(BaseModel):
     model_config = ConfigDict(extra="ignore")
 
@@ -21,6 +30,7 @@ class SecaoSchema(BaseModel):
     model_config = ConfigDict(extra="ignore")
 
     titulo: str = ""
+    responsavel: str = ""
     passos: list[str] = []
     campos: list[CampoProcedimentoSchema] = []
 
@@ -43,9 +53,16 @@ class PopCreateRequest(BaseModel):
     data: str = Field(default="", description="Data de emissão (dd/mm/aaaa)")
     area: str = Field(default="", description="Setor responsável")
     aviso: str = Field(default="", description="Alerta opcional")
+    elaborado_por: str = Field(default="", description="Nome do elaborador")
+    elaborado_cargo: str = Field(default="", description="Cargo do elaborador")
+    aprovado_por: str = Field(default="", description="Nome do aprovador")
+    aprovado_cargo: str = Field(default="", description="Cargo do aprovador")
     objetivo: str = Field(default="", description="Objetivo do procedimento")
-    escopo: str = Field(default="", description="Escopo e pré-condições")
+    campo_aplicacao: str = Field(default="", description="Campo de aplicação")
+    pre_condicoes: str = Field(default="", description="Pré-condições")
+    escopo: str = Field(default="", description="Escopo / Campo de Aplicação (legado)")
     definicoes: list[DefinicaoSchema] = []
+    matriz_responsabilidades: list[ItemMatrizSchema] = []
     secoes: list[SecaoSchema] = []
     regras: list[str] = []
     consulta: str = Field(default="", description="Consulta e relatórios")

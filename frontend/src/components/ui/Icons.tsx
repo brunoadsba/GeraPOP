@@ -205,6 +205,14 @@ export const IconClock = multiIcon(
   </>
 );
 
+export const IconHistory = multiIcon(
+  <>
+    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+    <polyline points="3 3 3 8 8 8" />
+    <polyline points="12 7 12 12 15 15" />
+  </>
+);
+
 export const IconFolder = multiIcon(
   <>
     <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
