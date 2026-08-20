@@ -3,11 +3,25 @@
 PYTHON ?= python3.11
 UV ?= uv
 VENV := .venv
+
+ifeq ($(OS),Windows_NT)
+BIN := $(VENV)/Scripts
+PYTHON_BIN := $(BIN)/python.exe
+PYTEST := $(BIN)/pytest.exe
+RUFF := $(BIN)/ruff.exe
+STREAMLIT := $(BIN)/streamlit.exe
+PYTHON ?= 3.11
+CLEAN_CMD = powershell -NoProfile -Command "Remove-Item -Recurse -Force $(VENV),.pytest_cache,.ruff_cache,.mypy_cache -ErrorAction SilentlyContinue; Get-ChildItem -Recurse -Directory -Filter __pycache__ | Remove-Item -Recurse -Force"
+BACKEND_START = powershell -NoProfile -Command "Start-Process '$(PYTHON_BIN)' -ArgumentList '-m','uvicorn','backend.main:app','--reload','--host','127.0.0.1','--port','8000'"
+else
 BIN := $(VENV)/bin
-STREAMLIT := $(BIN)/streamlit
+PYTHON_BIN := $(BIN)/python
 PYTEST := $(BIN)/pytest
 RUFF := $(BIN)/ruff
-PYTHON_BIN := $(BIN)/python
+STREAMLIT := $(BIN)/streamlit
+CLEAN_CMD = rm -rf $(VENV) .pytest_cache .ruff_cache .mypy_cache; find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
+BACKEND_START = $(PYTHON_BIN) -m uvicorn backend.main:app --reload --host 127.0.0.1 --port 8000 &
+endif
 
 help:
 	@echo "Comandos disponíveis:"
@@ -23,12 +37,12 @@ help:
 	@echo "  make clean        — remove venv e caches"
 	@echo "  make docker-run   — sobe via Docker (alternativa ao venv local)"
 
-$(VENV)/bin/python:
+$(PYTHON_BIN):
 	$(UV) venv --python $(PYTHON) $(VENV)
 	$(UV) pip install -r requirements.txt
 	$(UV) pip install -e .
 
-install: $(VENV)/bin/python
+install: $(PYTHON_BIN)
 
 install-dev: install
 	$(UV) pip install -r requirements-dev.txt
@@ -39,7 +53,8 @@ run-backend: install-dev
 run-frontend:
 	cd frontend && npm run dev
 
-run: run-backend &
+run: 
+	$(BACKEND_START)
 	cd frontend && npm run dev
 
 test: install-dev
@@ -54,11 +69,10 @@ format: install-dev
 	$(RUFF) check --fix app.py backend gerapop tests scripts
 
 backup: install
-	$(BIN)/python -m gerapop.backup
+	$(PYTHON_BIN) -m gerapop.backup
 
 clean:
-	rm -rf $(VENV) .pytest_cache .ruff_cache .mypy_cache
-	find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
+	$(CLEAN_CMD)
 
 docker-build:
 	docker compose build

@@ -188,6 +188,12 @@ Contrato frontend ↔ backend: schemas Pydantic em `backend/schemas.py` ↔ inte
 # Setup (primeira vez)
 make install-dev
 cd frontend && npm install --registry https://registry.yarnpkg.com
+```
+
+> **make no Windows:** instalar com `winget install -e --id ezwinports.make` (GNU make 4.4.1). O
+> `Makefile` detecta `OS=Windows_NT` e usa `.venv/Scripts/` (python.exe, pytest.exe, ruff.exe);
+> `make run` inicia o backend via `Start-Process` (detached) e `make clean` usa PowerShell.
+> Em shell novo o PATH já inclui o aliased `make`.
 
 # Desenvolvimento
 make run          # backend (http://localhost:8000) + frontend (http://localhost:5173)
