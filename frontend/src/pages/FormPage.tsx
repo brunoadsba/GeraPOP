@@ -18,7 +18,6 @@ import { ObjetivoEscopoSection } from '../components/Form/ObjetivoEscopoSection'
 import { ProcedimentoSection } from '../components/Form/ProcedimentoSection';
 import { RegrasSection } from '../components/Form/RegrasSection';
 import { History } from '../components/History/History';
-import { Simulacao } from '../components/Simulation/Simulacao';
 import { Accordion } from '../components/ui/Accordion';
 import { Button } from '../components/ui/Button';
 import {
@@ -281,8 +280,6 @@ export function FormPage() {
         </div>
       ) : (
         <>
-          <Simulacao dispatch={dispatch} />
-
           <div className="form-workspace">
             {/* Barra de Progresso Superior */}
             <div className="form-progress-strip">

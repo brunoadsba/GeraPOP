@@ -408,55 +408,6 @@
   margin-top: 0.4rem;
 }
 
-/* --- Simulação RPA --- */
-.sim-box {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 1rem 1.4rem;
-  margin-bottom: 1.2rem;
-  box-shadow: var(--shadow);
-  transition: border-color var(--transition-fast);
-}
-
-.sim-title {
-  font-size: 0.95rem;
-  font-weight: 800;
-  color: var(--heading);
-  margin-bottom: 0.3rem;
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
-}
-
-.sim-caption {
-  color: var(--muted);
-  font-size: 0.84rem;
-  margin-bottom: 0.6rem;
-  line-height: 1.4;
-}
-
-.progress-track {
-  height: 6px;
-  background: var(--hover);
-  border-radius: 999px;
-  overflow: hidden;
-  margin: 0.6rem 0;
-}
-
-.progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--accent), var(--hero-g2));
-  border-radius: 999px;
-  transition: width 0.35s ease;
-}
-
-.progress-label {
-  font-size: 0.76rem;
-  color: var(--muted);
-  font-family: var(--mono);
-}
-
 /* --- Ações do Rodapé --- */
 .form-actions {
   display: flex;

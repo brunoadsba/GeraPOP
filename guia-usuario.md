@@ -39,9 +39,10 @@ O GeraPOP transforma o que você digita num documento pronto para usar.
 
 ## 3. Conhecendo a tela
 
-O GeraPOP possui uma interface moderna, responsiva e com suporte a temas claros e escuros. Tem **duas telas principais**, navegáveis pelo menu lateral (barra à esquerda):
+O GeraPOP possui uma interface moderna, responsiva e com suporte a temas claros e escuros. Tem **três telas principais**, navegáveis pelo menu lateral (barra à esquerda):
 
-- **🏠 Início** — o painel do Fluxo SEV com indicadores animados, indicador visual do fluxo, modelo de referência e ação rápida "Novo POP" (veja a seção 4).
+- **🏠 Início** — visão geral com indicadores reais dos POPs salvos, ações rápidas e lista de recentes (veja a seção 4).
+- **📁 Meus POPs** — a biblioteca de todos os procedimentos salvos, com busca, download e exclusão (veja a seção 7).
 - **📝 Formulário** — onde você cria e edita POPs, organizado em seções colapsáveis (sanfonas/accordions) com indicador de progresso (veja a seção 5).
 
 Na barra lateral há o botão para alternar o **tema claro/escuro**: escolha o que for mais confortável para a sua vista.
@@ -56,16 +57,17 @@ Na tela do Formulário:
 
 ---
 
-## 4. A página Início (o painel do Fluxo SEV)
+## 4. A página Início (visão geral)
 
-A página Início acompanha o **Fluxo SEV** (Desembarque): a sequência de etapas do processo e os POPs de cada etapa. Ela oferece:
+A página Início funciona como um *dashboard* dos seus POPs. Ela oferece:
 
-- **Hero com Ação Rápida** — botão **"Novo POP"** para ir diretamente ao formulário em branco.
-- **Indicadores (KPIs) com Animação** — contadores animados mostrando total de etapas, POPs gerados, POPs pendentes e percentual concluído.
-- **A sequência de passos do fluxo (Stepper)** — visualização em linha conectora com marcador pulsante na etapa atual e ícones de confirmação (✓) nas etapas concluídas.
-- **Modelo de referência** — um POP de exemplo, já preenchido e validado. Você pode baixar o `.docx` dele ou clicar em **"Ver modelo no formulário"** para carregá-lo na tela de edição.
-- **Cards de POPs gerados** — para cada etapa com POP pronto: botões com ícones visuais para **"Visualizar POP"** (modo leitura), baixar `.docx` / `.pdf` e **"Editar POP"**.
-- **Cards de POPs pendentes** — etapas que ainda não têm POP, com o botão **"Criar POP"** para iniciar (nome e descrição já vêm preenchidos no formulário).
+- **Indicadores (KPIs)** — contadores reais dos POPs salvos no sistema: total de **POPs salvos**, criados **hoje** e nos **últimos 7 dias**.
+- **Ações rápidas** — botão **"Novo POP"** para abrir o formulário em branco e **"Ir para a biblioteca"** para ver todos os POPs salvos.
+- **Recentes** — os POPs salvos mais recentes, com atalhos para **Visualizar** (modo leitura) e baixar `.docx` / `.pdf`.
+
+> A gestão completa (buscar, editar, excluir, backup) fica na tela **Meus POPs**.
+> O diagrama interativo do **Fluxo SEV** não faz mais parte deste aplicativo — ele é
+> consultado diretamente na página externa `fluxo-sev/index.html`.
 
 > **Visualizar POP** abre o documento em modo de leitura, com botões para
 > baixar `.docx`/`.pdf` e voltar. Use para conferir um POP sem abrir o Word.
@@ -80,11 +82,9 @@ No topo do formulário você encontra:
 
 - **Barra de Progresso do Preenchimento**: uma barra colorida no topo do cartão do formulário que indica o percentual de preenchimento dos campos obrigatórios em tempo real.
 - **Seções em Sanfona (Accordions)**: o formulário é dividido em blocos expansíveis/colapsáveis (*Identificação*, *Objetivo e Escopo*, *Definições*, *Procedimento*, *Regras*, *Consulta*, *Revisões*). Clique no título da seção para expandir ou recolher. As sanfonas exibem pequenos selos (*badges*) com a quantidade de itens ou status de cada seção.
-- **Simulação de preenchimento (RPA)** — um painel com o botão **"▶ Iniciar simulação"**: um robô preenche o formulário automaticamente, campo a campo, mostrando na prática como cada campo deve ser preenchido. Serve como demonstração; você pode parar a simulação a qualquer momento e editar à vontade.
 
-> Se quiser ver um POP de exemplo preenchido (o **modelo de referência**),
-> abra **🏠 Início** e clique em **"Ver modelo no formulário"** no card do
-> modelo — atenção: isso substitui o que estiver no formulário.
+> Se quiser editar um POP de exemplo já preenchido, use **"Carregar para editar"**
+> no histórico no final do formulário.
 
 ### 5.1 Dados principais (parte de cima)
 
@@ -214,11 +214,16 @@ local que o navegador escolher).
 
 ---
 
-## 7. Histórico de POPs gerados
+## 7. Biblioteca e histórico de POPs gerados
 
-Os POPs gerados ficam guardados na própria ferramenta.
+Os POPs gerados ficam guardados na própria ferramenta e ficam visíveis na tela
+**📁 Meus POPs** (menu lateral), com campo de **busca** por nome, código ou nome
+de arquivo, botão **"Baixar backup (.zip)"** e a opção **"Excluir"** (com
+confirmação) para remover um POP da biblioteca.
 
-1. No final da página do Formulário, use **"Histórico de POPs gerados"**.
+O histórico também está disponível no final da página do Formulário:
+
+1. Use **"Histórico de POPs gerados"**.
 2. Escolha o POP na lista (ela mostra a data, o código e o nome).
 3. Você pode:
    - **"Visualizar"** — abrir o POP em modo de leitura (sem baixar).

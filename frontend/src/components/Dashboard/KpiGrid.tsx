@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { IconClipboard, IconFileText, IconClock, IconCheck } from '../ui/Icons';
+import { IconCheck, IconClipboard, IconClock, IconFileText, IconFolder } from '../ui/Icons';
 
 interface Kpi {
   icone: string;
@@ -12,10 +12,11 @@ interface KpiGridProps {
 }
 
 const KPI_ICONS: Record<string, React.ReactNode> = {
-  'Etapas': <IconClipboard size={18} />,
+  'POPs salvos': <IconFolder size={18} />,
+  'Criados hoje': <IconClock size={18} />,
+  'Últimos 7 dias': <IconFileText size={18} />,
   'Com POP': <IconFileText size={18} />,
-  'Etapas com POP': <IconFileText size={18} />,
-  'POPs gerados': <IconFileText size={18} />,
+  'Etapas': <IconClipboard size={18} />,
   'Pendentes': <IconClock size={18} />,
   'Concluído': <IconCheck size={18} />,
 };

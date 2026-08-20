@@ -27,23 +27,20 @@ async function seedPop(request: APIRequestContext, codigo: string, nome?: string
 
 test.describe.configure({ mode: 'serial' });
 
-test('dashboard carrega fluxo SEV, KPIs e modelo de referência', async ({ page }) => {
+test('início mostra visão geral com KPIs reais e ações rápidas', async ({ page }) => {
   await page.goto('/');
 
-  await expect(page.getByRole('heading', { name: 'Fluxo — Desembarque' })).toBeVisible();
-  await expect(page.locator('.dash-badge')).toHaveText('Fluxo SEV');
+  await expect(page.getByRole('heading', { name: 'Início' })).toBeVisible();
 
-  const kpiEtapas = page.locator('.dash-kpi', { hasText: 'Etapas' });
-  await expect(kpiEtapas.locator('.dash-kpi-value')).toHaveText('7');
+  const kpiSalvos = page.locator('.dash-kpi', { hasText: 'POPs salvos' });
+  await expect(kpiSalvos.locator('.dash-kpi-value')).toHaveText('0');
 
-  await expect(
-    page.locator('.dash-section-title', { hasText: 'Etapas com POP (2/7)' }),
-  ).toBeVisible();
-  await expect(page.locator('.dash-section-title', { hasText: 'POPs pendentes (5)' })).toBeVisible();
+  await expect(page.locator('.dash-section-title', { hasText: 'Ações rápidas' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Novo POP', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Ir para a biblioteca' })).toBeVisible();
 
-  const cardModelo = page.locator('.dash-card', { hasText: 'Manobra de Atracação de Navio' });
-  await expect(cardModelo).toBeVisible();
-  await expect(cardModelo.locator('.dash-chip')).toHaveText('POP-MAN-001');
+  await expect(page.locator('.dash-section-title', { hasText: 'Recentes (0)' })).toBeVisible();
+  await expect(page.locator('.dash-empty')).toContainText('Nenhum POP salvo ainda.');
 });
 
 test('alterna tema claro/escuro', async ({ page }) => {
@@ -70,16 +67,15 @@ test('valida campos obrigatórios antes de gerar', async ({ page }) => {
   await expect(alerta).toContainText('Objetivo é obrigatório.');
 });
 
-test('cria POP pela etapa pendente, gera e baixa .docx/.pdf', async ({ page }) => {
+test('cria POP pelo formulário, gera e baixa .docx/.pdf', async ({ page }) => {
   const codigo = `${CODIGO_BASE}-01`;
   await page.goto('/');
+  await page.getByRole('button', { name: 'Novo POP', exact: true }).click();
 
-  const card = page.locator('.dash-card', { hasText: 'Planejamento da atracação' }).first();
-  await card.getByRole('button', { name: 'Criar POP' }).click();
-
-  await expect(page.getByLabel('Nome do POP')).toHaveValue('Planejamento da atracação');
+  await page.getByLabel('Nome do POP').fill('Planejamento da atracação E2E');
   await page.getByLabel('Código').fill(codigo);
   await page.getByLabel('Área').fill('Operações E2E');
+  await page.getByLabel(/objetivo/i).first().fill('Planejamento da atracação de navio.');
 
   await page.getByRole('button', { name: 'Gerar POP (.docx)', exact: true }).click();
   await expect(page.locator('.alert-success')).toHaveText('POP gerado com sucesso.');
@@ -91,19 +87,6 @@ test('cria POP pela etapa pendente, gera e baixa .docx/.pdf', async ({ page }) =
   const downloadPdf = page.waitForEvent('download');
   await page.getByRole('button', { name: 'Baixar POP (.pdf)' }).click();
   expect((await downloadPdf).suggestedFilename()).toMatch(/\.pdf$/);
-});
-
-test('simulação RPA preenche o formulário passo a passo', async ({ page }) => {
-  await page.goto('/formulario');
-  await page.getByRole('button', { name: /Iniciar simulação/ }).click();
-
-  await expect(page.locator('.progress-track')).toBeVisible();
-  await expect(page.getByLabel('Nome do POP')).toHaveValue('Manobra de Atracação de Navio', {
-    timeout: 15_000,
-  });
-  await expect(page.getByLabel('Código')).toHaveValue('POP-MAN-001');
-
-  await page.getByRole('button', { name: /Parar simulação/ }).click();
 });
 
 test('histórico: carregar para editar e baixar backup .zip', async ({ page }) => {
@@ -150,13 +133,13 @@ test('bloqueia código duplicado ao gerar', async ({ page }) => {
   );
 });
 
-test('exclui POP salvo com confirmação', async ({ page }) => {
+test('exclui POP salvo com confirmação pela biblioteca', async ({ page }) => {
   const codigo = `${CODIGO_BASE}-DEL`;
   await seedPop(page.request, codigo, 'POP a ser excluído');
   const antigo = await page.request.get('/api/pops');
   const antes = ((await antigo.json()) as Array<{ id: string }>).length;
 
-  await page.goto('/');
+  await page.goto('/pops');
   const card = page.locator('.dash-card', { hasText: 'POP a ser excluído' }).first();
   await card.getByRole('button', { name: 'Excluir' }).click();
 

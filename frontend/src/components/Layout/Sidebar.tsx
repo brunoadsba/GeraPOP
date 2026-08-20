@@ -8,7 +8,6 @@ import {
   IconMoon,
   IconPlus,
   IconSun,
-  IconTarget,
 } from '../ui/Icons';
 
 export function Sidebar() {
@@ -34,15 +33,6 @@ export function Sidebar() {
             <IconHome size={18} />
           </span>
           <span className="nav-link-label">Início</span>
-        </NavLink>
-        <NavLink
-          to="/fluxo"
-          className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}
-        >
-          <span className="nav-link-icon" aria-hidden="true">
-            <IconTarget size={18} />
-          </span>
-          <span className="nav-link-label">Fluxo SEV</span>
         </NavLink>
         <NavLink
           to="/pops"

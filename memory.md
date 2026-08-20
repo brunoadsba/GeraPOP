@@ -1,7 +1,7 @@
 # GeraPOP — Memória de Contexto para LLMs
 
 > Documento de continuidade do projeto. Leia antes de implementar qualquer feature.
-> Última atualização: 2026-08-20 (Branch `ajustes-finos`: Alinhamento da saída DOCX/PDF ao padrão CODEBA a partir dos modelos `teste/POP-COM-001_*.{docx,pdf}` e `teste/POP-OPE-001_*.{docx,pdf}` — matriz de responsabilidades em 2 variantes (Tela / Fluxo), passos com responsável por linha, seções 7 Registros obrigatórios / 8 Critérios de encerramento / 9 Indicadores, header "Página X de Y" a partir da página 2, rodapé "cópia não controlada", fontes Calibri no PDF; biblioteca alimentada com POP-COM-001 e POP-OPE-001 via `scripts/seed_pops.py`; 68 pytest + 9 Playwright E2E 100% passando; eslint/tsc/vite build limpos; GNU make 4.4.1 instalado via winget e `Makefile` compatível com Windows — `make run/test/lint` validados).
+> Última atualização: 2026-08-20 (Branch `ajustes-finos`: **simulação RPA removida do projeto** — componente `Simulation/Simulacao.tsx`, seu uso no Formuário, estilos `.sim-*`/`.progress-*`, teste E2E e referências em docs removidos; 68 pytest + 8 Playwright E2E passando). Mudança anterior: **reorganização das telas** — Início virou dashboard enxuto com KPIs reais dos POPs salvos (totais/criados hoje/últimos 7 dias), ações rápidas e recentes; **rota `/fluxo` e a `FluxoPage` removidas** do menu e do router (consulta ao Fluxo SEV passa a ser via diagrama externo `fluxo-sev/`); componentes órfãos `Hero.tsx`/`Stepper.tsx` removidos. Contexto anterior: alinhamento da saída DOCX/PDF ao padrão CODEBA a partir dos modelos `teste/POP-COM-001_*.{docx,pdf}` e `teste/POP-OPE-001_*.{docx,pdf}` — matriz de responsabilidades em 2 variantes (Tela / Fluxo), passos com responsável por linha, seções 7 Registros obrigatórios / 8 Critérios de encerramento / 9 Indicadores, header "Página X de Y" a partir da página 2, rodapé "cópia não controlada", fontes Calibri no PDF; biblioteca alimentada com POP-COM-001 e POP-OPE-001 via `scripts/seed_pops.py`; 68 pytest + 8 Playwright E2E 100% passando; eslint/tsc/vite build limpos; GNU make 4.4.1 instalado via winget e `Makefile` compatível com Windows — `make run/test/lint` validados).
 
 ---
 
@@ -12,8 +12,8 @@
 O usuário preenche um formulário guiado e recebe arquivos `.docx` e `.pdf` formatados, seguindo o padrão oficial da CODEBA com logo e metadados no topo.
 
 **Repositório:** https://github.com/brunoadsba/GeraPOP.git  
-**Branch principal:** `main` (branch de trabalho atual: `ajustes-finos`)  
-**Status atual:** MVP v1 completo (validação por seção, unicidade de código, rascunho persistente, backup zip, export JSON) + export **PDF** (reportlab com logo oficial CODEBA, metadados e revisões no topo em layout de alta densidade) + **dashboard home** (KPIs/stepper do fluxo SEV) + **preview do POP** (modo leitura com botão Editar e downloads) + **simulação RPA** de preenchimento + **design system v2 sênior** (sidebar com navegação estruturada, `/fluxo` com abas, `/pops` com busca, tema light/dark, glassmorphism, ícones SVG inline, toasts, accordions, progresso de formulário em 2 colunas) + **sete de melhorias visuais v1.1** (sub-cabeçalhos de tela, respostas do sistema, negrito em aspas, cabeçalho de regras, rodapé com linha divisória e paginação — docx/pdf/fluxo-sev) + **padrão CODEBA aplicado à saída** (matriz de responsabilidades 2 variantes, passos com responsável por linha, seções 7/8/9, header "Página X de Y" página 2+, rodapé cópia não controlada, fontes Calibri) + **biblioteca alimentada** (`data/pops/` com POP-COM-001 e POP-OPE-001 via `scripts/seed_pops.py`) + **migração de UI para web moderna concluída** (React 19 + TS + Vite 6 no frontend, FastAPI no backend); **68 pytest + 9 testes E2E Playwright 100% passando**; tsc/eslint/build limpos.
+**Branch principal:** `main` (branch de trabalho atual: `ajustes-finos`; `main` mergeada e publicada em `2b5b1bf` — seguir trabalhando em `ajustes-finos` para novos ajustes)  
+**Status atual:** MVP v1 completo (validação por seção, unicidade de código, rascunho persistente, backup zip, export JSON) + export **PDF** (reportlab com logo oficial CODEBA, metadados e revisões no topo em layout de alta densidade) + **dashboard home enxuto** (KPIs reais dos POPs salvos, ações rápidas, recentes; sem fluxo SEV) + **preview do POP** (modo leitura com botão Editar e downloads) + **design system v2 sênior** (sidebar com navegação estruturada — Início/Meus POPs/Novo POP, `/pops` com busca, tema light/dark, glassmorphism, ícones SVG inline, toasts, accordions, progresso de formulário em 2 colunas; **rota `/fluxo` removida** — Fluxo SEV consultado em `fluxo-sev/` externo) + **sete de melhorias visuais v1.1** (sub-cabeçalhos de tela, respostas do sistema, negrito em aspas, cabeçalho de regras, rodapé com linha divisória e paginação — docx/pdf/fluxo-sev) + **padrão CODEBA aplicado à saída** (matriz de responsabilidades 2 variantes, passos com responsável por linha, seções 7/8/9, header "Página X de Y" página 2+, rodapé cópia não controlada, fontes Calibri) + **biblioteca alimentada** (`data/pops/` com POP-COM-001 e POP-OPE-001 via `scripts/seed_pops.py`) + **migração de UI para web moderna concluída** (React 19 + TS + Vite 6 no frontend, FastAPI no backend); **68 pytest + 8 testes E2E Playwright 100% passando**; tsc/eslint/build limpos.
 
 ---
 
@@ -50,7 +50,7 @@ GeraPOP (Projeto 2)  →  dados estruturados  →  Fluxo Interativo SEV (Projeto
 | Frontend | React 19 + TypeScript + Vite 6 + Vanilla CSS (design system CODEBA em `frontend/src/styles/`) |
 | Geração docx | python-docx 1.1 |
 | Geração PDF | reportlab 4.x (layout com logo CODEBA, banner, metadados compactos, linha divisória no rodapé) |
-| Testes | pytest (`tests/` — 68 testes incluindo API TestClient) + Playwright E2E (`frontend/e2e/` — 9 testes usando Chrome do sistema via `channel: 'chrome'`) |
+| Testes | pytest (`tests/` — 68 testes incluindo API TestClient) + Playwright E2E (`frontend/e2e/` — 8 testes usando Chrome do sistema via `channel: 'chrome'`) |
 | Lint/format | ruff (Python) + eslint (frontend) |
 | Ambiente | uv + Makefile |
 | Deploy v2 (futuro) | FastAPI + frontend estático em Docker + volume (persistente) — ver `docs/deploy.md` (deploy local por enquanto) |
@@ -104,12 +104,12 @@ gerapop/
 ├── frontend/                       # React 19 + TypeScript + Vite 6
 │   ├── vite.config.ts              # Proxy /api → http://localhost:8000
 │   ├── src/
-│   │   ├── main.tsx / App.tsx      # Router (/, /fluxo, /pops, /formulario, /preview/:type/:ref)
+│   │   ├── main.tsx / App.tsx      # Router (/, /pops, /formulario, /preview/:type/:ref)
 │   │   ├── api/client.ts           # Fetch wrappers tipados (listPops, generatePop, download...)
 │   │   ├── hooks/                  # useTheme, usePopForm (useReducer), useDraft (auto-save)
-│   │   ├── components/             # Layout (Sidebar), Dashboard (Hero/Kpi/Stepper/Card),
-│   │   │                           #   Form (seções do POP + DynamicList), Simulation, History, ui/
-│   │   ├── pages/                  # HomePage, FluxoPage, PopsPage, FormPage, PreviewPage
+│   │   ├── components/             # Layout (Sidebar), Dashboard (KpiGrid/CardGrid),
+│   │   │                           #   Form (seções do POP + DynamicList), History, ui/
+│   │   ├── pages/                  # HomePage, PopsPage, FormPage, PreviewPage
 │   │   ├── types/pop.ts            # Interfaces TS espelhando PopData
 │   │   └── styles/                 # variables.css (tokens CODEBA light/dark) + global/dashboard/form/preview
 │   └── public/                     # logos (logo-codeba-topo.png, codeba-light/dark) + favicon
@@ -213,7 +213,7 @@ make lint         # ruff check + format --check (Python) e eslint (frontend)
 make format       # auto-format Python
 cd frontend && npm run typecheck  # validação tsc sem erros
 cd frontend && npm run build      # validação de build Vite
-cd frontend && npm run test:e2e   # 9 testes E2E Playwright (Chrome do sistema em portas 5199/8199)
+cd frontend && npm run test:e2e   # 8 testes E2E Playwright (Chrome do sistema em portas 5199/8199)
 
 # Biblioteca de POPs (alimentar data/pops/ com o padrão CODEBA)
 .venv/Scripts/python.exe scripts/seed_pops.py   # idempotente (atualiza registro existente pelo codigo)
@@ -283,7 +283,7 @@ make docker-run
   - `pdfplumber` adicionado como dev dependency (`uv add --dev pdfplumber`).
 - **Qualidade & Validação:**
   - 68 testes pytest verdes (`uv run pytest`).
-  - 9 testes E2E Playwright verdes (`npm run test:e2e`).
+  - 8 testes E2E Playwright verdes (`npm run test:e2e`).
   - `tsc`, `eslint` e `npm run build` 100% limpos.
 
 ---
@@ -302,10 +302,9 @@ make docker-run
 - [x] Export PDF (reportlab) com logo CODEBA, banner e metadados de alta densidade
 - [x] Dashboard home (KPIs, stepper, cards do fluxo SEV)
 - [x] Preview do POP em modo leitura (com .docx/.pdf baixáveis e botão Editar POP)
-- [x] Simulação RPA de preenchimento
 - [x] Design system: paleta light/dark, componentes custom e navegação estruturada no Sidebar
 - [x] Migração de UI: React 19 + TypeScript + Vite 6 + FastAPI
-- [x] Suite de testes automatizados: 68 pytest + 9 E2E Playwright isolados
+- [x] Suite de testes automatizados: 68 pytest + 8 E2E Playwright isolados
 
 ### Gate de negócio (aguarda usuário/equipe)
 - [ ] **Piloto com a equipe** — `docs/piloto.md` (roteiro pronto, GATE explícito)
@@ -364,13 +363,13 @@ Stack: Python 3.11, FastAPI (backend/), React+TS+Vite (frontend/), python-docx,
 reportlab, pytest, ruff, eslint.
 Arquitetura: gerapop/models (domínio), services/docx + services/pdf (geração),
 backend/ (API REST), frontend/ (dashboard, formulário, preview, histórico,
-simulação, tema light/dark), fluxo-sev/ (Projeto 1, HTML/CSS/JS puro).
+tema light/dark), fluxo-sev/ (Projeto 1, HTML/CSS/JS puro).
 
 Estado: Branch `ajustes-finos` com saída alinhada ao padrão CODEBA (matriz de
 responsabilidades 2 variantes, passos com responsável por linha, seções 7/8/9,
 header "Página X de Y" a partir da página 2, rodapé cópia não controlada, fontes
 Calibri); biblioteca alimentada com POP-COM-001 e POP-OPE-001 via
-scripts/seed_pops.py; 68 pytest + 9 E2E Playwright 100% verdes; tsc/eslint/vite
+scripts/seed_pops.py; 68 pytest + 8 E2E Playwright 100% verdes; tsc/eslint/vite
 build limpos.
 
 Próximo passo sugerido: commitar a branch `ajustes-finos`, validar o piloto com a equipe

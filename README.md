@@ -43,7 +43,7 @@ make docker-run
 
 ## Testes E2E (Playwright)
 
-Testes de ponta a ponta no `frontend/e2e/` cobrem dashboard, formulário → geração → download `.docx`/`.pdf`, validação, código duplicado, histórico/backup `.zip`, exclusão com confirmação, simulação RPA e tema claro/escuro.
+Testes de ponta a ponta no `frontend/e2e/` cobrem dashboard, formulário → geração → download `.docx`/`.pdf`, validação, código duplicado, histórico/backup `.zip`, exclusão com confirmação e tema claro/escuro.
 
 ```bash
 cd frontend
@@ -66,7 +66,7 @@ backend/                       # API FastAPI
 frontend/                      # React 19 + TypeScript + Vite
 ├── src/
 │   ├── pages/                 # HomePage, FormPage, PreviewPage
-│   ├── components/            # Layout, Dashboard, Form, History, Simulation, ui
+│   ├── components/            # Layout, Dashboard, Form, History, ui
 │   ├── hooks/                 # useTheme, usePopForm, useDraft
 │   ├── api/client.ts          # Fetch wrappers tipados
 │   ├── types/pop.ts           # Interfaces TS (PopData)
@@ -95,9 +95,8 @@ tests/                         # pytest (68 testes)
 - UI moderna e sênior (React 19 + TypeScript + Vite 6 + Vanilla CSS) com tema light/dark, glassmorphism (`backdrop-filter`), fonte Inter via Google Fonts e animações fluídas
 - Biblioteca de ícones vetoriais SVG inline (`Icons.tsx`), sistema de notificações flutuantes Toast (`Toast.tsx`) e modais com confirmação e backdrop blur
 - Formulário com seções colapsáveis em sanfona (`Accordion.tsx`), selos informativos (*badges*) e barra de progresso de preenchimento em tempo real
-- Dashboard do fluxo SEV com KPIs animados em estilo *count-up*, stepper com linha conectora visual e ação rápida "Novo POP" no Hero
+- Dashboard Início (Home) enxuto com KPIs reais dos POPs salvos (*count-up*), ações rápidas ("Novo POP" e "Ir para a biblioteca") e lista de recentes — a consulta ao **Fluxo SEV** sai do app e fica no diagrama externo `fluxo-sev/`
 - Preview do POP em modo leitura com numeração destacada, passos especiais (sub-cabeçalhos de tela e respostas do sistema) e tabelas zebradas
-- Simulação RPA de preenchimento automático para demonstração prática
 - Validação mínima (nome, código, área e objetivo) e unicidade de código (bloqueio de duplicidade com exceção para edição)
 - Gera `.docx` seguindo a estrutura do modelo `POP_Manobras_CODEBA_v2` (numeração automática das seções, aviso ⚠ no escopo, regras em tabela, fontes do modelo) — validado contra o modelo real OpenPort
 - Export `.pdf` (reportlab) com a mesma estrutura do `.docx`
