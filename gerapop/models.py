@@ -28,11 +28,16 @@ class ItemMatriz(TypedDict):
     nome_tela: str
     etapa: str
     responsavel: str
+    # Variante "fluxo de negócios" (ex.: prospecção comercial): quando preenchido,
+    # a matriz é renderizada como Etapa/Registro/Atividade/Responsável.
+    registro: str
+    atividade: str
 
 
 class Secao(TypedDict):
     titulo: str
     responsavel: str  # ex: "OPERADOR PORTUÁRIO (PRESTADOR)" ou "TPO CONTROLE"
+    responsaveis: list[str]  # responsável de cada passo (paralelo a `passos`)
     passos: list[str]
     campos: list[CampoProcedimento]  # opcional (dados antigos podem não ter)
 
@@ -41,6 +46,12 @@ class Revisao(TypedDict):
     revisao: str
     data: str
     descricao: str
+    responsavel: str
+
+
+class RegistroObrigatorio(TypedDict):
+    registro: str
+    conteudo: str
     responsavel: str
 
 
@@ -53,11 +64,22 @@ def default_campo() -> CampoProcedimento:
 
 
 def default_item_matriz() -> ItemMatriz:
-    return {"tela": "", "nome_tela": "", "etapa": "", "responsavel": ""}
+    return {
+        "tela": "",
+        "nome_tela": "",
+        "etapa": "",
+        "responsavel": "",
+        "registro": "",
+        "atividade": "",
+    }
+
+
+def default_registro_obrigatorio() -> RegistroObrigatorio:
+    return {"registro": "", "conteudo": "", "responsavel": ""}
 
 
 def default_secao() -> Secao:
-    return {"titulo": "", "responsavel": "", "passos": [""], "campos": []}
+    return {"titulo": "", "responsavel": "", "responsaveis": [], "passos": [""], "campos": []}
 
 
 def default_revisao() -> Revisao:
@@ -94,6 +116,10 @@ class PopData:
     secoes: list[Secao] = field(default_factory=list)
     regras: list[str] = field(default_factory=list)
     consulta: str = ""
+    registros_obrigatorios: list[RegistroObrigatorio] = field(default_factory=list)
+    criterios_encerramento: str = ""
+    indicadores: str = ""
+    aviso_final: str = ""
     revisoes: list[Revisao] = field(default_factory=list)
 
     def __post_init__(self) -> None:
@@ -126,6 +152,10 @@ class PopData:
         secoes: list[Secao] | None = None,
         regras: list[str] | None = None,
         consulta: str = "",
+        registros_obrigatorios: list[RegistroObrigatorio] | None = None,
+        criterios_encerramento: str = "",
+        indicadores: str = "",
+        aviso_final: str = "",
         revisoes: list[Revisao] | None = None,
     ) -> PopData:
         return cls(
@@ -148,6 +178,10 @@ class PopData:
             secoes=secoes or [],
             regras=regras or [],
             consulta=consulta.strip(),
+            registros_obrigatorios=registros_obrigatorios or [],
+            criterios_encerramento=criterios_encerramento.strip(),
+            indicadores=indicadores.strip(),
+            aviso_final=aviso_final.strip(),
             revisoes=revisoes or [],
         )
 

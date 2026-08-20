@@ -46,12 +46,12 @@ test: install-dev
 	$(PYTEST) -q
 
 lint: install-dev
-	$(RUFF) check app.py backend gerapop tests
-	$(RUFF) format --check app.py backend gerapop tests
+	$(RUFF) check app.py backend gerapop tests scripts
+	$(RUFF) format --check app.py backend gerapop tests scripts
 
 format: install-dev
-	$(RUFF) format app.py backend gerapop tests
-	$(RUFF) check --fix app.py backend gerapop tests
+	$(RUFF) format app.py backend gerapop tests scripts
+	$(RUFF) check --fix app.py backend gerapop tests scripts
 
 backup: install
 	$(BIN)/python -m gerapop.backup

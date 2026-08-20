@@ -70,7 +70,7 @@ const ROTULOS: (keyof PopData)[] = [
   'escopo',
 ];
 
-const ROTULO_LABEL: Record<keyof PopData, string> = {
+const ROTULO_LABEL: Partial<Record<keyof PopData, string>> = {
   nome_pop: 'Nome do POP',
   codigo: 'Código',
   versao: 'Versão',

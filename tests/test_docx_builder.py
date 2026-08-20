@@ -6,6 +6,7 @@ from docx.shared import Cm
 
 from gerapop.constants import PASSO_COL_WIDTH_CM, ValidationMessage
 from gerapop.models import PopData
+from gerapop.services.documento import titulo_para_header
 from gerapop.services.docx import gerar_docx
 from gerapop.services.docx.styles import set_cell_shading
 
@@ -55,8 +56,18 @@ def _texto_tabela(table) -> str:
 def test_numercao_plana_e_aviso_no_escopo(pop_minimo: PopData) -> None:
     pop_minimo.aviso = "Este POP não contempla o anúncio do navio."
     pop_minimo.secoes = [
-        {"titulo": "Acesso ao Módulo de Manobras", "responsavel": "", "passos": ["Abrir o sistema."], "campos": []},
-        {"titulo": "Procedimento – Atracação", "responsavel": "", "passos": ["Localizar o navio."], "campos": []},
+        {
+            "titulo": "Acesso ao Módulo de Manobras",
+            "responsavel": "",
+            "passos": ["Abrir o sistema."],
+            "campos": [],
+        },
+        {
+            "titulo": "Procedimento – Atracação",
+            "responsavel": "",
+            "passos": ["Localizar o navio."],
+            "campos": [],
+        },
     ]
 
     texts, tables = _docx_estrutura(pop_minimo)
@@ -127,7 +138,12 @@ def test_secao_sem_campos_nao_gera_subtabela(pop_minimo: PopData) -> None:
 
 
 def test_secao_antiga_sem_chave_campos(pop_minimo: PopData) -> None:
-    pop_minimo.secoes[0] = {"titulo": "Atracação", "responsavel": "", "passos": ["Localizar o navio."], "campos": []}
+    pop_minimo.secoes[0] = {
+        "titulo": "Atracação",
+        "responsavel": "",
+        "passos": ["Localizar o navio."],
+        "campos": [],
+    }
 
     texts, _ = _docx_estrutura(pop_minimo)
 
@@ -172,7 +188,9 @@ def test_tabela_passos_numero_estreita_e_descricao_restante(pop_minimo: PopData)
     doc = _docx_completo(pop_minimo)
     largura_util = _largura_util(doc)
 
-    passos_table = next(t for t in doc.tables if len(t.columns) == 2 and t.rows[0].cells[0].text == "#")
+    passos_table = next(
+        t for t in doc.tables if len(t.columns) == 2 and t.rows[0].cells[0].text == "#"
+    )
     largura_numero = passos_table.rows[1].cells[0].width
     largura_descricao = passos_table.rows[1].cells[1].width
     assert abs(largura_numero - Cm(PASSO_COL_WIDTH_CM)) < 635
@@ -195,9 +213,7 @@ def test_passos_sub_cabecalho_e_resposta_sistema(pop_minimo: PopData) -> None:
     ]
 
     _, tables = _docx_estrutura(pop_minimo)
-    passos_table = next(
-        t for t in tables if len(t.columns) == 2 and t.rows[0].cells[0].text == "#"
-    )
+    passos_table = next(t for t in tables if len(t.columns) == 2 and t.rows[0].cells[0].text == "#")
 
     sub_cell = passos_table.rows[1].cells[0]
     assert sub_cell.text == "Tela 6002 – Programação de Saída"
@@ -234,7 +250,9 @@ def test_larguras_validas_com_sub_cabecalho_na_primeira_linha(pop_minimo: PopDat
     doc = Document(io.BytesIO(gerar_docx(pop_minimo).getvalue()))
     largura_util = _largura_util(doc)
 
-    passos_table = next(t for t in doc.tables if len(t.columns) == 2 and t.rows[0].cells[0].text == "#")
+    passos_table = next(
+        t for t in doc.tables if len(t.columns) == 2 and t.rows[0].cells[0].text == "#"
+    )
     primeira_normal = next(
         row
         for row in passos_table.rows
@@ -262,3 +280,112 @@ def test_rodape_com_codigo_versao_e_campo_pagina(pop_minimo: PopData) -> None:
 
     campos = paragraph._p.findall(qn("w:fldSimple"))
     assert campos and campos[0].get(qn("w:instr")) == "PAGE"
+
+
+def test_matriz_fluxo_etapa_registro_atividade(pop_minimo: PopData) -> None:
+    pop_minimo.matriz_responsabilidades = [
+        {
+            "etapa": "1",
+            "registro": "Ficha de oportunidade",
+            "atividade": "Criar e registrar cliente",
+            "responsavel": "Comercial",
+        },
+        {
+            "etapa": "2",
+            "registro": "Avaliação comercial",
+            "atividade": "Avaliar viabilidade",
+            "responsavel": "Comitê comercial",
+        },
+    ]
+
+    _, tables = _docx_estrutura(pop_minimo)
+    matriz = next(t for t in tables if len(t.columns) == 4 and _texto_tabela(t) == "Etapa")
+    assert [c.text for c in matriz.rows[0].cells] == [
+        "Etapa",
+        "Registro",
+        "Atividade",
+        "Responsável",
+    ]
+    assert matriz.rows[1].cells[1].text == "Ficha de oportunidade"
+    assert matriz.rows[2].cells[3].text == "Comitê comercial"
+
+
+def test_passos_com_responsavel_por_linha(pop_minimo: PopData) -> None:
+    pop_minimo.secoes = [
+        {
+            "titulo": "Prospecção",
+            "responsaveis": ["Comercial", "Logística"],
+            "passos": ["Registrar o lead.", "Confirmar o modal."],
+            "campos": [],
+        }
+    ]
+
+    _, tables = _docx_estrutura(pop_minimo)
+    passos = next(t for t in tables if len(t.columns) == 3 and _texto_tabela(t) == "#")
+    assert [c.text for c in passos.rows[0].cells] == ["#", "Responsável", "Passo"]
+    assert passos.rows[1].cells[1].text == "Comercial"
+    assert passos.rows[1].cells[2].text == "Registrar o lead."
+    assert passos.rows[2].cells[1].text == "Logística"
+
+
+def test_banner_nao_repetido_quando_ha_responsavel_por_passo(pop_minimo: PopData) -> None:
+    pop_minimo.secoes = [
+        {
+            "titulo": "Etapa Única",
+            "responsavel": "COMERCIAL",
+            "responsaveis": ["Comercial"],
+            "passos": ["Agir."],
+            "campos": [],
+        }
+    ]
+
+    texto_tabelas = [t.rows[0].cells[0].text for t in _docx_estrutura(pop_minimo)[1]]
+    assert not any("RESPONSÁVEL" in t for t in texto_tabelas)
+
+
+def test_secoes_registros_criterios_indicadores_e_aviso_final(pop_minimo: PopData) -> None:
+    pop_minimo.registros_obrigatorios = [
+        {
+            "registro": "Ficha de oportunidade",
+            "conteudo": "Cliente, produto, volume",
+            "responsavel": "Comercial",
+        },
+    ]
+    pop_minimo.criterios_encerramento = (
+        "Encerrar como convertida somente com primeira operação concluída."
+    )
+    pop_minimo.indicadores = "Taxa de conversão e tempo entre proposta e compromisso."
+    pop_minimo.aviso_final = "NOTA DE CONTROLE: validar antes do uso oficial."
+
+    texts, tables = _docx_estrutura(pop_minimo)
+
+    assert any("Registros obrigatórios" in t for t in texts)
+    assert any("Critérios de encerramento" in t for t in texts)
+    assert any("Indicadores de acompanhamento" in t for t in texts)
+
+    registros = next(t for t in tables if len(t.columns) == 3 and _texto_tabela(t) == "Registro")
+    assert registros.rows[1].cells[1].text == "Cliente, produto, volume"
+
+    aviso_final = next(t for t in tables if "NOTA DE CONTROLE" in _texto_tabela(t))
+    assert "ATENÇÃO: NOTA DE CONTROLE: validar antes do uso oficial." in _texto_tabela(aviso_final)
+
+
+def test_header_so_a_partir_da_segunda_pagina(pop_minimo: PopData) -> None:
+    doc = Document(io.BytesIO(gerar_docx(pop_minimo).getvalue()))
+    section = doc.sections[0]
+
+    assert section.different_first_page_header_footer
+    assert not section.first_page_header.paragraphs[0].text.strip()
+
+    header_texto = section.header.paragraphs[0].text
+    assert header_texto == "POP-OPE-001 · Registro de Manobras · Versão 01 · Página "
+    campos = section.header.paragraphs[0]._p.findall(qn("w:fldSimple"))
+    assert [c.get(qn("w:instr")) for c in campos] == ["PAGE", "NUMPAGES"]
+
+
+def test_titulo_para_header() -> None:
+    assert titulo_para_header("PROSPECÇÃO E FECHAMENTO COMERCIAL DE NOVAS CARGAS") == (
+        "Prospecção e Fechamento Comercial de Novas Cargas"
+    )
+    assert titulo_para_header("PROGRAMAÇÃO DE SAÍDA") == "Programação de Saída"
+    assert titulo_para_header("ATENDIMENTO À FRONTEIRA") == "Atendimento à Fronteira"

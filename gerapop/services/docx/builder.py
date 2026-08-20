@@ -9,23 +9,18 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_TAB_ALIGNMENT
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from docx.shared import Cm, Pt, RGBColor
+from docx.text.paragraph import Paragraph
 
 from gerapop.constants import (
-    COR_RESP_CONTROLE,
-    COR_RESP_PRESTADOR,
     COR_SUB,
-    DOCX_TITLE,
     FONT_FOOTER_PT,
     FONT_HEADER_PT,
     FONT_HEADING_PT,
     FONT_SUBHEADING_PT,
-    FONT_SUBTITLE_PT,
-    FONT_TITLE_PT,
     MARGIN_BOTTOM_CM,
     MARGIN_LEFT_CM,
     MARGIN_RIGHT_CM,
     MARGIN_TOP_CM,
-    PASSO_COL_WIDTH_CM,
     SHADING_AVISO,
     SHADING_HEADER,
     SHADING_METADATA,
@@ -41,6 +36,7 @@ from gerapop.services.documento import (
     Tabela,
     Titulo,
     montar_conteudo,
+    titulo_para_header,
 )
 from gerapop.services.docx.styles import set_cell_shading, style_header_cell
 
@@ -101,11 +97,13 @@ def _set_col_widths(table, larguras_emu: list[int]) -> None:
 
 
 def _obter_logo_path() -> str | None:
+    raiz = Path(__file__).resolve().parent.parent.parent.parent
     candidatos = [
         Path("Logo CODEBA.png"),
-        Path(__file__).resolve().parent.parent.parent.parent / "Logo CODEBA.png",
-        Path(__file__).resolve().parent.parent.parent / "assets" / "logo-codeba.png",
-        Path(__file__).resolve().parent.parent.parent.parent / "frontend" / "public" / "logo-codeba-topo.png",
+        raiz / "Logo CODEBA.png",
+        raiz / "gerapop" / "assets" / "logo-codeba.png",
+        # logo da UI web (fallback)
+        raiz / "frontend" / "public" / "logo-codeba-topo.png",
     ]
     for c in candidatos:
         if c.is_file():
@@ -303,7 +301,11 @@ def _add_subheading(doc: Document, prefixo: str, texto: str) -> None:
 
 def _add_tabela(doc: Document, tabela: Tabela, largura_util: int) -> None:
     tem_cabecalho = tabela.cabecalho is not None and tabela.com_cabecalho_docx
-    colunas = len(tabela.cabecalho) if tabela.cabecalho else (len(tabela.linhas[0]) if tabela.linhas else 1)
+    linha_exemplo = tabela.linhas[0] if tabela.linhas else []
+    if tabela.cabecalho:
+        colunas = len(tabela.cabecalho)
+    else:
+        colunas = len(linha_exemplo) if linha_exemplo else 1
     table = doc.add_table(rows=1 if tem_cabecalho else 0, cols=colunas)
     table.style = "Table Grid"
 
@@ -330,7 +332,7 @@ def _add_tabela(doc: Document, tabela: Tabela, largura_util: int) -> None:
         for idx, valor in enumerate(linha):
             p = row.cells[idx].paragraphs[0]
             # Se for coluna de número (#) ou estilo sys/primeira célula
-            if idx == 0 and len(linha) == 2 and valor.isdigit():
+            if idx == 0 and len(linha) >= 2 and valor.isdigit():
                 p.alignment = WD_ALIGN_PARAGRAPH.CENTER
                 run = p.add_run(valor)
                 run.bold = True
@@ -360,48 +362,57 @@ def _render_blocos(doc: Document, blocos: list[Bloco], largura_util: int) -> Non
             _add_tabela(doc, bloco, largura_util)
 
 
+def _add_pagina_campos(p: Paragraph, *, de: bool = True, tamanho: float = FONT_FOOTER_PT) -> None:
+    """Insere os campos de página "Página X de Y" (PAGE e NUMPAGES)."""
+    for instr, default in (("PAGE", "1"), ("NUMPAGES", "1")):
+        campo = OxmlElement("w:fldSimple")
+        campo.set(qn("w:instr"), instr)
+        run = OxmlElement("w:r")
+        run_props = OxmlElement("w:rPr")
+        sz = OxmlElement("w:sz")
+        sz.set(qn("w:val"), str(round(tamanho * 2)))
+        run_props.append(sz)
+        run.append(run_props)
+        t = OxmlElement("w:t")
+        t.text = default
+        run.append(t)
+        campo.append(run)
+        p._p.append(campo)
+
+
 def _add_header_footer(doc: Document, pop: PopData) -> None:
     section = doc.sections[0]
     largura_util = section.page_width - section.left_margin - section.right_margin
+    nome_titulo = titulo_para_header(pop.nome_pop)
 
-    # Header
+    # Header somente a partir da página 2 (página 1 tem o banner institucional)
+    section.different_first_page_header_footer = True
+
     header = section.header
     header.is_linked_to_previous = False
     p_hdr = header.paragraphs[0]
     p_hdr.alignment = WD_ALIGN_PARAGRAPH.RIGHT
-    run_hdr = p_hdr.add_run(f"{pop.codigo} · {pop.nome_pop} · Versão {pop.versao}")
+    run_hdr = p_hdr.add_run(f"{pop.codigo} · {nome_titulo} · Versão {pop.versao} · Página ")
     run_hdr.font.size = Pt(FONT_HEADER_PT)
     run_hdr.font.color.rgb = RGBColor(0x71, 0x80, 0x96)
+    _add_pagina_campos(p_hdr, de=True, tamanho=FONT_HEADER_PT)
 
     # Footer
     footer = section.footer
     footer.is_linked_to_previous = False
     p_ftr = footer.paragraphs[0]
     p_ftr.paragraph_format.tab_stops.add_tab_stop(largura_util, WD_TAB_ALIGNMENT.RIGHT)
-    run_ftr_l = p_ftr.add_run(f"{pop.codigo} – {pop.nome_pop} · Versão {pop.versao}\tPág. ")
+    run_ftr_l = p_ftr.add_run(f"{pop.codigo} – {nome_titulo} · Versão {pop.versao}\tPágina ")
     run_ftr_l.font.size = Pt(FONT_FOOTER_PT)
     run_ftr_l.font.color.rgb = RGBColor(0x47, 0x55, 0x69)
-
-    # Campo de página
-    campo_pagina = OxmlElement("w:fldSimple")
-    campo_pagina.set(qn("w:instr"), "PAGE")
-    run_p = OxmlElement("w:r")
-    run_p_props = OxmlElement("w:rPr")
-    sz = OxmlElement("w:sz")
-    sz.set(qn("w:val"), str(FONT_FOOTER_PT * 2))
-    run_p_props.append(sz)
-    run_p.append(run_p_props)
-    t_p = OxmlElement("w:t")
-    t_p.text = "1"
-    run_p.append(t_p)
-    campo_pagina.append(run_p)
-    p_ftr._p.append(campo_pagina)
+    _add_pagina_campos(p_ftr, de=True, tamanho=FONT_FOOTER_PT)
 
     # Linha 2 de aviso cópia não controlada
     p_aviso = footer.add_paragraph()
     p_aviso.alignment = WD_ALIGN_PARAGRAPH.CENTER
     run_aviso = p_aviso.add_run(
-        "Documento impresso é uma CÓPIA NÃO CONTROLADA — verifique a versão vigente no controle de documentos antes de utilizá-la."
+        "Documento impresso é uma CÓPIA NÃO CONTROLADA — verifique a versão vigente no controle de "
+        "documentos antes de utilizá-la."
     )
     run_aviso.font.size = Pt(7.5)
     run_aviso.italic = True

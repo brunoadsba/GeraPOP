@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import io
+import os
 from pathlib import Path
 
 from reportlab.lib import colors
@@ -10,12 +11,17 @@ from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import cm
-from reportlab.platypus import Image as RLImage, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.pdfgen import canvas as canvas_module
+from reportlab.platypus import Image as RLImage
+from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
 from gerapop.constants import (
     COR_SUB,
     DOCX_TITLE,
     FONT_FOOTER_PT,
+    FONT_HEADER_PT,
     SHADING_AVISO,
     SHADING_HEADER,
     SHADING_METADATA,
@@ -31,6 +37,7 @@ from gerapop.services.documento import (
     Tabela,
     Titulo,
     montar_conteudo,
+    titulo_para_header,
 )
 
 MARGIN_TOP_CM = 1.0
@@ -38,6 +45,43 @@ MARGIN_BOTTOM_CM = 1.4
 MARGIN_LEFT_CM = 1.3
 MARGIN_RIGHT_CM = 1.3
 _PAGE_W_CM = 21.0 - MARGIN_LEFT_CM - MARGIN_RIGHT_CM  # 18.4 cm
+
+_FONT_DIR = Path(os.environ.get("WINDIR", "C:/Windows")) / "Fonts"
+
+
+def _tentar_registrar(nome_ttf: str, arquivo: str) -> str | None:
+    """Registra uma fonte TTF (Calibri do padrão CODEBA); None se indisponível."""
+    caminho = _FONT_DIR / arquivo
+    if not caminho.is_file():
+        return None
+    try:
+        pdfmetrics.registerFont(TTFont(nome_ttf, str(caminho)))
+        return nome_ttf
+    except Exception:
+        return None
+
+
+_CANDIDATOS = (
+    ("Calibri", "calibri.ttf"),
+    ("Calibri-Bold", "calibrib.ttf"),
+    ("Calibri-Italic", "calibrii.ttf"),
+    ("Calibri-BoldItalic", "calibriz.ttf"),
+)
+_FONTES = {nome: _tentar_registrar(nome, arq) for nome, arq in _CANDIDATOS}
+
+PDF_REGULAR = _FONTES["Calibri"] or "Helvetica"
+PDF_BOLD = _FONTES["Calibri-Bold"] or "Helvetica-Bold"
+PDF_ITALIC = _FONTES["Calibri-Italic"] or "Helvetica-Oblique"
+PDF_BOLD_ITALIC = _FONTES["Calibri-BoldItalic"] or "Helvetica-BoldOblique"
+
+if PDF_REGULAR == "Calibri":
+    pdfmetrics.registerFontFamily(
+        "Calibri",
+        normal=PDF_REGULAR,
+        bold=PDF_BOLD,
+        italic=PDF_ITALIC,
+        boldItalic=PDF_BOLD_ITALIC,
+    )
 
 GRID_COLOR = colors.HexColor("#777777")
 HEADER_BG = colors.HexColor(f"#{SHADING_HEADER}")
@@ -51,7 +95,7 @@ PRIMARY_COLOR = colors.HexColor(f"#{SHADING_HEADER}")
 
 _HEADER_CAT = ParagraphStyle(
     "headercat",
-    fontName="Helvetica-Bold",
+    fontName=PDF_BOLD,
     fontSize=10,
     alignment=TA_RIGHT,
     leading=13,
@@ -59,7 +103,7 @@ _HEADER_CAT = ParagraphStyle(
 )
 _HEADER_NAME = ParagraphStyle(
     "headername",
-    fontName="Helvetica-Bold",
+    fontName=PDF_BOLD,
     fontSize=12,
     alignment=TA_RIGHT,
     leading=15,
@@ -67,7 +111,7 @@ _HEADER_NAME = ParagraphStyle(
 )
 _HEADING = ParagraphStyle(
     "heading",
-    fontName="Helvetica-Bold",
+    fontName=PDF_BOLD,
     fontSize=11,
     leading=14,
     textColor=PRIMARY_COLOR,
@@ -77,7 +121,7 @@ _HEADING = ParagraphStyle(
 )
 _SUBHEADING = ParagraphStyle(
     "subheading",
-    fontName="Helvetica-Bold",
+    fontName=PDF_BOLD,
     fontSize=10,
     leading=13,
     textColor=PRIMARY_COLOR,
@@ -87,7 +131,7 @@ _SUBHEADING = ParagraphStyle(
 )
 _BODY = ParagraphStyle(
     "body",
-    fontName="Helvetica",
+    fontName=PDF_REGULAR,
     fontSize=8.5,
     leading=11.5,
     alignment=TA_LEFT,
@@ -95,11 +139,11 @@ _BODY = ParagraphStyle(
 _BODY_BOLD = ParagraphStyle(
     "bodybold",
     parent=_BODY,
-    fontName="Helvetica-Bold",
+    fontName=PDF_BOLD,
 )
 _CELL = ParagraphStyle(
     "cell",
-    fontName="Helvetica",
+    fontName=PDF_REGULAR,
     fontSize=8,
     leading=10.5,
 )
@@ -111,7 +155,7 @@ _CELL_CENTER = ParagraphStyle(
 _CELL_BOLD = ParagraphStyle(
     "cellbold",
     parent=_CELL,
-    fontName="Helvetica-Bold",
+    fontName=PDF_BOLD,
 )
 _CELL_BOLD_CENTER = ParagraphStyle(
     "cellboldcenter",
@@ -131,12 +175,12 @@ _CELL_HEADER_CENTER = ParagraphStyle(
 _CELL_ITALIC = ParagraphStyle(
     "cellitalic",
     parent=_CELL,
-    fontName="Helvetica-Oblique",
+    fontName=PDF_ITALIC,
 )
 _CELL_SUB = ParagraphStyle(
     "cellsub",
     parent=_CELL,
-    fontName="Helvetica-Bold",
+    fontName=PDF_BOLD,
     textColor=SUB_FG,
 )
 
@@ -163,7 +207,8 @@ def _paragraph(text: str, style: ParagraphStyle = _CELL) -> Paragraph:
 
 
 def _table(data: list[list], col_widths: list[float], repeat_header: bool = True) -> Table:
-    table = Table(data, colWidths=[w * cm for w in col_widths], repeatRows=1 if repeat_header else 0)
+    larguras = [w * cm for w in col_widths]
+    table = Table(data, colWidths=larguras, repeatRows=1 if repeat_header else 0)
     table.setStyle(
         TableStyle(
             [
@@ -180,11 +225,12 @@ def _table(data: list[list], col_widths: list[float], repeat_header: bool = True
 
 
 def _obter_logo_path() -> str | None:
+    raiz = Path(__file__).resolve().parent.parent.parent.parent
     candidatos = [
         Path("Logo CODEBA.png"),
-        Path(__file__).resolve().parent.parent.parent.parent / "Logo CODEBA.png",
-        Path(__file__).resolve().parent.parent.parent / "assets" / "logo-codeba.png",
-        Path(__file__).resolve().parent.parent.parent.parent / "frontend" / "public" / "logo-codeba-topo.png",
+        raiz / "Logo CODEBA.png",
+        raiz / "gerapop" / "assets" / "logo-codeba.png",
+        raiz / "frontend" / "public" / "logo-codeba-topo.png",
     ]
     for c in candidatos:
         if c.is_file():
@@ -351,7 +397,8 @@ def _banner_responsavel_table(banner: BannerResponsavel) -> Table:
         parent=_CELL_BOLD,
         textColor=fg_color,
     )
-    table = _table([[Paragraph(f"<b>{_escape(banner.texto)}</b>", style)]], [_PAGE_W_CM], repeat_header=False)
+    banner_par = Paragraph(f"<b>{_escape(banner.texto)}</b>", style)
+    table = _table([[banner_par]], [_PAGE_W_CM], repeat_header=False)
     table.setStyle(
         TableStyle(
             [
@@ -400,8 +447,10 @@ def _tabela_pdf(tabela: Tabela) -> Table:
         elif tabela.primeira_celula_bold:
             data.append([_paragraph(linha[0], _CELL_BOLD), *[_paragraph(v) for v in linha[1:]]])
         else:
-            if len(linha) == 2 and linha[0].isdigit():
-                data.append([_paragraph(linha[0], _CELL_CENTER), _paragraph(linha[1])])
+            if len(linha) >= 2 and linha[0].isdigit():
+                data.append(
+                    [_paragraph(linha[0], _CELL_CENTER), *[_paragraph(v) for v in linha[1:]]]
+                )
             else:
                 data.append([_paragraph(v) for v in linha])
 
@@ -451,42 +500,82 @@ def _render_blocos(story: list, blocos: list[Bloco]) -> None:
             story.append(Spacer(1, 0.15 * cm))
 
 
-def gerar_pdf(pop: PopData) -> io.BytesIO:
-    buffer = io.BytesIO()
+class _NumberedCanvas(canvas_module.Canvas):
+    """Canvas que conhece o total de páginas para desenhar "Página X de Y".
 
-    def _rodape(canvas, doc) -> None:
-        canvas.saveState()
+    O cabeçalho de rodapé oficial CODEBA é desenhado no `save()` em uma segunda
+    passagem, quando o número total de páginas já é conhecido.
+    """
+
+    def __init__(self, *args, pop: PopData, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._saved_page_states: list[dict] = []
+        self._pop = pop
+
+    def showPage(self) -> None:
+        self._saved_page_states.append(dict(self.__dict__))
+        self._startPage()
+
+    def save(self) -> None:
+        total_pages = len(self._saved_page_states)
+        for state in self._saved_page_states:
+            self.__dict__.update(state)
+            self._desenhar_cabecalho_rodape(total_pages)
+            super().showPage()
+        super().save()
+
+    def _desenhar_cabecalho_rodape(self, total_pages: int) -> None:
+        pop = self._pop
+        page_num = self._pageNumber
+        nome_titulo = titulo_para_header(pop.nome_pop)
+
         # Linha divisória acima do rodapé
-        canvas.setStrokeColor(LINE_COLOR)
-        canvas.setLineWidth(0.5)
-        canvas.line(
+        self.setStrokeColor(LINE_COLOR)
+        self.setLineWidth(0.5)
+        self.line(
             MARGIN_LEFT_CM * cm,
             1.2 * cm,
             A4[0] - MARGIN_RIGHT_CM * cm,
             1.2 * cm,
         )
 
-        canvas.setFont("Helvetica", FONT_FOOTER_PT)
-        canvas.setFillColor(FOOTER_FG)
-        canvas.drawString(
+        # Rodapé (todas as páginas): "COD – Nome · Versão    Página X de Y"
+        self.setFont(PDF_REGULAR, FONT_FOOTER_PT)
+        self.setFillColor(FOOTER_FG)
+        self.drawString(
             MARGIN_LEFT_CM * cm,
             0.8 * cm,
-            f"{pop.codigo} · {pop.nome_pop}",
+            f"{pop.codigo} – {nome_titulo} · Versão {pop.versao}",
         )
-        canvas.drawRightString(
+        self.drawRightString(
             A4[0] - MARGIN_RIGHT_CM * cm,
             0.8 * cm,
-            f"Versão {pop.versao} · Pág. {doc.page}",
+            f"Página {page_num} de {total_pages}",
         )
 
-        canvas.setFont("Helvetica-Oblique", 7)
-        canvas.setFillColor(colors.HexColor("#94A3B8"))
-        canvas.drawCentredString(
+        self.setFont(PDF_ITALIC, 7)
+        self.setFillColor(colors.HexColor("#94A3B8"))
+        self.drawCentredString(
             A4[0] / 2.0,
             0.35 * cm,
-            "Documento impresso é uma CÓPIA NÃO CONTROLADA — verifique a versão vigente no controle de documentos antes de utilizá-la.",
+            "Documento impresso é uma CÓPIA NÃO CONTROLADA — verifique a versão vigente "
+            "no controle de documentos antes de utilizá-la.",
         )
-        canvas.restoreState()
+
+        # Cabeçalho corrente a partir da página 2 (a página 1 tem o banner)
+        if page_num > 1:
+            self.setFont(PDF_REGULAR, FONT_HEADER_PT)
+            self.setFillColor(colors.HexColor("#718096"))
+            self.drawRightString(
+                A4[0] - MARGIN_RIGHT_CM * cm,
+                A4[1] - MARGIN_TOP_CM * cm + 0.55 * cm,
+                f"{pop.codigo} · {nome_titulo} · Versão {pop.versao} · "
+                f"Página {page_num} de {total_pages}",
+            )
+
+
+def gerar_pdf(pop: PopData) -> io.BytesIO:
+    buffer = io.BytesIO()
 
     doc = SimpleDocTemplate(
         buffer,
@@ -497,8 +586,6 @@ def gerar_pdf(pop: PopData) -> io.BytesIO:
         rightMargin=MARGIN_RIGHT_CM * cm,
         title=f"{DOCX_TITLE} — {pop.nome_pop}",
         author="GeraPOP CODEBA",
-        onFirstPage=_rodape,
-        onLaterPages=_rodape,
     )
     story: list = []
 
@@ -521,6 +608,6 @@ def gerar_pdf(pop: PopData) -> io.BytesIO:
     # 5. Seções numeradas do documento
     _render_blocos(story, montar_conteudo(pop))
 
-    doc.build(story)
+    doc.build(story, canvasmaker=lambda *args, **kwargs: _NumberedCanvas(*args, pop=pop, **kwargs))
     buffer.seek(0)
     return buffer

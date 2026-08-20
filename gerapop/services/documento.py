@@ -72,6 +72,46 @@ class Tabela:
 Bloco = Titulo | Subtitulo | Paragrafo | Aviso | BannerResponsavel | Tabela
 
 
+_PALAVRAS_MINUSCULAS = {
+    "a",
+    "as",
+    "à",
+    "às",
+    "com",
+    "da",
+    "das",
+    "de",
+    "do",
+    "dos",
+    "e",
+    "em",
+    "na",
+    "nas",
+    "no",
+    "nos",
+    "para",
+    "por",
+}
+
+
+def titulo_para_header(nome_pop: str) -> str:
+    """Versão em título (Title Case) do nome para cabeçalho/rodapé do documento.
+
+    O nome armazenado é em maiúsculas (ex.: "PROSPECÇÃO E FECHAMENTO COMERCIAL"),
+    mas o cabeçalho/rodapé padrão CODEBA usa "Prospecção e Fechamento Comercial".
+    """
+    palavras = nome_pop.strip().split()
+    if not palavras:
+        return nome_pop
+    resultado = []
+    for idx, palavra in enumerate(palavras):
+        if idx > 0 and palavra.lower() in _PALAVRAS_MINUSCULAS:
+            resultado.append(palavra.lower())
+        else:
+            resultado.append(palavra[0].upper() + palavra[1:].lower())
+    return " ".join(resultado)
+
+
 def _obter_banner_responsavel(responsavel: str) -> BannerResponsavel:
     texto = responsavel.strip()
     if not texto.upper().startswith("RESPONSÁVEL:"):
@@ -123,9 +163,7 @@ def montar_conteudo(pop: PopData) -> list[Bloco]:
     if any(item["termo"].strip() for item in pop.definicoes):
         titulo("Definições")
         linhas_def = tuple(
-            (item["termo"], item["definicao"])
-            for item in pop.definicoes
-            if item["termo"].strip()
+            (item["termo"], item["definicao"]) for item in pop.definicoes if item["termo"].strip()
         )
         blocos.append(
             Tabela(
@@ -137,26 +175,54 @@ def montar_conteudo(pop: PopData) -> list[Bloco]:
         )
 
     # 5. Matriz de Responsabilidades
-    matriz_itens = [m for m in pop.matriz_responsabilidades if m.get("tela", "").strip() or m.get("nome_tela", "").strip()]
-    if matriz_itens:
+    itens_tela = [
+        m
+        for m in pop.matriz_responsabilidades
+        if m.get("tela", "").strip() or m.get("nome_tela", "").strip()
+    ]
+    itens_fluxo = [
+        m
+        for m in pop.matriz_responsabilidades
+        if m.get("registro", "").strip() or m.get("atividade", "").strip()
+    ]
+    if itens_tela or itens_fluxo:
         titulo("Matriz de Responsabilidades")
-        linhas_matriz = tuple(
-            (
-                m.get("tela", ""),
-                m.get("nome_tela", ""),
-                m.get("etapa", ""),
-                m.get("responsavel", ""),
+        if itens_fluxo:
+            linhas_matriz = tuple(
+                (
+                    m.get("etapa", ""),
+                    m.get("registro", ""),
+                    m.get("atividade", ""),
+                    m.get("responsavel", ""),
+                )
+                for m in itens_fluxo
             )
-            for m in matriz_itens
-        )
-        blocos.append(
-            Tabela(
-                ("Tela", "Nome da Tela", "Etapa do Processo", "Responsável"),
-                linhas_matriz,
-                larguras_cm=(1.8, 4.6, 5.2, 4.4),
-                primeira_celula_bold=True,
+            blocos.append(
+                Tabela(
+                    ("Etapa", "Registro", "Atividade", "Responsável"),
+                    linhas_matriz,
+                    larguras_cm=(1.4, 4.6, 5.6, 4.4),
+                    primeira_celula_bold=True,
+                )
             )
-        )
+        else:
+            linhas_matriz = tuple(
+                (
+                    m.get("tela", ""),
+                    m.get("nome_tela", ""),
+                    m.get("etapa", ""),
+                    m.get("responsavel", ""),
+                )
+                for m in itens_tela
+            )
+            blocos.append(
+                Tabela(
+                    ("Tela", "Nome da Tela", "Etapa do Processo", "Responsável"),
+                    linhas_matriz,
+                    larguras_cm=(1.8, 4.6, 5.2, 4.4),
+                    primeira_celula_bold=True,
+                )
+            )
 
     # 6. Procedimento
     secoes_validas = [s for s in pop.secoes if s["titulo"].strip()]
@@ -168,43 +234,60 @@ def montar_conteudo(pop: PopData) -> list[Bloco]:
             # Se o título já começar com o número da subseção (ex: "6.1 Etapa..."), limpa o prefixo
             tit_secao = secao["titulo"].strip()
             if tit_secao.startswith(sub_prefixo):
-                tit_limpo = tit_secao[len(sub_prefixo):].lstrip(" .—–-")
+                tit_limpo = tit_secao[len(sub_prefixo) :].lstrip(" .—–-")
             else:
                 tit_limpo = tit_secao
 
             blocos.append(Subtitulo(sub_prefixo, tit_limpo))
 
-            # Banner de Responsável da seção
-            if secao.get("responsavel", "").strip():
-                blocos.append(_obter_banner_responsavel(secao["responsavel"]))
+            # Passos com responsável individual (#/Responsável/Passo)
+            passos_por_responsavel = [
+                (passo.strip(), resp.strip())
+                for passo, resp in zip(secao.get("passos", []), secao.get("responsaveis", []))
+                if passo.strip()
+            ]
+            if not passos_por_responsavel:
+                # Banner de Responsável da seção
+                if secao.get("responsavel", "").strip():
+                    blocos.append(_obter_banner_responsavel(secao["responsavel"]))
 
-            # Passos da seção
-            linhas_passos: list[tuple[str, str]] = []
-            estilos: list[str] = []
-            passo_numero = 0
-            for passo in secao["passos"]:
-                texto = passo.strip()
-                if not texto:
-                    continue
-                if texto.startswith(SUB_PREFIXO):
-                    linhas_passos.append(("", texto))
-                    estilos.append("sub")
-                elif texto.startswith(SISTEMA_PREFIXO):
-                    linhas_passos.append(("—", texto))
-                    estilos.append("sys")
-                else:
-                    passo_numero += 1
-                    linhas_passos.append((str(passo_numero), texto))
-                    estilos.append("")
+                linhas_passos: list[tuple[str, str]] = []
+                estilos: list[str] = []
+                passo_numero = 0
+                for passo in secao["passos"]:
+                    texto = passo.strip()
+                    if not texto:
+                        continue
+                    if texto.startswith(SUB_PREFIXO):
+                        linhas_passos.append(("", texto))
+                        estilos.append("sub")
+                    elif texto.startswith(SISTEMA_PREFIXO):
+                        linhas_passos.append(("—", texto))
+                        estilos.append("sys")
+                    else:
+                        passo_numero += 1
+                        linhas_passos.append((str(passo_numero), texto))
+                        estilos.append("")
 
-            if linhas_passos:
+                if linhas_passos:
+                    blocos.append(
+                        Tabela(
+                            ("#", "Passo"),
+                            tuple(linhas_passos),
+                            larguras_cm=(PASSO_COL_WIDTH_CM, None),
+                            com_cabecalho_docx=True,
+                            estilos_linha=tuple(estilos),
+                        )
+                    )
+            else:
                 blocos.append(
                     Tabela(
-                        ("#", "Passo"),
-                        tuple(linhas_passos),
-                        larguras_cm=(PASSO_COL_WIDTH_CM, None),
-                        com_cabecalho_docx=True,
-                        estilos_linha=tuple(estilos),
+                        ("#", "Responsável", "Passo"),
+                        tuple(
+                            (str(num), resp, passo)
+                            for num, (passo, resp) in enumerate(passos_por_responsavel, start=1)
+                        ),
+                        larguras_cm=(PASSO_COL_WIDTH_CM, 3.2, None),
                     )
                 )
 
@@ -238,5 +321,38 @@ def montar_conteudo(pop: PopData) -> list[Bloco]:
     if pop.consulta:
         titulo("Consulta e Relatórios")
         blocos.append(Tabela(None, ((pop.consulta,),), larguras_cm=(None,)))
+
+    # Registros obrigatórios (se houver)
+    registros = tuple(r for r in pop.registros_obrigatorios if r.get("registro", "").strip())
+    if registros:
+        titulo("Registros obrigatórios")
+        linhas_registros = tuple(
+            (r.get("registro", ""), r.get("conteudo", ""), r.get("responsavel", ""))
+            for r in registros
+        )
+        blocos.append(
+            Tabela(
+                ("Registro", "Conteúdo mínimo", "Responsável"),
+                linhas_registros,
+                larguras_cm=(4.4, None, 3.6),
+            )
+        )
+
+    # Critérios de encerramento (se houver)
+    if pop.criterios_encerramento.strip():
+        titulo("Critérios de encerramento")
+        blocos.append(Paragrafo(pop.criterios_encerramento))
+
+    # Indicadores de acompanhamento (se houver)
+    if pop.indicadores.strip():
+        titulo("Indicadores de acompanhamento")
+        blocos.append(Paragrafo(pop.indicadores))
+
+    # Aviso final (ex.: nota de controle no encerramento do documento)
+    if pop.aviso_final.strip():
+        aviso_final_txt = pop.aviso_final
+        if not aviso_final_txt.startswith("■") and not aviso_final_txt.startswith("⚠"):
+            aviso_final_txt = f"{AVISO_PREFIX}{aviso_final_txt}"
+        blocos.append(Aviso(aviso_final_txt))
 
     return blocos

@@ -71,21 +71,23 @@ frontend/                      # React 19 + TypeScript + Vite
 │   ├── api/client.ts          # Fetch wrappers tipados
 │   ├── types/pop.ts           # Interfaces TS (PopData)
 │   └── styles/                # Design system CODEBA (light/dark)
-gerapop/                       # Lógica de domínio (inalterada)
-├── models.py                  # Domínio e validação
+gerapop/                       # Lógica de domínio
+├── models.py                  # Domínio e validação (matriz fluxo, responsáveis, seções 7/8/9)
 ├── codigo.py                  # Unicidade de código + rótulo histórico (puro)
 ├── fluxo.py                   # Leitura do fluxo SEV (puro)
 ├── storage.py                 # Histórico em disco (pop.json + pop.docx)
 ├── backup.py                  # CLI de backup (python -m gerapop.backup)
 └── services/
-    ├── documento.py           # Modelo neutro de blocos (docx/pdf)
-    ├── docx/                  # Geração do .docx
-    └── pdf/                   # Geração do .pdf
+    ├── documento.py           # Modelo neutro de blocos (docx/pdf) + título para header
+    ├── docx/                  # Geração do .docx (header página 2+, rodapé cópia não controlada)
+    └── pdf/                   # Geração do .pdf (Calibri, _NumberedCanvas, página X de Y)
+scripts/
+└── seed_pops.py               # Alimenta data/pops/ com o padrão CODEBA (idempotente)
 obsoleto/
 ├── gerapop-streamlit/         # UI Streamlit antiga (arquivada)
 └── tests-streamlit/           # Testes E2E AppTest (arquivados)
 fluxo-sev/                     # Diagrama interativo do fluxo SEV
-tests/                         # pytest (inclui test_api_pops.py)
+tests/                         # pytest (68 testes)
 ```
 
 ## O que a v1 faz
@@ -103,6 +105,21 @@ tests/                         # pytest (inclui test_api_pops.py)
 - Histórico de POPs gerados em `data/pops/` (JSON + .docx) com re-download e "carregar para editar" (persistente via volume no Docker)
 - Rascunho do formulário persistido entre sessões (`/api/draft`)
 - Backup dos POPs em `.zip` (botão no histórico + `python -m gerapop.backup`)
+- **Padrão CODEBA na saída DOCX/PDF:** matriz de responsabilidades em 2 variantes (Tela / Fluxo de negócios), passos com responsável por linha (`# / Responsável / Passo`) ou banner de responsável, seções numeradas 7 Registros obrigatórios / 8 Critérios de encerramento / 9 Indicadores de acompanhamento, aviso final com `■`, header "Página X de Y" a partir da página 2 e rodapé com aviso de cópia não controlada (PDF usa fonte Calibri com fallback)
+
+## Biblioteca de POPs (padrão CODEBA)
+
+A biblioteca (`data/pops/`) é alimentada a partir dos modelos de referência em `teste/` via seed idempotente:
+
+```bash
+.venv/Scripts/python.exe scripts/seed_pops.py
+```
+
+Contém hoje:
+- **POP-COM-001** — Prospecção e Fechamento Comercial de Novas Cargas (v01, matriz fluxo, 8 etapas)
+- **POP-OPE-001** — Programação de Saída (v02, telas 6002/6007, responsabilidades segregadas)
+
+Os arquivos `teste/POP-COM-001_*.{docx,pdf}` e `teste/POP-OPE-001_*.{docx,pdf}` são os modelos de referência do padrão (não versionados).
 
 ## O que a v1 não faz (proposital)
 

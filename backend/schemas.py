@@ -17,6 +17,16 @@ class ItemMatrizSchema(BaseModel):
     nome_tela: str = ""
     etapa: str = ""
     responsavel: str = ""
+    registro: str = ""
+    atividade: str = ""
+
+
+class RegistroObrigatorioSchema(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    registro: str = ""
+    conteudo: str = ""
+    responsavel: str = ""
 
 
 class CampoProcedimentoSchema(BaseModel):
@@ -31,6 +41,7 @@ class SecaoSchema(BaseModel):
 
     titulo: str = ""
     responsavel: str = ""
+    responsaveis: list[str] = []
     passos: list[str] = []
     campos: list[CampoProcedimentoSchema] = []
 
@@ -66,6 +77,10 @@ class PopCreateRequest(BaseModel):
     secoes: list[SecaoSchema] = []
     regras: list[str] = []
     consulta: str = Field(default="", description="Consulta e relatórios")
+    registros_obrigatorios: list[RegistroObrigatorioSchema] = []
+    criterios_encerramento: str = Field(default="", description="Critérios de encerramento")
+    indicadores: str = Field(default="", description="Indicadores de acompanhamento")
+    aviso_final: str = Field(default="", description="Aviso/nota final em destaque")
     revisoes: list[RevisaoSchema] = []
 
 

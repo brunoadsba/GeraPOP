@@ -8,8 +8,25 @@ export interface CampoProcedimento {
   descricao: string;
 }
 
+export interface ItemMatriz {
+  tela: string;
+  nome_tela: string;
+  etapa: string;
+  responsavel: string;
+  registro?: string;
+  atividade?: string;
+}
+
+export interface RegistroObrigatorio {
+  registro: string;
+  conteudo: string;
+  responsavel: string;
+}
+
 export interface Secao {
   titulo: string;
+  responsavel?: string;
+  responsaveis?: string[];
   passos: string[];
   campos: CampoProcedimento[];
 }
@@ -30,10 +47,21 @@ export interface PopData {
   aviso: string;
   objetivo: string;
   escopo: string;
+  campo_aplicacao?: string;
+  pre_condicoes?: string;
+  elaborado_por?: string;
+  elaborado_cargo?: string;
+  aprovado_por?: string;
+  aprovado_cargo?: string;
   definicoes: Definicao[];
+  matriz_responsabilidades?: ItemMatriz[];
   secoes: Secao[];
   regras: string[];
   consulta: string;
+  registros_obrigatorios?: RegistroObrigatorio[];
+  criterios_encerramento?: string;
+  indicadores?: string;
+  aviso_final?: string;
   revisoes: Revisao[];
 }
 

@@ -31,6 +31,7 @@ def pop_from_request(payload: PopCreateRequest) -> PopData:
             {
                 "titulo": s.titulo,
                 "responsavel": s.responsavel,
+                "responsaveis": list(s.responsaveis),
                 "passos": list(s.passos),
                 "campos": [c.model_dump() for c in s.campos],
             }
@@ -38,6 +39,10 @@ def pop_from_request(payload: PopCreateRequest) -> PopData:
         ],
         regras=list(payload.regras),
         consulta=payload.consulta,
+        registros_obrigatorios=[r.model_dump() for r in payload.registros_obrigatorios],
+        criterios_encerramento=payload.criterios_encerramento,
+        indicadores=payload.indicadores,
+        aviso_final=payload.aviso_final,
         revisoes=[r.model_dump() for r in payload.revisoes],
     )
 
