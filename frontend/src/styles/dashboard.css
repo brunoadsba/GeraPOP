@@ -3,95 +3,80 @@
    Premium design — glassmorphism, animations, rich interactions
    ============================================================ */
 
-/* Hero */
+/* Hero - premium light editorial */
 .dash-hero {
-  background: linear-gradient(135deg, var(--hero-g1), var(--hero-g2));
-  border-radius: var(--radius-xl);
-  padding: 2rem 2rem 1.8rem;
-  color: #ffffff;
-  margin-bottom: 1.2rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 2rem 2rem 1.6rem;
+  margin-bottom: 1.4rem;
   animation: fade-up 0.4s ease both;
   position: relative;
   overflow: hidden;
+  box-shadow: var(--shadow);
 }
 
-/* Decorative geometric pattern */
 .dash-hero::before {
   content: '';
   position: absolute;
-  top: -40%;
-  right: -10%;
-  width: 300px;
-  height: 300px;
-  background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%);
+  top: -30%;
+  right: -8%;
+  width: 280px;
+  height: 280px;
+  background: radial-gradient(circle, var(--accent-dim) 0%, transparent 70%);
   border-radius: 50%;
   pointer-events: none;
 }
 
 .dash-hero::after {
-  content: '';
-  position: absolute;
-  bottom: -30%;
-  left: 15%;
-  width: 200px;
-  height: 200px;
-  background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 60%);
-  border-radius: 50%;
-  pointer-events: none;
+  display: none;
 }
 
 .dash-hero h1 {
-  color: #ffffff;
+  color: var(--heading);
   margin: 0;
-  font-size: 1.75rem;
+  font-size: 1.7rem;
   font-weight: 800;
-  letter-spacing: -0.02em;
+  letter-spacing: var(--tracking-tight);
   line-height: 1.2;
   position: relative;
 }
 
 .dash-hero p {
-  color: rgba(255, 255, 255, 0.88);
+  color: var(--muted);
   margin: 0.5rem 0 0;
-  font-size: 0.9rem;
-  line-height: 1.5;
-  max-width: 46rem;
+  font-size: 0.92rem;
+  line-height: 1.6;
+  max-width: 44rem;
   position: relative;
 }
 
 .dash-badge {
   display: inline-block;
-  background: rgba(255, 255, 255, 0.14);
-  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: var(--accent-dim);
+  border: 1px solid var(--border);
   border-radius: 999px;
-  padding: 0.18rem 0.75rem;
+  padding: 0.2rem 0.7rem;
   font-size: 0.62rem;
   font-weight: 700;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.8rem;
   font-family: var(--mono);
-  backdrop-filter: blur(8px);
+  color: var(--accent);
   position: relative;
 }
 
 .dash-hero-actions {
   margin-top: 1.2rem;
   position: relative;
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
 }
 
 .dash-hero-actions .btn {
-  background: rgba(255,255,255,0.18);
-  border: 1px solid rgba(255,255,255,0.3);
-  color: #ffffff;
-  backdrop-filter: blur(8px);
-}
-
-.dash-hero-actions .btn:hover:not(:disabled) {
-  background: rgba(255,255,255,0.28);
-  border-color: rgba(255,255,255,0.5);
-  color: #ffffff;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  box-shadow: var(--shadow);
 }
 
 /* KPIs */
