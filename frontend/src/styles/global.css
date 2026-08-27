@@ -171,26 +171,6 @@ button {
   width: 100%;
 }
 
-.sidebar-logo-mark {
-  display: none;
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  background: var(--accent-dim);
-  border: 1px solid color-mix(in srgb, var(--accent) 14%, transparent);
-  color: var(--accent);
-  align-items: center;
-  justify-content: center;
-  font-weight: 800;
-  font-size: 1rem;
-  letter-spacing: -0.02em;
-  flex-shrink: 0;
-}
-
-.sidebar-logo-mark-inner {
-  line-height: 1;
-}
-
 .sidebar.collapsed .sidebar-logo {
   justify-content: center;
   padding: 0.3rem 0 1.2rem;
@@ -198,10 +178,6 @@ button {
 
 .sidebar.collapsed .sidebar-logo-wordmark {
   display: none;
-}
-
-.sidebar.collapsed .sidebar-logo-mark {
-  display: flex;
 }
 
 .sidebar.collapsed .nav-link-label,
@@ -1059,10 +1035,6 @@ button {
   .sidebar.collapsed .sidebar-logo-wordmark {
     display: block;
     width: 100%;
-  }
-
-  .sidebar.collapsed .sidebar-logo-mark {
-    display: none;
   }
 
   .sidebar-logo img {

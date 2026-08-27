@@ -60,9 +60,6 @@ export function Sidebar() {
       <aside className={`sidebar ${collapsed ? 'collapsed' : ''} ${mobileOpen ? 'mobile-open' : ''}`}>
         <div className="sidebar-logo">
           <img src={logo} alt="CODEBA" className="sidebar-logo-wordmark" />
-          <div className="sidebar-logo-mark" aria-hidden="true">
-            <span className="sidebar-logo-mark-inner">C</span>
-          </div>
           <button
             className="sidebar-collapse-btn"
             aria-label={collapsed ? 'Expandir sidebar' : 'Recolher sidebar'}
