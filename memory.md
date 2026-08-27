@@ -1,7 +1,7 @@
 # GeraPOP — Memória de Contexto para LLMs
 
 > Documento de continuidade do projeto. Leia antes de implementar qualquer feature.
-> Última atualização: 2026-08-27 (merge `main` → `ajustes-finos`: biblioteca oficial em `POP - Procedimento Operacional Padrão/<CÓDIGO_NOME>/` (docx+pdf a cada generate/seed) + dashboard enxuto sem `/fluxo` e sem simulação RPA — KPIs reais, sem Hero/Stepper; 71 pytest + 8 E2E)
+> Última atualização: 2026-08-27 (main em `a8f06b7`: frontend enxuto (sem `/fluxo`/simulação, sem Hero/Stepper) + biblioteca oficial com 3 POPs — `POP-COM-001`, `POP-OPE-001`, `POP-OPE-002_ANÚNCIO DE NAVIO` (docx editável + pdf oficial em `POP - Procedimento Operacional Padrão/<CÓDIGO_NOME>/`); `data/pops/` com 3 históricos via seed + OPE-002 restaurado; 71 pytest + 8 E2E)
 
 ---
 
@@ -13,7 +13,7 @@ O usuário preenche um formulário guiado e recebe arquivos `.docx` e `.pdf` for
 
 **Repositório:** https://github.com/brunoadsba/GeraPOP.git  
 **Branch principal:** `main` (alinhada em `cda3fca`) + `ajustes-finos` (branch de trabalho atual, mergeada)  
-**Status atual:** MVP v1 completo (validação por seção, unicidade de código, rascunho persistente, backup zip, export JSON) + export **PDF** (reportlab com logo oficial CODEBA, metadados e revisões no topo em layout de alta densidade) + **dashboard home enxuto** (KPIs reais dos POPs salvos, ações rápidas, recentes; sem fluxo SEV) + **preview do POP** (modo leitura com botão Editar e downloads) + **design system v2 sênior** (sidebar — Início/Meus POPs/Novo POP, `/pops` com busca, tema light/dark, glassmorphism, ícones SVG inline, toasts, accordions, progresso de formulário em 2 colunas; **rota `/fluxo` removida** — Fluxo SEV em `fluxo-sev/` externo) + **sete de melhorias visuais v1.1** (sub-cabeçalhos de tela, respostas do sistema, negrito em aspas, cabeçalho de regras, rodapé com linha divisória e paginação) + **padrão CODEBA aplicado à saída** (matriz 2 variantes, passos com responsável por linha, seções 7/8/9, header "Página X de Y" página 2+, rodapé cópia não controlada, Calibri) + **biblioteca interna** (`data/pops/` via `scripts/seed_pops.py`) + **biblioteca oficial em pasta humana** (`POP - Procedimento Operacional Padrão/<CÓDIGO_NOME>/` com `.docx` + `.pdf` a cada generate/seed) + **migração de UI para web moderna concluída** (React 19 + TS + Vite 6 no frontend, FastAPI no backend); **71 pytest + 8 E2E Playwright**; tsc/eslint/build limpos.
+**Status atual:** MVP v1 completo (validação por seção, unicidade de código, rascunho persistente, backup zip, export JSON) + export **PDF** (reportlab com logo oficial CODEBA, metadados e revisões no topo em layout de alta densidade) + **dashboard home enxuto** (KPIs reais dos POPs salvos, ações rápidas, recentes; sem fluxo SEV) + **preview do POP** (modo leitura com botão Editar e downloads) + **design system v2 sênior** (sidebar — Início/Meus POPs/Novo POP, `/pops` com busca, tema light/dark, glassmorphism, ícones SVG inline, toasts, accordions, progresso de formulário em 2 colunas; **rota `/fluxo` removida** — Fluxo SEV em `fluxo-sev/` externo) + **sete de melhorias visuais v1.1** (sub-cabeçalhos de tela, respostas do sistema, negrito em aspas, cabeçalho de regras, rodapé com linha divisória e paginação) + **padrão CODEBA aplicado à saída** (matriz 2 variantes, passos com responsável por linha, seções 7/8/9, header "Página X de Y" página 2+, rodapé cópia não controlada, Calibri) + **biblioteca interna** (`data/pops/` com 3 POPs: `POP-COM-001`, `POP-OPE-001`, `POP-OPE-002` via seed + restauração) + **biblioteca oficial em pasta humana** (`POP - Procedimento Operacional Padrão/` com 3 pastas — `POP-COM-001`, `POP-OPE-001`, `POP-OPE-002_ANÚNCIO DE NAVIO` — cada com `.docx` editável + `.pdf` oficial) + **migração de UI para web moderna concluída** (React 19 + TS + Vite 6 no frontend, FastAPI no backend); **71 pytest + 8 E2E Playwright**; tsc/eslint/build limpos.
 
 ---
 
@@ -70,7 +70,7 @@ GeraPOP (Projeto 2)  →  dados estruturados  →  Fluxo Interativo SEV (Projeto
 - **Excluir no app:** `delete_pop` remove `data/pops/<id>/` **e** a pasta da biblioteca daquele código (`remover_da_biblioteca`).
 - **Overrides:** `GERAPOP_DATA_DIR` (padrão `data/`); `GERAPOP_LIBRARY_DIR` (padrão: raiz do repo + `POP - Procedimento Operacional Padrão`). Testes isolam as duas via `conftest.py`.
 - **Git:** `/data/` ignorado; `*.docx` ignorado; `*:Zone.Identifier` ignorado (ADS do Windows ao copiar arquivos). PDFs da biblioteca oficial podem ser versionados.
-- Pastas já inseridas pelo usuário (2026-08-27): `POP-OPE-001_PROGRAMAÇÃO DE SAÍDA` e `POP-OPE-002_ANÚNCIO DE NAVIO`. Só são sobrescritas se o app gerar de novo o mesmo código.
+- Pastas na biblioteca oficial (2026-08-27): `POP-COM-001_PROSPECÇÃO E FECHAMENTO COMERCIAL DE NOVAS CARGAS`, `POP-OPE-001_PROGRAMAÇÃO DE SAÍDA` e `POP-OPE-002_ANÚNCIO DE NAVIO` (3 pastas, cada com .docx editável + .pdf oficial; .docx ignorado, .pdf versionado). Só são sobrescritas se o app gerar de novo o mesmo código.
 - Backup zip continua só sobre `data/` (`python -m gerapop.backup` / `GET /api/backup`). **Exclusão na UI:** histórico e cards da home, confirmação em 2 cliques via modal no React; anti-traversal em `delete_pop`.
 
 **Rascunho persistente (v1.1):** o formulário salva rascunho a cada alteração — via hook `useDraft` (debounce 2 s → `PUT /api/draft`, `GET /api/draft` no mount, `DELETE /api/draft` após gerar e ao resetar/excluir). No `FormPage`, escuta o evento `gerapop:draft:loaded` e faz `LOAD_POP` (merge com `emptyPop`); não sobrescreve navegação explícita (`novo_pop`/`carregar`/`editar_id`) e aplica o draft uma única vez por montagem (ref `aplicadoDraft`).
@@ -289,7 +289,7 @@ make docker-run
 - **Biblioteca oficial em pasta humana:** geração grava `.docx` e `.pdf` em `POP - Procedimento Operacional Padrão/<CÓDIGO_NOME>/` (`exportar_para_biblioteca` em `gerapop/storage.py`; `POST /api/generate` passa `pdf=gerar_pdf(...)`; seed idempotente também). Preview não exporta.
 - Regenerar o mesmo código sobrescreve; mudança de nome renomeia a pasta; `delete_pop` limpa histórico e pasta oficial.
 - Testes em `tests/test_storage.py` (export, rename, delete) isolados com `GERAPOP_LIBRARY_DIR`.
-- Pasta inserida pelo usuário (não gerada pelo app): `POP-OPE-001_PROGRAMAÇÃO DE SAÍDA` e `POP-OPE-002_ANÚNCIO DE NAVIO`.
+- Biblioteca oficial com 3 POPs (2026-08-27): `POP-COM-001`, `POP-OPE-001`, `POP-OPE-002_ANÚNCIO DE NAVIO` (seed + restauração do OPE-002 em `data/pops/` para o frontend).
 
 ### Já integrado (antes `ajustes-finos`, agora em `main`)
 - **Header Oficial CODEBA e Layout de Alta Densidade:**
