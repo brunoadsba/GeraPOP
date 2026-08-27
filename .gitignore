@@ -33,6 +33,9 @@ Thumbs.db
 # Dados gerados (histórico de POPs) — apenas na raiz; fluxo-sev/data é versionado
 /data/
 
+# Metadados de download do Windows (NTFS ADS) junto à biblioteca oficial
+*:Zone.Identifier
+
 # Artefatos de QA (Playwright MCP)
 .playwright-mcp/
 .qa_shots/

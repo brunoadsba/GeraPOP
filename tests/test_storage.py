@@ -11,6 +11,7 @@ from gerapop.storage import (
     gerar_backup_zip,
     get_docx_bytes,
     get_draft,
+    get_library_dir,
     get_pop,
     get_pop_json_bytes,
     get_storage_dir,
@@ -128,3 +129,32 @@ def test_gerar_backup_zip_vazio() -> None:
     names = zipfile.ZipFile(io.BytesIO(gerar_backup_zip())).namelist()
 
     assert names == []
+
+
+def test_save_pop_organiza_biblioteca_oficial(pop_minimo: PopData) -> None:
+    save_pop(pop_minimo, b"PK fake docx", pdf=b"%PDF-fake")
+
+    pasta = get_library_dir() / "POP-OPE-001_REGISTRO DE MANOBRAS"
+    assert (pasta / "POP-OPE-001_REGISTRO DE MANOBRAS.docx").read_bytes() == b"PK fake docx"
+    assert (pasta / "POP-OPE-001_REGISTRO DE MANOBRAS.pdf").read_bytes() == b"%PDF-fake"
+
+
+def test_save_pop_mesmo_codigo_renomeia_pasta_da_biblioteca(pop_minimo: PopData) -> None:
+    save_pop(pop_minimo, b"docx-v1", pdf=b"pdf-v1")
+    pop_minimo.nome_pop = "Programação de Saída"
+    save_pop(pop_minimo, b"docx-v2", pdf=b"pdf-v2", pop_id="mesmo")
+
+    lib = get_library_dir()
+    nova = lib / "POP-OPE-001_PROGRAMAÇÃO DE SAÍDA"
+    assert not (lib / "POP-OPE-001_REGISTRO DE MANOBRAS").exists()
+    assert (nova / "POP-OPE-001_PROGRAMAÇÃO DE SAÍDA.docx").read_bytes() == b"docx-v2"
+    assert (nova / "POP-OPE-001_PROGRAMAÇÃO DE SAÍDA.pdf").read_bytes() == b"pdf-v2"
+
+
+def test_delete_pop_remove_pasta_da_biblioteca(pop_minimo: PopData) -> None:
+    pop_id = save_pop(pop_minimo, b"PK fake docx", pdf=b"%PDF-fake")
+    pasta = get_library_dir() / "POP-OPE-001_REGISTRO DE MANOBRAS"
+    assert pasta.is_dir()
+
+    assert delete_pop(pop_id) is True
+    assert not pasta.exists()

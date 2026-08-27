@@ -1,7 +1,7 @@
 # GeraPOP — Memória de Contexto para LLMs
 
 > Documento de continuidade do projeto. Leia antes de implementar qualquer feature.
-> Última atualização: 2026-08-20 (Branch `ajustes-finos`: **simulação RPA removida do projeto** — componente `Simulation/Simulacao.tsx`, seu uso no Formuário, estilos `.sim-*`/`.progress-*`, teste E2E e referências em docs removidos; 68 pytest + 8 Playwright E2E passando). Mudança anterior: **reorganização das telas** — Início virou dashboard enxuto com KPIs reais dos POPs salvos (totais/criados hoje/últimos 7 dias), ações rápidas e recentes; **rota `/fluxo` e a `FluxoPage` removidas** do menu e do router (consulta ao Fluxo SEV passa a ser via diagrama externo `fluxo-sev/`); componentes órfãos `Hero.tsx`/`Stepper.tsx` removidos. Contexto anterior: alinhamento da saída DOCX/PDF ao padrão CODEBA a partir dos modelos `teste/POP-COM-001_*.{docx,pdf}` e `teste/POP-OPE-001_*.{docx,pdf}` — matriz de responsabilidades em 2 variantes (Tela / Fluxo), passos com responsável por linha, seções 7 Registros obrigatórios / 8 Critérios de encerramento / 9 Indicadores, header "Página X de Y" a partir da página 2, rodapé "cópia não controlada", fontes Calibri no PDF; biblioteca alimentada com POP-COM-001 e POP-OPE-001 via `scripts/seed_pops.py`; 68 pytest + 8 Playwright E2E 100% passando; eslint/tsc/vite build limpos; GNU make 4.4.1 instalado via winget e `Makefile` compatível com Windows — `make run/test/lint` validados).
+> Última atualização: 2026-08-27 (merge `main` → `ajustes-finos`: biblioteca oficial em `POP - Procedimento Operacional Padrão/<CÓDIGO_NOME>/` (docx+pdf a cada generate/seed) + dashboard enxuto sem `/fluxo` e sem simulação RPA — KPIs reais, sem Hero/Stepper; 71 pytest + 8 E2E)
 
 ---
 
@@ -12,8 +12,8 @@
 O usuário preenche um formulário guiado e recebe arquivos `.docx` e `.pdf` formatados, seguindo o padrão oficial da CODEBA com logo e metadados no topo.
 
 **Repositório:** https://github.com/brunoadsba/GeraPOP.git  
-**Branch principal:** `main` (branch de trabalho atual: `ajustes-finos`; `main` mergeada e publicada em `2b5b1bf` — seguir trabalhando em `ajustes-finos` para novos ajustes)  
-**Status atual:** MVP v1 completo (validação por seção, unicidade de código, rascunho persistente, backup zip, export JSON) + export **PDF** (reportlab com logo oficial CODEBA, metadados e revisões no topo em layout de alta densidade) + **dashboard home enxuto** (KPIs reais dos POPs salvos, ações rápidas, recentes; sem fluxo SEV) + **preview do POP** (modo leitura com botão Editar e downloads) + **design system v2 sênior** (sidebar com navegação estruturada — Início/Meus POPs/Novo POP, `/pops` com busca, tema light/dark, glassmorphism, ícones SVG inline, toasts, accordions, progresso de formulário em 2 colunas; **rota `/fluxo` removida** — Fluxo SEV consultado em `fluxo-sev/` externo) + **sete de melhorias visuais v1.1** (sub-cabeçalhos de tela, respostas do sistema, negrito em aspas, cabeçalho de regras, rodapé com linha divisória e paginação — docx/pdf/fluxo-sev) + **padrão CODEBA aplicado à saída** (matriz de responsabilidades 2 variantes, passos com responsável por linha, seções 7/8/9, header "Página X de Y" página 2+, rodapé cópia não controlada, fontes Calibri) + **biblioteca alimentada** (`data/pops/` com POP-COM-001 e POP-OPE-001 via `scripts/seed_pops.py`) + **migração de UI para web moderna concluída** (React 19 + TS + Vite 6 no frontend, FastAPI no backend); **68 pytest + 8 testes E2E Playwright 100% passando**; tsc/eslint/build limpos.
+**Branch principal:** `main` (alinhada em `cda3fca`) + `ajustes-finos` (branch de trabalho atual, mergeada)  
+**Status atual:** MVP v1 completo (validação por seção, unicidade de código, rascunho persistente, backup zip, export JSON) + export **PDF** (reportlab com logo oficial CODEBA, metadados e revisões no topo em layout de alta densidade) + **dashboard home enxuto** (KPIs reais dos POPs salvos, ações rápidas, recentes; sem fluxo SEV) + **preview do POP** (modo leitura com botão Editar e downloads) + **design system v2 sênior** (sidebar — Início/Meus POPs/Novo POP, `/pops` com busca, tema light/dark, glassmorphism, ícones SVG inline, toasts, accordions, progresso de formulário em 2 colunas; **rota `/fluxo` removida** — Fluxo SEV em `fluxo-sev/` externo) + **sete de melhorias visuais v1.1** (sub-cabeçalhos de tela, respostas do sistema, negrito em aspas, cabeçalho de regras, rodapé com linha divisória e paginação) + **padrão CODEBA aplicado à saída** (matriz 2 variantes, passos com responsável por linha, seções 7/8/9, header "Página X de Y" página 2+, rodapé cópia não controlada, Calibri) + **biblioteca interna** (`data/pops/` via `scripts/seed_pops.py`) + **biblioteca oficial em pasta humana** (`POP - Procedimento Operacional Padrão/<CÓDIGO_NOME>/` com `.docx` + `.pdf` a cada generate/seed) + **migração de UI para web moderna concluída** (React 19 + TS + Vite 6 no frontend, FastAPI no backend); **71 pytest + 8 E2E Playwright**; tsc/eslint/build limpos.
 
 ---
 
@@ -57,7 +57,21 @@ GeraPOP (Projeto 2)  →  dados estruturados  →  Fluxo Interativo SEV (Projeto
 | CI | GitHub Actions (`.github/workflows/ci.yml`) — **desativado** (`disabled_manually`, workflow id `330472653`); reativar com `gh workflow enable 330472653 --repo brunoadsba/GeraPOP` |
 | Container | Docker + docker-compose (alternativa ao venv) |
 
-**Persistência (v1.1):** POPs gerados são salvos automaticamente em `data/pops/<id>/` (`pop.json` + `pop.docx`) e listados no app (seção Histórico). Backup = botão "Backup (.zip)" no app ou `python -m gerapop.backup` (gera `data/backups/gerapop_YYYYMMDD_HHMMSS.zip`). `data/` é ignorado pelo git (apenas na raiz). **Exclusão:** `storage.delete_pop(pop_id)` remove a pasta do POP (validação anti-traversal: o id resolvido precisa estar dentro de `data/pops/`, senão `ValueError`); na UI nova, botão "Excluir" disponível **no histórico (formulário) e nos cards de "POPs salvos no app" (home)**, com confirmação em 2 cliques via modal no React.
+**Persistência (v1.1 + biblioteca oficial 2026-08-27):** duas camadas, com papéis distintos:
+
+| Camada | Caminho | Conteúdo | Quem usa |
+|--------|---------|----------|----------|
+| Histórico do app | `data/pops/<id>/` | `pop.json` + `pop.docx` | API, UI, unicidade de código, backup zip |
+| Biblioteca oficial | `POP - Procedimento Operacional Padrão/<CÓDIGO_NOME>/` | `<CÓDIGO_NOME>.docx` + `.pdf` | Arquivo humano / pasta de trabalho CODEBA |
+
+- **Gerar/salvar** (`POST /api/generate` e `scripts/seed_pops.py`) chama `save_pop(..., pdf=...)`, que grava o histórico e chama `exportar_para_biblioteca`. Preview/download (`/preview/docx`, `/preview/pdf`) **não** grava na biblioteca.
+- **Nome da pasta:** `{codigo}_{NOME EM MAIÚSCULAS}` (espaços preservados; caracteres inválidos de path removidos). Ex.: `POP-OPE-001_PROGRAMAÇÃO DE SAÍDA`.
+- **Mesmo código:** reaproveita a pasta existente; se o nome mudou, a pasta é renomeada e os arquivos sobrescritos.
+- **Excluir no app:** `delete_pop` remove `data/pops/<id>/` **e** a pasta da biblioteca daquele código (`remover_da_biblioteca`).
+- **Overrides:** `GERAPOP_DATA_DIR` (padrão `data/`); `GERAPOP_LIBRARY_DIR` (padrão: raiz do repo + `POP - Procedimento Operacional Padrão`). Testes isolam as duas via `conftest.py`.
+- **Git:** `/data/` ignorado; `*.docx` ignorado; `*:Zone.Identifier` ignorado (ADS do Windows ao copiar arquivos). PDFs da biblioteca oficial podem ser versionados.
+- Pastas já inseridas pelo usuário (2026-08-27): `POP-OPE-001_PROGRAMAÇÃO DE SAÍDA` e `POP-OPE-002_ANÚNCIO DE NAVIO`. Só são sobrescritas se o app gerar de novo o mesmo código.
+- Backup zip continua só sobre `data/` (`python -m gerapop.backup` / `GET /api/backup`). **Exclusão na UI:** histórico e cards da home, confirmação em 2 cliques via modal no React; anti-traversal em `delete_pop`.
 
 **Rascunho persistente (v1.1):** o formulário salva rascunho a cada alteração — via hook `useDraft` (debounce 2 s → `PUT /api/draft`, `GET /api/draft` no mount, `DELETE /api/draft` após gerar e ao resetar/excluir). No `FormPage`, escuta o evento `gerapop:draft:loaded` e faz `LOAD_POP` (merge com `emptyPop`); não sobrescreve navegação explícita (`novo_pop`/`carregar`/`editar_id`) e aplica o draft uma única vez por montagem (ref `aplicadoDraft`).
 
@@ -98,7 +112,7 @@ gerapop/
 │   ├── dependencies.py             # pop_from_request / pop_as_dict
 │   └── routers/
 │       ├── pops.py                 # CRUD + validate + check-code + fluxo
-│       ├── generate.py             # POST /api/generate + docx/pdf (+ preview sem salvar)
+│       ├── generate.py             # POST /api/generate (salva histórico + biblioteca) + preview sem salvar
 │       ├── drafts.py               # Rascunho persistente (GET/PUT/DELETE /api/draft)
 │       └── backup.py               # GET /api/backup (zip)
 ├── frontend/                       # React 19 + TypeScript + Vite 6
@@ -119,7 +133,7 @@ gerapop/
 │   ├── codigo.py                   # Unicidade de código + rótulo histórico (módulos puros)
 │   ├── fluxo.py                    # carregar fluxo SEV + POP de referência (módulos puros)
 │   ├── models.py                   # PopData, TypedDicts, validação, factories
-│   ├── storage.py                  # Persistência em disco (pop.json + pop.docx) + backup zip
+│   ├── storage.py                  # data/pops (json+docx) + export oficial (docx+pdf) + backup zip
 │   ├── backup.py                   # CLI de backup zip (python -m gerapop.backup)
 │   ├── assets/                     # Logos CODEBA (light/dark/topo)
 │   └── services/
@@ -130,13 +144,14 @@ gerapop/
 │       └── pdf/
 │           └── builder.py          # Renderiza os blocos neutros em PDF (reportlab com banner/logo)
 ├── tests/
-│   ├── conftest.py                 # Fixtures (data dir tmp, pop_minimo/pop_invalido)
+│   ├── conftest.py                 # Fixtures (GERAPOP_DATA_DIR + GERAPOP_LIBRARY_DIR tmp, pop_minimo)
 │   ├── test_api_pops.py            # Integração da API FastAPI (14 testes)
 │   ├── test_docx_builder.py        # Testes de geração e estrutura Word
 │   ├── test_validacao_codigo.py    # Unit unicidade + label de histórico (via gerapop.codigo)
 │   ├── test_fluxo_sev.py           # Valida dados estáticos do fluxo-sev
 │   ├── test_models.py              # Validação de schema e integridade PopData
-│   └── test_storage.py             # Testes de persistência atômica e listagem
+│   └── test_storage.py             # Persistência, listagem, export/exclusão da biblioteca oficial
+├── POP - Procedimento Operacional Padrão/  # Biblioteca humana: uma pasta por POP (docx + pdf)
 ├── obsoleto/
 │   ├── ideia-files/                # Protótipo original (versionado)
 │   ├── gerapop-streamlit/          # UI Streamlit arquivada (ui/, session_draft.py, session_codigo.py)
@@ -215,8 +230,9 @@ cd frontend && npm run typecheck  # validação tsc sem erros
 cd frontend && npm run build      # validação de build Vite
 cd frontend && npm run test:e2e   # 8 testes E2E Playwright (Chrome do sistema em portas 5199/8199)
 
-# Biblioteca de POPs (alimentar data/pops/ com o padrão CODEBA)
-.venv/Scripts/python.exe scripts/seed_pops.py   # idempotente (atualiza registro existente pelo codigo)
+# Biblioteca de POPs (data/pops/ + pasta oficial na raiz)
+.venv/bin/python scripts/seed_pops.py   # WSL; no Windows: .venv/Scripts/python.exe
+# idempotente (atualiza pelo codigo; também exporta .docx/.pdf para a pasta oficial)
 
 # Backup
 make backup       # zip com todos os POPs + rascunho
@@ -235,13 +251,13 @@ make docker-run
 4. **Testes** — toda lógica de domínio/serviço deve ter teste pytest; suite verde antes de commit/push.
 5. **Commits semânticos** — formato: `tipo(escopo): descrição` (ex: `feat(pdf): layout de alta densidade`).
 6. **Português BR** — comunicação e mensagens de validação em português.
-7. **Não commitar** `.venv/`, `*.docx`, secrets, `/data/` (raiz), `.omo/`, `.e2e-data/`.
+7. **Não commitar** `.venv/`, `*.docx`, secrets, `/data/` (raiz), `.omo/`, `.e2e-data/`, `*:Zone.Identifier`.
 8. **Atualizar este `memory.md`** sempre que o estado do projeto mudar de direção.
 9. **Arquivos obsoletos vão para `obsoleto/`** (versionado, arquivamento) — não apagar.
 
 ---
 
-## 8. Estado atual do repositório (2026-08-19)
+## 8. Estado atual do repositório (2026-08-27)
 
 ### Commits já integrados no Git
 - `feat(gerapop): estrutura inicial do MVP com Streamlit e geração de POP`
@@ -264,8 +280,18 @@ make docker-run
 - `feat(ui): redistribui navegação no Sidebar com visões dedicadas para Fluxo SEV e Biblioteca de POPs`
 - `fix(types): declara tipos de node no vite-env e inclui configs no tsconfig` (`4917afe`)
 - `feat(pop): evolui modelo e documento com metadados CODEBA` (`0c7958a`)
+- `feat(pop): aplica padrão CODEBA na saída e alimenta biblioteca com seed idempotente` (`859ef60`)
+- `build(make): compatibiliza Makefile com Windows` (`fc26538`)
+- `docs(memory): registra make no Windows e servidores persistentes via WMI` (`2b5b1bf`) — HEAD de `origin/main`
 
-### Em andamento na branch `ajustes-finos` (Trabalho Atual)
+### Trabalho local em `main` (2026-08-27, ainda não commitado)
+
+- **Biblioteca oficial em pasta humana:** geração grava `.docx` e `.pdf` em `POP - Procedimento Operacional Padrão/<CÓDIGO_NOME>/` (`exportar_para_biblioteca` em `gerapop/storage.py`; `POST /api/generate` passa `pdf=gerar_pdf(...)`; seed idempotente também). Preview não exporta.
+- Regenerar o mesmo código sobrescreve; mudança de nome renomeia a pasta; `delete_pop` limpa histórico e pasta oficial.
+- Testes em `tests/test_storage.py` (export, rename, delete) isolados com `GERAPOP_LIBRARY_DIR`.
+- Pasta inserida pelo usuário (não gerada pelo app): `POP-OPE-001_PROGRAMAÇÃO DE SAÍDA` e `POP-OPE-002_ANÚNCIO DE NAVIO`.
+
+### Já integrado (antes `ajustes-finos`, agora em `main`)
 - **Header Oficial CODEBA e Layout de Alta Densidade:**
   - Inclusão da logo oficial CODEBA (`frontend/public/logo-codeba-topo.png` e `gerapop/assets/` / reportlab Image) no topo do PDF e da UI web.
   - Cabeçalho do PDF com banner contendo a logo da CODEBA à esquerda e título "PROCEDIMENTO OPERACIONAL PADRÃO" + Nome do POP centralizados/destacados.
@@ -279,7 +305,7 @@ make docker-run
   - `montar_conteudo` (`gerapop/services/documento.py`): matriz em 2 variantes, passos com responsável → tabela `# / Responsável / Passo` (sem banner), seções 7/8/9, aviso final `■`, `titulo_para_header` (Title Case com conectores minúsculos incluindo à/às).
   - Builders DOCX/PDF: header "Página X de Y" (fldSimple PAGE+NUMPAGES no DOCX) a partir da página 2 (`different_first_page_header_footer` DOCX / `_NumberedCanvas` PDF), rodapé "cópia não controlada", células de número generalizadas, fontes Calibri (fallback Helvetica).
   - Biblioteca alimentada: `data/pops/20260820_122120_073271_7e4c3f` (POP-COM-001 Prospecção e Fechamento Comercial de Novas Cargas v01) e `data/pops/20260819_084549_789221_8f80b6` (POP-OPE-001 Programação de Saída v02, telas 6002/6007). Referência: `teste/POP-COM-001_*.{docx,pdf}` e `teste/POP-OPE-001_*.{docx,pdf}`.
-  - `scripts/seed_pops.py` idempotente (resolve id por `codigo`; `save_pop` + `gerar_docx`).
+  - `scripts/seed_pops.py` idempotente (resolve id por `codigo`; `save_pop` + `gerar_docx` + `gerar_pdf` → pasta oficial).
   - `pdfplumber` adicionado como dev dependency (`uv add --dev pdfplumber`).
 - **Qualidade & Validação:**
   - 68 testes pytest verdes (`uv run pytest`).
@@ -304,7 +330,8 @@ make docker-run
 - [x] Preview do POP em modo leitura (com .docx/.pdf baixáveis e botão Editar POP)
 - [x] Design system: paleta light/dark, componentes custom e navegação estruturada no Sidebar
 - [x] Migração de UI: React 19 + TypeScript + Vite 6 + FastAPI
-- [x] Suite de testes automatizados: 68 pytest + 8 E2E Playwright isolados
+- [x] Suite de testes automatizados: 71 pytest + 8 E2E Playwright isolados
+- [x] Cópia oficial de cada POP gerado em `POP - Procedimento Operacional Padrão/<CÓDIGO_NOME>/` (docx + pdf)
 
 ### Gate de negócio (aguarda usuário/equipe)
 - [ ] **Piloto com a equipe** — `docs/piloto.md` (roteiro pronto, GATE explícito)
@@ -330,6 +357,7 @@ make docker-run
 | CI desativado | Reativar antes de nova rodada de desenvolvimento |
 | Testes flaky de storage | `save_pop`/`serialize_pop` usam timestamps monotônicos (`_proximo_timestamp()`) |
 | Perda de POPs de teste | Guardar PDFs de referência em `teste/` para reconstrução se necessário |
+| Excluir no app apaga a pasta oficial | `delete_pop` remove `POP - Procedimento Operacional Padrão/<CÓDIGO_*>`; confirmar antes de excluir POPs já publicados |
 
 ---
 
@@ -344,7 +372,8 @@ make docker-run
 | Guia do usuário final | `guia-usuario.md` |
 | Modelo POP | `POP_Manobras_CODEBA_v2.docx` (referência externa) |
 | Referência do padrão CODEBA | `teste/POP-COM-001_*.{docx,pdf}` e `teste/POP-OPE-001_*.{docx,pdf}` (modelos do usuário) |
-| Seed da biblioteca | `scripts/seed_pops.py` (alimenta `data/pops/` — idempotente) |
+| Seed da biblioteca | `scripts/seed_pops.py` (alimenta `data/pops/` **e** a pasta oficial — idempotente) |
+| Biblioteca oficial (humana) | `POP - Procedimento Operacional Padrão/<CÓDIGO_NOME>/` (`.docx` + `.pdf`) |
 | Logo oficial CODEBA | `frontend/public/logo-codeba-topo.png` e `Logo CODEBA.png` |
 | Módulo Fluxo SEV | `fluxo-sev/README.md` + `fluxo-sev/memory/000-fluxo-sev-v1.md` |
 | Config backend/frontend | CORS em `backend/main.py`; proxy `/api` em `frontend/vite.config.ts` |
@@ -362,18 +391,18 @@ Leia memory.md e docs/plano.md antes de codar.
 Stack: Python 3.11, FastAPI (backend/), React+TS+Vite (frontend/), python-docx,
 reportlab, pytest, ruff, eslint.
 Arquitetura: gerapop/models (domínio), services/docx + services/pdf (geração),
-backend/ (API REST), frontend/ (dashboard, formulário, preview, histórico,
-tema light/dark), fluxo-sev/ (Projeto 1, HTML/CSS/JS puro).
+backend/ (API REST), frontend/ (dashboard enxuto, formulário, preview, histórico,
+sem /fluxo, sem simulação), fluxo-sev/ (Projeto 1, HTML/CSS/JS puro externo).
 
-Estado: Branch `ajustes-finos` com saída alinhada ao padrão CODEBA (matriz de
-responsabilidades 2 variantes, passos com responsável por linha, seções 7/8/9,
-header "Página X de Y" a partir da página 2, rodapé cópia não controlada, fontes
-Calibri); biblioteca alimentada com POP-COM-001 e POP-OPE-001 via
-scripts/seed_pops.py; 68 pytest + 8 E2E Playwright 100% verdes; tsc/eslint/vite
-build limpos.
+Estado: merge `main` → `ajustes-finos` (2026-08-27). Saída alinhada ao padrão CODEBA
+(matriz 2 variantes, passos com responsável por linha, seções 7/8/9, header
+"Página X de Y" página 2+, rodapé cópia não controlada, Calibri). Histórico em
+data/pops/; cópia oficial em "POP - Procedimento Operacional Padrão/<CÓDIGO_NOME>/"
+(docx+pdf) a cada generate/seed — preview não grava. Dashboard enxuto sem Hero/Stepper
+e sem simulação RPA; 71 pytest + 8 E2E 100% verdes; tsc/eslint/vite build limpos.
 
-Próximo passo sugerido: commitar a branch `ajustes-finos`, validar o piloto com a equipe
-(docs/piloto.md) e mapear os 3 fluxos SEV restantes.
+Próximo passo sugerido: commitar a persistência na pasta oficial se o usuário
+pedir; piloto com a equipe (docs/piloto.md); 3 fluxos SEV restantes.
 
 NÃO implementar: nuvem, auth, multi-agente, frameworks adicionais sem validação do piloto.
 ```

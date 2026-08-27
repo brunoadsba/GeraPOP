@@ -5,6 +5,7 @@ from __future__ import annotations
 import io
 import json
 import os
+import re
 import shutil
 import uuid
 import zipfile
@@ -16,12 +17,27 @@ from typing import Any
 from gerapop.models import PopData
 
 STORAGE_DIR_ENV = "GERAPOP_DATA_DIR"
+LIBRARY_DIR_ENV = "GERAPOP_LIBRARY_DIR"
 DEFAULT_STORAGE_DIR = "data"
+DEFAULT_LIBRARY_DIR = "POP - Procedimento Operacional Padrão"
 DRAFT_FILENAME = "draft.json"
+_CHARS_INVALIDOS_PASTA = re.compile(r'[<>:"/\\|?*]')
 
 
 def get_storage_dir() -> Path:
     return Path(os.environ.get(STORAGE_DIR_ENV, DEFAULT_STORAGE_DIR)).resolve()
+
+
+def _project_root() -> Path:
+    return Path(__file__).resolve().parent.parent
+
+
+def get_library_dir() -> Path:
+    """Pasta humana da biblioteca oficial (`CÓDIGO_NOME` com .docx/.pdf)."""
+    env = os.environ.get(LIBRARY_DIR_ENV)
+    if env:
+        return Path(env).resolve()
+    return (_project_root() / DEFAULT_LIBRARY_DIR).resolve()
 
 
 def _pops_dir() -> Path:
@@ -57,7 +73,61 @@ def _proximo_timestamp() -> datetime:
     return agora
 
 
-def save_pop(pop: PopData, docx: bytes | None = None, pop_id: str | None = None) -> str:
+def _nome_pasta_biblioteca(pop: PopData) -> str:
+    """Ex.: POP-OPE-001_PROGRAMAÇÃO DE SAÍDA — mesmo padrão da pasta oficial."""
+    codigo = (pop.codigo or "POP").strip()
+    nome = _CHARS_INVALIDOS_PASTA.sub(" ", (pop.nome_pop or "").strip())
+    nome = re.sub(r"\s+", " ", nome).strip().upper()
+    return f"{codigo}_{nome}" if nome else codigo
+
+
+def _pastas_biblioteca_do_codigo(codigo: str) -> list[Path]:
+    lib = get_library_dir()
+    if not lib.exists() or not codigo:
+        return []
+    prefixo = f"{codigo}_"
+    return [
+        entrada
+        for entrada in lib.iterdir()
+        if entrada.is_dir() and (entrada.name == codigo or entrada.name.startswith(prefixo))
+    ]
+
+
+def exportar_para_biblioteca(
+    pop: PopData, docx: bytes | None = None, pdf: bytes | None = None
+) -> Path | None:
+    """Grava .docx/.pdf em ``POP - Procedimento Operacional Padrão/<CÓDIGO_NOME>/``.
+
+    Reaproveita a pasta já existente do mesmo código (renomeia se o nome mudou).
+    """
+    if docx is None and pdf is None:
+        return None
+    destino = get_library_dir() / _nome_pasta_biblioteca(pop)
+    existentes = _pastas_biblioteca_do_codigo(pop.codigo)
+    if len(existentes) == 1 and existentes[0].resolve() != destino.resolve():
+        destino.parent.mkdir(parents=True, exist_ok=True)
+        existentes[0].rename(destino)
+    destino.mkdir(parents=True, exist_ok=True)
+    stem = destino.name
+    if docx is not None:
+        _atomic_write(destino / f"{stem}.docx", docx)
+    if pdf is not None:
+        _atomic_write(destino / f"{stem}.pdf", pdf)
+    return destino
+
+
+def remover_da_biblioteca(codigo: str) -> None:
+    """Remove a(s) pasta(s) da biblioteca oficial com o código informado."""
+    for pasta in _pastas_biblioteca_do_codigo(codigo):
+        shutil.rmtree(pasta, ignore_errors=True)
+
+
+def save_pop(
+    pop: PopData,
+    docx: bytes | None = None,
+    pop_id: str | None = None,
+    pdf: bytes | None = None,
+) -> str:
     if not pop_id:
         timestamp = _proximo_timestamp()
         pop_id = timestamp.strftime("%Y%m%d_%H%M%S_%f") + "_" + uuid.uuid4().hex[:6]
@@ -69,6 +139,7 @@ def save_pop(pop: PopData, docx: bytes | None = None, pop_id: str | None = None)
     _atomic_write(target / "pop.json", json.dumps(payload, ensure_ascii=False, indent=2))
     if docx is not None:
         _atomic_write(target / "pop.docx", docx)
+    exportar_para_biblioteca(pop, docx=docx, pdf=pdf)
     return pop_id
 
 
@@ -129,7 +200,10 @@ def delete_pop(pop_id: str) -> bool:
         raise ValueError(f"pop_id inválido: {pop_id!r}")
     if not target_resolved.exists():
         return False
+    pop = get_pop(pop_id)
     shutil.rmtree(target_resolved)
+    if pop is not None:
+        remover_da_biblioteca(pop.codigo)
     return True
 
 
