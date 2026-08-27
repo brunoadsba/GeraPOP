@@ -1,3 +1,10 @@
+FROM node:20-alpine AS frontend-build
+WORKDIR /app/frontend
+COPY frontend/package*.json ./
+RUN npm ci
+COPY frontend/ ./
+RUN npm run build
+
 FROM python:3.11-slim
 
 WORKDIR /app
@@ -12,6 +19,7 @@ RUN pip install --upgrade pip && pip install -r requirements.txt
 COPY pyproject.toml README.md app.py ./
 COPY gerapop ./gerapop
 COPY backend ./backend
+COPY --from=frontend-build /app/frontend/dist ./frontend/dist
 
 RUN pip install -e .
 

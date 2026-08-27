@@ -1,0 +1,25 @@
+.venv
+venv
+env
+__pycache__
+.pytest_cache
+.ruff_cache
+.mypy_cache
+.pytest_cache
+.coverage
+htmlcov
+node_modules
+frontend/node_modules
+frontend/dist
+data
+POP - Procedimento Operacional Padrão
+.e2e-data
+.omo
+.playwright-mcp
+.qa_shots
+.git
+.gitignore
+teste
+obsoleto
+harnessfiles
+fluxo-sev/data

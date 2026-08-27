@@ -7,4 +7,5 @@ services:
       - ./backend:/app/backend:ro
       - ./gerapop:/app/gerapop:ro
       - ./data:/app/data
+      - ./POP - Procedimento Operacional Padrão:/app/POP - Procedimento Operacional Padrão
     restart: unless-stopped

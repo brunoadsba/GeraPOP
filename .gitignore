@@ -19,6 +19,14 @@ htmlcov/
 # Streamlit
 .streamlit/secrets.toml
 
+# Env (segredos)
+.env
+.env.local
+
+# Frontend build
+frontend/dist/
+frontend/node_modules/
+
 # IDE / OS
 .idea/
 .vscode/
