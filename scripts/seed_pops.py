@@ -2,6 +2,7 @@
 
 from gerapop.models import PopData
 from gerapop.services.docx import gerar_docx
+from gerapop.services.pdf import gerar_pdf
 from gerapop.storage import list_pops, save_pop
 
 AREA_COM = "DESENVOLVIMENTO DE NEGÓCIOS"
@@ -336,7 +337,12 @@ def main() -> None:
         erros = pop.validate()
         if erros:
             raise SystemExit(f"Validação falhou: {erros}")
-        novo_id = save_pop(pop, gerar_docx(pop).getvalue(), pop_id=_pop_id_existente(pop.codigo))
+        novo_id = save_pop(
+            pop,
+            gerar_docx(pop).getvalue(),
+            pop_id=_pop_id_existente(pop.codigo),
+            pdf=gerar_pdf(pop).getvalue(),
+        )
         print(f"Salvo {pop.codigo} ({pop.nome_pop}) -> {novo_id}")
 
     print("\nBiblioteca atual:")
