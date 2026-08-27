@@ -48,9 +48,9 @@ export function HomePage() {
   }, [salvos]);
 
   const kpis = [
-    { icone: '📄', valor: String(salvos.length), rotulo: 'POPs salvos' },
-    { icone: '🕐', valor: String(criadosHoje), rotulo: 'Criados hoje' },
-    { icone: '🗓️', valor: String(ultimos7), rotulo: 'Últimos 7 dias' },
+    { valor: String(salvos.length), rotulo: 'POPs salvos' },
+    { valor: String(criadosHoje), rotulo: 'Criados hoje' },
+    { valor: String(ultimos7), rotulo: 'Últimos 7 dias' },
   ];
 
   const recentes = salvos.slice(0, 6);
@@ -76,10 +76,29 @@ export function HomePage() {
         <p className="subtitle">Visão geral dos seus Procedimentos Operacionais Padrão.</p>
       </div>
 
+      <div className="dash-hero">
+        <div className="dash-badge">CODEBA · Padrão Operacional</div>
+        <h1>GeraPOP — POPs no padrão CODEBA</h1>
+        <p>Crie, valide e exporte Procedimentos Operacionais Padrão com matriz de responsabilidades, numeração automática e exportação docx/pdf com header e paginação oficiais.</p>
+        <div className="dash-hero-actions">
+          <Button
+            icon={<IconPlus size={15} />}
+            onClick={() => navigate('/formulario', { state: { novo_pop: { nome: '', objetivo: '' } } })}
+          >
+            Criar POP agora
+          </Button>
+          <Button icon={<IconFolder size={15} />} onClick={() => navigate('/pops')}>
+            Ver biblioteca
+          </Button>
+        </div>
+      </div>
+
       {carregando ? (
-        <div className="dash-loading">
-          <span className="spinner" />
-          Carregando…
+        <div className="dash-skeleton-grid" aria-busy="true" aria-label="Carregando POPs">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="skeleton skeleton-kpi" style={{ animationDelay: `${i * 0.08}s` }} />
+          ))}
+          <div className="skeleton skeleton-card" style={{ gridColumn: 'span 3' }} />
         </div>
       ) : (
         <>
@@ -94,7 +113,7 @@ export function HomePage() {
               <Button
                 variant="primary"
                 icon={<IconPlus size={15} />}
-                onClick={() => navigate('/formulario')}
+                onClick={() => navigate('/formulario', { state: { novo_pop: { nome: '', objetivo: '' } } })}
               >
                 Novo POP
               </Button>
@@ -113,9 +132,22 @@ export function HomePage() {
               Recentes ({recentes.length})
             </h2>
             {recentes.length === 0 ? (
-              <p className="dash-empty">
-                Nenhum POP salvo ainda. Comece criando um novo POP pelo botão acima.
-              </p>
+              <div className="dash-empty-premium" role="status" aria-live="polite">
+                <div className="dash-empty-illustration" aria-hidden="true">
+                  <IconFileText size={32} />
+                </div>
+                <h3 className="dash-empty-title">Nenhum POP salvo ainda</h3>
+                <p className="dash-empty-desc">
+                  Comece criando seu primeiro Procedimento Operacional Padrão. O assistente guiado leva menos de 3 minutos.
+                </p>
+                <Button
+                  variant="primary"
+                  icon={<IconPlus size={15} />}
+                  onClick={() => navigate('/formulario', { state: { novo_pop: { nome: '', objetivo: '' } } })}
+                >
+                  Criar primeiro POP
+                </Button>
+              </div>
             ) : (
               <CardGrid>
                 {recentes.map((record) => (

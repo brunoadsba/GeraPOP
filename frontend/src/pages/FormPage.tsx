@@ -104,10 +104,12 @@ export function FormPage() {
       setCarregando(false);
       return;
     }
-    if (navState?.novo_pop) {
+    if (navState?.novo_pop !== undefined) {
       dispatch({ type: 'RESET' });
-      dispatch({ type: 'SET_FIELD', field: 'nome_pop', value: navState.novo_pop.nome });
-      dispatch({ type: 'SET_FIELD', field: 'objetivo', value: navState.novo_pop.objetivo });
+      if (navState.novo_pop?.nome) dispatch({ type: 'SET_FIELD', field: 'nome_pop', value: navState.novo_pop.nome });
+      if (navState.novo_pop?.objetivo) dispatch({ type: 'SET_FIELD', field: 'objetivo', value: navState.novo_pop.objetivo });
+      setLoadedFromId(null);
+      discard();
       setCarregando(false);
       return;
     }
@@ -122,7 +124,7 @@ export function FormPage() {
       return;
     }
     setCarregando(false);
-  }, [navState]);
+  }, [navState, discard]);
 
   useEffect(() => {
     if (!state.codigo?.trim()) return;
@@ -274,9 +276,10 @@ export function FormPage() {
       </div>
 
       {carregando ? (
-        <div className="dash-loading">
-          <span className="spinner" />
-          Carregando…
+        <div className="dash-skeleton-grid" aria-busy="true" aria-label="Carregando formulário">
+          <div className="skeleton skeleton-card" style={{ height: '140px' }} />
+          <div className="skeleton skeleton-card" style={{ height: '220px' }} />
+          <div className="skeleton skeleton-card" style={{ height: '180px' }} />
         </div>
       ) : (
         <>

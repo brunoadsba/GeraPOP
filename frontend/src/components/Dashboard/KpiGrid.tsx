@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { IconCheck, IconClipboard, IconClock, IconFileText, IconFolder } from '../ui/Icons';
 
 interface Kpi {
-  icone: string;
+  icone?: string;
   valor: string;
   rotulo: string;
 }

@@ -112,7 +112,7 @@ export function PopsPage() {
             <Button
               variant="primary"
               icon={<IconPlus size={15} />}
-              onClick={() => navigate('/formulario')}
+              onClick={() => navigate('/formulario', { state: { novo_pop: { nome: '', objetivo: '' } } })}
             >
               Novo POP
             </Button>
@@ -120,21 +120,25 @@ export function PopsPage() {
         </div>
       </div>
 
-      {/* Barra de Pesquisa */}
-      <div style={{ marginBottom: '1.5rem', display: 'flex', gap: '0.8rem', alignItems: 'center', maxWidth: '480px' }}>
-        <div style={{ position: 'relative', width: '100%' }}>
+      {/* Barra de Pesquisa - premium */}
+      <div style={{ marginBottom: '1.6rem', display: 'flex', gap: '0.8rem', alignItems: 'center', maxWidth: '520px', flexWrap: 'wrap' }}>
+        <div style={{ position: 'relative', flex: '1 1 280px' }}>
           <input
             type="text"
             className="input"
             placeholder="Buscar por nome do POP ou código…"
             value={busca}
             onChange={(e) => setBusca(e.target.value)}
-            style={{ paddingLeft: '2.2rem' }}
+            style={{ paddingLeft: '2.4rem', height: '42px', borderRadius: '12px' }}
+            aria-label="Buscar POPs"
           />
-          <div style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', opacity: 0.5 }}>
+          <div style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)', opacity: 0.55, color: 'var(--muted)' }}>
             <IconSearch size={16} />
           </div>
         </div>
+        <span style={{ fontSize: '0.8rem', color: 'var(--muted)', whiteSpace: 'nowrap' }}>
+          {filtrados.length} de {pops.length} POPs
+        </span>
         {busca ? (
           <Button variant="ghost" size="sm" onClick={() => setBusca('')}>
             Limpar
@@ -143,17 +147,35 @@ export function PopsPage() {
       </div>
 
       {carregando ? (
-        <div className="dash-loading">
-          <span className="spinner" />
-          Carregando POPs salvos…
+        <div className="dash-skeleton-grid" aria-busy="true" aria-label="Carregando POPs">
+          {[0, 1, 2, 3, 4, 5].map((i) => (
+            <div key={i} className="skeleton skeleton-card" style={{ animationDelay: `${i * 0.06}s` }} />
+          ))}
         </div>
       ) : filtrados.length === 0 ? (
-        <div className="dash-empty" style={{ padding: '3rem 1rem', textAlign: 'center' }}>
+        <div className="dash-empty-premium" role="status" aria-live="polite">
+          <div className="dash-empty-illustration" aria-hidden="true">
+            <IconFolder size={32} />
+          </div>
           {busca ? (
-            <>Nenhum POP encontrado para a busca "{busca}".</>
+            <>
+              <h3 className="dash-empty-title">Nenhum resultado para “{busca}”</h3>
+              <p className="dash-empty-desc">Tente ajustar os termos da busca ou limpar o filtro para ver todos os POPs.</p>
+              <Button variant="ghost" icon={<IconSearch size={14} />} onClick={() => setBusca('')}>
+                Limpar busca
+              </Button>
+            </>
           ) : (
             <>
-              Nenhum POP salvo ainda. Clique em <strong>"Novo POP"</strong> para criar o seu primeiro procedimento!
+              <h3 className="dash-empty-title">Sua biblioteca está vazia</h3>
+              <p className="dash-empty-desc">Crie seu primeiro POP em menos de 3 minutos com o formulário guiado. O documento sai no padrão CODEBA pronto para exportar.</p>
+              <Button
+                variant="primary"
+                icon={<IconPlus size={15} />}
+                onClick={() => navigate('/formulario', { state: { novo_pop: { nome: '', objetivo: '' } } })}
+              >
+                Criar primeiro POP
+              </Button>
             </>
           )}
         </div>

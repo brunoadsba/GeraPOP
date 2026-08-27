@@ -50,6 +50,7 @@ export function Sidebar() {
         <div className="sidebar-section-title">Criação</div>
         <NavLink
           to="/formulario"
+          state={{ novo_pop: { nome: '', objetivo: '' } }}
           className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}
         >
           <span className="nav-link-icon" aria-hidden="true">
