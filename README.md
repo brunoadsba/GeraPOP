@@ -1,5 +1,7 @@
 # GeraPOP — CODEBA
 
+![Python 3.11](https://img.shields.io/badge/python-3.11-3776AB) ![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688) ![React 19](https://img.shields.io/badge/React-19-61DAFB) ![Tests](https://img.shields.io/badge/tests-71%20pytest%20%2B%208%20E2E-brightgreen) ![License MIT](https://img.shields.io/badge/license-MIT-lightgrey)
+
 Gerador de POP (Procedimento Operacional Padrão) com formulário guiado e exportação `.docx`/`.pdf` formatadas — **backend FastAPI + frontend React (TypeScript/Vite)**.
 
 ## Pré-requisitos
