@@ -23,7 +23,10 @@ export default defineConfig({
       // @ts-ignore - process is available in Node
       command: `"${path.join(repoRoot, '.venv', (process as any).platform === 'win32' ? path.join('Scripts', 'python.exe') : path.join('bin', 'python'))}" -m uvicorn backend.main:app --host 127.0.0.1 --port 8199`,
       cwd: repoRoot,
-      env: { GERAPOP_DATA_DIR: path.join(repoRoot, '.e2e-data') },
+      env: {
+        GERAPOP_DATA_DIR: path.join(repoRoot, '.e2e-data'),
+        GERAPOP_LIBRARY_DIR: path.join(repoRoot, '.e2e-data', 'biblioteca'),
+      },
       url: 'http://127.0.0.1:8199/api/health',
       reuseExistingServer: false,
       timeout: 30_000,
