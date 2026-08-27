@@ -1,7 +1,7 @@
 # GeraPOP — Memória de Contexto para LLMs
 
 > Documento de continuidade do projeto. Leia antes de implementar qualquer feature.
-> Última atualização: 2026-08-27 (main em `a8f06b7`: frontend enxuto (sem `/fluxo`/simulação, sem Hero/Stepper) + biblioteca oficial com 3 POPs — `POP-COM-001`, `POP-OPE-001`, `POP-OPE-002_ANÚNCIO DE NAVIO` (docx editável + pdf oficial em `POP - Procedimento Operacional Padrão/<CÓDIGO_NOME>/`); `data/pops/` com 3 históricos via seed + OPE-002 restaurado; 71 pytest + 8 E2E)
+> Última atualização: 2026-08-27 (branch `ajustes-finos` `16372d3`: paleta premium leve light editorial (#F8F9FC, slate 900), hero editorial claro com badge e CTAs, sidebar retrátil 250→72px com persistência + drawer mobile 280px e marca C removida (recolhido limpo), empty states premium ilustrados e skeletons com stagger, bug "Novo POP" corrigido (RESET+discard via state novo_pop); biblioteca oficial com 3 POPs — `POP-COM-001`, `POP-OPE-001`, `POP-OPE-002_ANÚNCIO DE NAVIO`; `data/pops/` com 3; 71 pytest + 8 E2E + build Vite 36kB)
 
 ---
 
@@ -12,8 +12,8 @@
 O usuário preenche um formulário guiado e recebe arquivos `.docx` e `.pdf` formatados, seguindo o padrão oficial da CODEBA com logo e metadados no topo.
 
 **Repositório:** https://github.com/brunoadsba/GeraPOP.git  
-**Branch principal:** `main` (alinhada em `cda3fca`) + `ajustes-finos` (branch de trabalho atual, mergeada)  
-**Status atual:** MVP v1 completo (validação por seção, unicidade de código, rascunho persistente, backup zip, export JSON) + export **PDF** (reportlab com logo oficial CODEBA, metadados e revisões no topo em layout de alta densidade) + **dashboard home enxuto** (KPIs reais dos POPs salvos, ações rápidas, recentes; sem fluxo SEV) + **preview do POP** (modo leitura com botão Editar e downloads) + **design system v2 sênior** (sidebar — Início/Meus POPs/Novo POP, `/pops` com busca, tema light/dark, glassmorphism, ícones SVG inline, toasts, accordions, progresso de formulário em 2 colunas; **rota `/fluxo` removida** — Fluxo SEV em `fluxo-sev/` externo) + **sete de melhorias visuais v1.1** (sub-cabeçalhos de tela, respostas do sistema, negrito em aspas, cabeçalho de regras, rodapé com linha divisória e paginação) + **padrão CODEBA aplicado à saída** (matriz 2 variantes, passos com responsável por linha, seções 7/8/9, header "Página X de Y" página 2+, rodapé cópia não controlada, Calibri) + **biblioteca interna** (`data/pops/` com 3 POPs: `POP-COM-001`, `POP-OPE-001`, `POP-OPE-002` via seed + restauração) + **biblioteca oficial em pasta humana** (`POP - Procedimento Operacional Padrão/` com 3 pastas — `POP-COM-001`, `POP-OPE-001`, `POP-OPE-002_ANÚNCIO DE NAVIO` — cada com `.docx` editável + `.pdf` oficial) + **migração de UI para web moderna concluída** (React 19 + TS + Vite 6 no frontend, FastAPI no backend); **71 pytest + 8 E2E Playwright**; tsc/eslint/build limpos.
+**Branch principal:** `main` (`13681a6`) + `ajustes-finos` (`16372d3`, branch de trabalho atual — 4 commits à frente: redesign premium, paleta light editorial e sidebar retrátil)  
+**Status atual:** MVP v1 completo + export **PDF** + **dashboard home enxuto** (KPIs reais, hero editorial claro com badge/CTA, recentes) + **preview** + **design system premium leve** (light #F8F9FC/slate 900, dark #0A0E1C, hero claro com borda, sidebar retrátil 250→72px persistida + drawer mobile 280px com overlay, empty states premium ilustrados e skeletons stagger, foco com glow, `prefers-reduced-motion`) + **bug "Novo POP" corrigido** (navegação com `state novo_pop` + `RESET`/`discard()` — abre vazio, sem rascunho `PROSPECÇÃO...`) + **padrão CODEBA** (matriz 2 variantes, passos com responsável por linha, seções 7/8/9, header "Página X de Y" p2+, rodapé cópia não controlada, Calibri) + **biblioteca interna** (`data/pops/` 3: `POP-COM-001`, `POP-OPE-001`, `POP-OPE-002`) + **biblioteca oficial** (`POP - Procedimento Operacional Padrão/` 3 pastas) + **React 19 + TS + Vite 6**; **71 pytest + 8 E2E + build 36kB** limpos.
 
 ---
 
@@ -388,21 +388,14 @@ Contexto: Projeto GeraPOP (CODEBA) — gerador de POP com backend FastAPI + fron
 React 19/TS/Vite 6 + python-docx + reportlab (PDF com logo CODEBA e alta densidade).
 Leia memory.md e docs/plano.md antes de codar.
 
-Stack: Python 3.11, FastAPI (backend/), React+TS+Vite (frontend/), python-docx,
+Stack: Python 3.11, FastAPI (backend/), React+TS+Vite (frontend/ premium leve), python-docx,
 reportlab, pytest, ruff, eslint.
 Arquitetura: gerapop/models (domínio), services/docx + services/pdf (geração),
-backend/ (API REST), frontend/ (dashboard enxuto, formulário, preview, histórico,
-sem /fluxo, sem simulação), fluxo-sev/ (Projeto 1, HTML/CSS/JS puro externo).
+backend/ (API REST), frontend/ (dashboard enxuto com hero editorial claro, sidebar retrátil 250→72px + drawer mobile, empty premium + skeletons, sem /fluxo/sem simulação), fluxo-sev/ (Projeto 1 externo).
 
-Estado: merge `main` → `ajustes-finos` (2026-08-27). Saída alinhada ao padrão CODEBA
-(matriz 2 variantes, passos com responsável por linha, seções 7/8/9, header
-"Página X de Y" página 2+, rodapé cópia não controlada, Calibri). Histórico em
-data/pops/; cópia oficial em "POP - Procedimento Operacional Padrão/<CÓDIGO_NOME>/"
-(docx+pdf) a cada generate/seed — preview não grava. Dashboard enxuto sem Hero/Stepper
-e sem simulação RPA; 71 pytest + 8 E2E 100% verdes; tsc/eslint/vite build limpos.
+Estado: `ajustes-finos` `16372d3` (4 à frente de `main` `13681a6`): paleta light #F8F9FC/slate 900, hero claro, sidebar recolhível com persistência e sem marca C, empty/skeleton premium, bug Novo POP corrigido (RESET+discard). Saída CODEBA (matriz 2 variantes, passos com responsável por linha, seções 7/8/9, header "Página X de Y" p2+, Calibri). Histórico `data/pops/` 3 + biblioteca humana 3 (docx editável + pdf oficial); 71 pytest + 8 E2E + build 36kB limpos.
 
-Próximo passo sugerido: commitar a persistência na pasta oficial se o usuário
-pedir; piloto com a equipe (docs/piloto.md); 3 fluxos SEV restantes.
+Próximo passo sugerido: piloto com equipe (docs/piloto.md) ou merge `ajustes-finos` → `main` se aprovado; 3 fluxos SEV restantes.
 
 NÃO implementar: nuvem, auth, multi-agente, frameworks adicionais sem validação do piloto.
 ```
