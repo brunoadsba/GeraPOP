@@ -153,7 +153,7 @@ export function PopsPage() {
           ))}
         </div>
       ) : filtrados.length === 0 ? (
-        <div className="dash-empty-premium" role="status" aria-live="polite">
+        <div className="dash-empty dash-empty-premium" role="status" aria-live="polite">
           <div className="dash-empty-illustration" aria-hidden="true">
             <IconFolder size={32} />
           </div>

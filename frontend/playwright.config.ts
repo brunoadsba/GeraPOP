@@ -20,7 +20,7 @@ export default defineConfig({
   globalSetup: './e2e/global-setup.ts',
   webServer: [
     {
-      command: `"${path.join(repoRoot, '.venv', 'Scripts', 'python.exe')}" -m uvicorn backend.main:app --host 127.0.0.1 --port 8199`,
+      command: `"${path.join(repoRoot, '.venv', process.platform === 'win32' ? path.join('Scripts', 'python.exe') : path.join('bin', 'python'))}" -m uvicorn backend.main:app --host 127.0.0.1 --port 8199`,
       cwd: repoRoot,
       env: { GERAPOP_DATA_DIR: path.join(repoRoot, '.e2e-data') },
       url: 'http://127.0.0.1:8199/api/health',

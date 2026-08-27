@@ -132,11 +132,11 @@ export function HomePage() {
               Recentes ({recentes.length})
             </h2>
             {recentes.length === 0 ? (
-              <div className="dash-empty-premium" role="status" aria-live="polite">
+              <div className="dash-empty dash-empty-premium" role="status" aria-live="polite">
                 <div className="dash-empty-illustration" aria-hidden="true">
                   <IconFileText size={32} />
                 </div>
-                <h3 className="dash-empty-title">Nenhum POP salvo ainda</h3>
+                <h3 className="dash-empty-title">Nenhum POP salvo ainda.</h3>
                 <p className="dash-empty-desc">
                   Comece criando seu primeiro Procedimento Operacional Padrão. O assistente guiado leva menos de 3 minutos.
                 </p>
