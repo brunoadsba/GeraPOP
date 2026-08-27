@@ -9,6 +9,7 @@ from gerapop.models import PopData
 @pytest.fixture(autouse=True)
 def _data_dir_tmp(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("GERAPOP_DATA_DIR", str(tmp_path))
+    monkeypatch.setenv("GERAPOP_LIBRARY_DIR", str(tmp_path / "biblioteca"))
 
 
 @pytest.fixture
