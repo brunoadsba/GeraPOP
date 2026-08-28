@@ -13,6 +13,8 @@
   color: var(--text);
   animation: fade-up 0.3s ease both;
   position: relative;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .preview-brand-header {
@@ -23,6 +25,7 @@
   margin-bottom: 1.1rem;
   padding-bottom: 1rem;
   border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
 }
 
 .preview-brand-titles {
@@ -48,10 +51,11 @@
 
 .preview-hero h1 {
   margin: 0;
-  font-size: 1.45rem;
+  font-size: clamp(1.15rem, 3.8vw, 1.45rem);
   font-weight: 800;
   color: var(--heading);
   line-height: 1.25;
+  overflow-wrap: anywhere;
 }
 
 .preview-meta-grid {
@@ -275,6 +279,61 @@
   width: 180px;
   font-weight: 700;
   color: var(--heading);
+}
+
+@media (max-width: 640px) {
+  .preview-hero {
+    padding: 1rem;
+  }
+
+  .preview-brand-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .preview-brand-spacer {
+    display: none;
+  }
+
+  .preview-brand-titles {
+    text-align: left;
+  }
+
+  .preview-chips {
+    gap: 0.4rem;
+  }
+
+  .preview-chip {
+    font-size: 0.78rem;
+    padding: 0.3rem 0.6rem;
+  }
+
+  .preview-table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .preview-table-compact {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .preview-actions {
+    flex-direction: column;
+  }
+
+  .preview-actions .btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 380px) {
+  .preview-table td:first-child {
+    width: 110px;
+    font-size: 0.82rem;
+  }
 }
 
 .preview-table td:last-child {

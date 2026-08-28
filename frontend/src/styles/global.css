@@ -108,8 +108,9 @@ button {
 }
 
 .app-container {
-  max-width: clamp(720px, 92%, 1160px);
+  max-width: min(1160px, 92vw);
   margin: 0 auto;
+  min-width: 0;
 }
 
 /* --- Sidebar --- */
@@ -344,18 +345,20 @@ button {
 }
 
 .page-header h1 {
-  font-size: 1.75rem;
+  font-size: clamp(1.25rem, 4vw, 1.75rem);
   font-weight: 800;
   letter-spacing: var(--tracking-tight);
   display: flex;
   align-items: center;
   gap: 0.6rem;
   line-height: 1.15;
+  flex-wrap: wrap;
+  overflow-wrap: anywhere;
 }
 
 .page-header .subtitle {
   color: var(--muted);
-  font-size: 0.92rem;
+  font-size: clamp(0.85rem, 2.5vw, 0.92rem);
   margin-top: 0.35rem;
   line-height: 1.5;
   max-width: 42rem;
@@ -442,6 +445,8 @@ button {
   white-space: nowrap;
   position: relative;
   overflow: hidden;
+  min-height: 40px;
+  touch-action: manipulation;
 }
 
 .btn svg {
@@ -553,6 +558,7 @@ button {
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 0.55rem 0.75rem;
+  min-height: 42px;
   transition: border-color var(--transition-fast), box-shadow var(--transition-fast),
     background var(--transition-fast);
 }
@@ -981,7 +987,11 @@ button {
 .stagger > *:nth-child(7) { animation-delay: 0.28s; }
 .stagger > *:nth-child(8) { animation-delay: 0.32s; }
 
-/* --- Responsividade --- */
+.app-main {
+  padding-left: max(1rem, 2vw);
+  padding-right: max(1rem, 2vw);
+}
+
 @media (max-width: 900px) {
   .app-shell {
     flex-direction: column;
@@ -996,13 +1006,15 @@ button {
     top: 0;
     left: 0;
     bottom: 0;
-    width: 280px;
+    width: min(280px, 82vw);
     height: 100vh;
+    height: 100dvh;
     z-index: 35;
     transform: translateX(-100%);
     transition: transform var(--transition-normal);
     box-shadow: var(--shadow-xl);
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .sidebar.mobile-open {
@@ -1010,7 +1022,7 @@ button {
   }
 
   .sidebar.collapsed {
-    width: 280px;
+    width: min(280px, 82vw);
     padding: 1.2rem 0.9rem;
   }
 
@@ -1078,5 +1090,38 @@ button {
     right: 1rem;
     left: 1rem;
     max-width: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .app-main {
+    padding: 3.6rem 0.85rem 2rem;
+  }
+
+  .page-header {
+    margin-bottom: 1rem;
+  }
+
+  .page-header h1 {
+    font-size: 1.35rem;
+  }
+
+  .card {
+    padding: 0.85rem;
+  }
+
+  .btn {
+    padding: 0.45rem 0.75rem;
+    font-size: 0.82rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .app-main {
+    padding: 3.4rem 0.6rem 1.5rem;
+  }
+
+  .app-container {
+    max-width: 100%;
   }
 }

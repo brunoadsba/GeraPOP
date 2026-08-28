@@ -15,6 +15,7 @@
   flex-direction: column;
   gap: 0.6rem;
   animation: fade-up 0.25s ease both;
+  min-width: 0;
 }
 
 .form-header-main {
@@ -29,6 +30,8 @@
   display: flex;
   align-items: center;
   gap: 1.1rem;
+  min-width: 0;
+  flex-wrap: wrap;
 }
 
 .form-logo-box {
@@ -57,7 +60,7 @@
 }
 
 .form-page-title {
-  font-size: 1.35rem;
+  font-size: clamp(1.05rem, 3.5vw, 1.35rem);
   font-weight: 800;
   color: var(--heading);
   display: flex;
@@ -65,6 +68,8 @@
   gap: 0.5rem;
   margin: 0;
   line-height: 1.2;
+  flex-wrap: wrap;
+  overflow-wrap: anywhere;
 }
 
 .form-page-subtitle {
@@ -108,6 +113,8 @@
   padding: 1.4rem 1.6rem;
   margin-bottom: 1.2rem;
   box-shadow: var(--shadow);
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .identificacao-section {
@@ -434,7 +441,6 @@
   flex: 1;
 }
 
-/* --- Responsividade & Breakpoints --- */
 @media (max-width: 900px) {
   .ident-meta-grid {
     grid-template-columns: 1fr 1fr;
@@ -454,9 +460,77 @@
   }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 640px) {
+  .form-header-card {
+    padding: 0.85rem 1rem;
+  }
+
+  .form-header-main {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .form-logo-box {
+    max-width: 120px;
+    height: 38px;
+  }
+
+  .form-top-card {
+    padding: 1rem;
+  }
+
+  .secao-block {
+    padding: 0.85rem 0.9rem;
+  }
+
+  .accordion {
+    padding: 0.7rem 0.9rem;
+  }
+
+  .accordion-trigger {
+    font-size: 1rem;
+  }
+
   .ident-meta-grid {
     grid-template-columns: 1fr;
+  }
+
+  .ident-revisoes-box {
+    padding: 0.85rem 0.9rem;
+  }
+
+  .ident-revisao-row {
+    grid-template-columns: 1fr;
+    padding: 0.6rem 0.7rem;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .form-actions .btn {
+    width: 100%;
+  }
+
+  .history-select-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+@media (max-width: 380px) {
+  .form-header-brand {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.7rem;
+  }
+
+  .secao-block::before {
+    width: 3px;
+  }
+
+  .dynamic-item {
+    padding: 0.6rem 0.7rem;
   }
 }
 

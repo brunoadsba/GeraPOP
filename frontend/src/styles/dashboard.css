@@ -35,17 +35,18 @@
 .dash-hero h1 {
   color: var(--heading);
   margin: 0;
-  font-size: 1.7rem;
+  font-size: clamp(1.25rem, 4vw, 1.7rem);
   font-weight: 800;
   letter-spacing: var(--tracking-tight);
   line-height: 1.2;
   position: relative;
+  overflow-wrap: anywhere;
 }
 
 .dash-hero p {
   color: var(--muted);
   margin: 0.5rem 0 0;
-  font-size: 0.92rem;
+  font-size: clamp(0.85rem, 2.5vw, 0.92rem);
   line-height: 1.6;
   max-width: 44rem;
   position: relative;
@@ -82,7 +83,7 @@
 /* KPIs */
 .dash-kpis {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 0.8rem;
   margin-bottom: 1.2rem;
 }
@@ -122,7 +123,7 @@
 }
 
 .dash-kpi-value {
-  font-size: 1.8rem;
+  font-size: clamp(1.25rem, 4vw, 1.8rem);
   font-weight: 800;
   color: var(--heading);
   line-height: 1.1;
@@ -238,7 +239,7 @@
 
 .dash-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.8rem;
 }
 
@@ -253,6 +254,8 @@
   gap: 0.5rem;
   animation: fade-up 0.35s ease both;
   transition: all var(--transition-normal);
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .dash-card:hover {
@@ -309,6 +312,10 @@
   gap: 0.4rem;
   flex-wrap: wrap;
   align-items: center;
+}
+
+.dash-card-actions .btn {
+  min-height: 38px;
 }
 
 .dash-empty {
@@ -456,5 +463,66 @@
 
   .dash-skeleton-grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 520px) {
+  .dash-hero {
+    padding: 1.1rem 1rem;
+  }
+
+  .dash-hero-actions {
+    flex-direction: column;
+  }
+
+  .dash-hero-actions .btn {
+    width: 100%;
+  }
+
+  .dash-kpis {
+    grid-template-columns: 1fr;
+    gap: 0.6rem;
+  }
+
+  .dash-kpi {
+    padding: 0.85rem 0.9rem;
+  }
+
+  .dash-skeleton-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dash-card {
+    padding: 0.85rem 0.9rem;
+  }
+
+  .dash-empty-premium {
+    padding: 1.4rem 1rem;
+  }
+
+  .modal {
+    width: 96%;
+    padding: 1.1rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .dash-hero h1 {
+    font-size: 1.15rem;
+  }
+
+  .dash-card-actions {
+    gap: 0.35rem;
+  }
+
+  .dash-card-actions .btn {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 0.35rem 0.5rem;
+    font-size: 0.78rem;
+  }
+
+  .pops-search-bar {
+    max-width: 100% !important;
   }
 }

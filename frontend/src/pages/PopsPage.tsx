@@ -120,9 +120,8 @@ export function PopsPage() {
         </div>
       </div>
 
-      {/* Barra de Pesquisa - premium */}
-      <div style={{ marginBottom: '1.6rem', display: 'flex', gap: '0.8rem', alignItems: 'center', maxWidth: '520px', flexWrap: 'wrap' }}>
-        <div style={{ position: 'relative', flex: '1 1 280px' }}>
+      <div className="pops-search-bar" style={{ marginBottom: '1.6rem', display: 'flex', gap: '0.8rem', alignItems: 'center', maxWidth: '520px', flexWrap: 'wrap' }}>
+        <div style={{ position: 'relative', flex: '1 1 280px', minWidth: 0 }}>
           <input
             type="text"
             className="input"
