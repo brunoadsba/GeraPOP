@@ -46,19 +46,26 @@ MARGIN_LEFT_CM = 1.3
 MARGIN_RIGHT_CM = 1.3
 _PAGE_W_CM = 21.0 - MARGIN_LEFT_CM - MARGIN_RIGHT_CM  # 18.4 cm
 
-_FONT_DIR = Path(os.environ.get("WINDIR", "C:/Windows")) / "Fonts"
+_FONT_DIRS = [
+    Path(os.environ.get("WINDIR", "C:/Windows")) / "Fonts",
+    Path("/usr/share/fonts/truetype/calibri"),
+    Path("/app/fonts"),
+    Path(__file__).resolve().parent.parent.parent / "assets" / "fonts",
+]
 
 
 def _tentar_registrar(nome_ttf: str, arquivo: str) -> str | None:
     """Registra uma fonte TTF (Calibri do padrão CODEBA); None se indisponível."""
-    caminho = _FONT_DIR / arquivo
-    if not caminho.is_file():
-        return None
-    try:
-        pdfmetrics.registerFont(TTFont(nome_ttf, str(caminho)))
-        return nome_ttf
-    except Exception:
-        return None
+    for font_dir in _FONT_DIRS:
+        caminho = font_dir / arquivo
+        if not caminho.is_file():
+            continue
+        try:
+            pdfmetrics.registerFont(TTFont(nome_ttf, str(caminho)))
+            return nome_ttf
+        except Exception:
+            continue
+    return None
 
 
 _CANDIDATOS = (

@@ -1,97 +1,104 @@
 # Deploy do GeraPOP
 
-Duas formas de publicar o GeraPOP para o setor usar:
+Duas formas de publicar o GeraPOP:
 
-| Opção | Persistência do histórico/rascunho | Esforço |
-|-------|-----------------------------------|---------|
-| **A. Streamlit Community Cloud** | **Efêmera** (perde dados a cada restart/redeploy) | Baixo — sem servidor |
-| **B. Docker com volume** | **Persistente** (`./data:/app/data` no host) | Médio — precisa de um servidor |
-
-> Recomendação: o Community Cloud é ótimo para pilotar com a equipe por um tempo.
-> Quando o histórico de POPs gerados passar a ser parte do trabalho diário, migrar
-> para Docker com volume (ou adicionar um armazenamento externo).
+| Opção | Persistência | Esforço |
+|-------|-------------|---------|
+| **A. Fly.io** (recomendado) | **Persistente** (volume montado em `/data`) | Baixo — CLI `fly deploy` |
+| **B. Docker local** | **Persistente** (`./data:/app/data` no host) | Médio — precisa de um servidor |
 
 ---
 
-## Opção A — Streamlit Community Cloud
+## Opção A — Fly.io (recomendado)
 
 Pré-requisitos:
 
-- Repositório deste projeto no GitHub (público ou privado).
-- Conta no [share.streamlit.io](https://share.streamlit.io) (entra com o GitHub).
+- Conta no [fly.io](https://fly.io) (plano gratuito inclui 3 VMs shared-cpu-1x).
+- CLI `flyctl` instalado (`curl -L https://fly.io/install.sh | sh`).
+- Repositório atualizado no GitHub.
 
-Passo a passo:
+### Primeiro deploy
 
-1. **Publique o código no GitHub** e faça push da branch desejada.
-2. Acesse <https://share.streamlit.io> e faça login com o GitHub.
-3. Clique em **New app**.
-4. Em **Deploy a public app from GitHub**:
-   - **Repository**: selecione `seu-usuario/gerapop`.
-   - **Branch**: `main` (ou a branch de produção).
-   - **Main file path**: `app.py`.
-5. Clique em **Advanced settings**:
-   - **Python version**: `3.11`.
-   - Não é necessário configurar secrets (o app não usa).
-6. Clique em **Deploy**.
-7. Aguarde o build (instala `requirements.txt` e roda `pip install -e .`). O app
-   estará disponível em `https://<app>.streamlit.app`.
+```bash
+# 1. Autenticar
+fly auth login
 
-Atualizações: a cada push para a branch configurada o Cloud re-deploya
-automaticamente.
+# 2. Criar o app (nome definido no fly.toml)
+fly apps create gerapop
 
-### Aviso: persistência é efêmera no Cloud
+# 3. Criar volume persistente (1 GB na região GRU — São Paulo)
+fly volumes create gerapop_data --region gru --size 1
 
-O filesystem do Community Cloud é **descartável**. Tudo o que o app grava em
-disco — o histórico em `data/pops/`, o rascunho (`data/draft.json`) e os
-backups em `data/backups/` — **é perdido** quando o app:
+# 4. Fazer o deploy (build remoto)
+fly deploy
 
-- entra em *idle timeout* e é reiniciado,
-- é atualizado por um novo push (redeploy),
-- é pausado/reiniciado manualmente.
+# 5. (Opcional) Alimentar a biblioteca com POPs iniciais
+fly ssh console -C "python scripts/seed_pops.py"
+```
 
-Na prática, no Cloud:
+O app ficará disponível em `https://gerapop.fly.dev`.
 
-- O **rascunho** funciona apenas dentro da mesma sessão ativa.
-- O **histórico de POPs** não sobrevive a reinícios — use o botão
-  **"Baixar backup (.zip)"** (no histórico) ou baixe os `.docx`/`.json` para
-  guardar fora do app.
-- O app lê `GERAPOP_DATA_DIR` (default `data/`) se quiser apontar o storage
-  para outro diretório efêmero — não resolve a efemeridade.
+### Configuração (`fly.toml`)
 
-Se o setor precisar reter o histórico de forma confiável, use a Opção B.
+O arquivo `fly.toml` na raiz define:
+
+- **Região:** `gru` (São Paulo — menor latência para o Brasil)
+- **VM:** `shared-cpu-1x` com 512 MB RAM
+- **Volume:** `gerapop_data` montado em `/data` (histórico + rascunho + biblioteca)
+- **Auto-stop:** máquina suspende quando ociosa (economia de créditos)
+- **HTTPS:** forçado automaticamente pelo Fly.io
+
+### Variáveis de ambiente
+
+Definidas em `[env]` no `fly.toml`:
+
+| Variável | Valor | Descrição |
+|----------|-------|-----------|
+| `PORT` | `8000` | Porta interna do uvicorn |
+| `GERAPOP_DATA_DIR` | `/data` | Diretório de dados (dentro do volume) |
+| `GERAPOP_LIBRARY_DIR` | `/data/biblioteca` | Biblioteca oficial (dentro do volume) |
+
+### Atualizações
+
+```bash
+git push origin main
+fly deploy
+```
+
+### Fontes Calibri (opcional)
+
+Por padrão, os PDFs usam Helvetica no container Linux. Para usar Calibri (padrão CODEBA):
+
+1. Copiar `calibri.ttf`, `calibrib.ttf`, `calibrii.ttf`, `calibriz.ttf` para o diretório do projeto
+2. Adicionar ao Dockerfile:
+   ```dockerfile
+   COPY fonts/ /usr/share/fonts/truetype/calibri/
+   ```
+3. Redesploiar com `fly deploy`
 
 ---
 
-## Opção B — Docker com volume (persistência real)
+## Opção B — Docker local com volume
 
-Pré-requisitos: um servidor/máquina com Docker e Docker Compose.
+Pré-requisitos: servidor/máquina com Docker e Docker Compose.
 
 ```bash
 make docker-run          # ou: docker compose up --build
 ```
 
-O `docker-compose.yml` monta `./data:/app/data` como volume, então **histórico,
-rascunho e backups ficam gravados no host** e sobrevivem a reinícios e
-re-deploys. O serviço roda com `restart: unless-stopped` (sobe sozinho após
-reinício da máquina).
+O `docker-compose.yml` monta `./data:/app/data` como volume. Histórico, rascunho e backups ficam gravados no host. Serviço roda com `restart: unless-stopped`.
 
-O app fica em `http://<servidor>:8501`.
+O app fica em `http://<servidor>:8000`.
 
 Notas:
 
-- Para mudar o diretório de dados: `GERAPOP_DATA_DIR` no serviço, apontando
-  para um caminho dentro do volume.
-- Para acesso externo seguro, coloque um proxy reverso (ex.: Nginx + TLS) na
-  frente da porta 8501.
+- Para acesso externo seguro, coloque um proxy reverso (Nginx + TLS) na frente.
+- As variáveis `GERAPOP_DATA_DIR` e `GERAPOP_LIBRARY_DIR` podem ser definidas no `docker-compose.yml`.
 
 ---
 
 ## Segurança (ambas as opções)
 
-- O GeraPOP **não tem login**. Qualquer pessoa com a URL pode criar, editar e
-  baixar POPs.
-- No Community Cloud, a URL do app é pública. Para uso restrito ao setor,
-  prefira a Opção B numa rede interna, ou adicione autenticação numa versão
-  futura.
-- O histórico fica em texto claro no disco do servidor — sem dados sensíveis
-  além dos próprios POPs.
+- O GeraPOP **não tem login**. Qualquer pessoa com a URL pode criar, editar e baixar POPs.
+- No Fly.io, a URL é pública (`https://gerapop.fly.dev`). Para uso restrito, adicione autenticação numa versão futura.
+- O histórico fica em texto claro no disco — sem dados sensíveis além dos próprios POPs.
