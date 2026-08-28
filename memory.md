@@ -1,7 +1,7 @@
 # GeraPOP — Memória de Contexto para LLMs
 
 > Documento de continuidade do projeto. Leia antes de implementar qualquer feature.
-> Última atualização: 2026-08-27 (branch `ajustes-finos` `16372d3`: paleta premium leve light editorial (#F8F9FC, slate 900), hero editorial claro com badge e CTAs, sidebar retrátil 250→72px com persistência + drawer mobile 280px e marca C removida (recolhido limpo), empty states premium ilustrados e skeletons com stagger, bug "Novo POP" corrigido (RESET+discard via state novo_pop); biblioteca oficial com 3 POPs — `POP-COM-001`, `POP-OPE-001`, `POP-OPE-002_ANÚNCIO DE NAVIO`; `data/pops/` com 3; 71 pytest + 8 E2E + build Vite 36kB)
+> Última atualização: 2026-08-28 (main `b125001` + túneis sem cartão: Docker produção `gerapop-gerapop:8000` healthy + Cloudflare Quick `wedding-inherited-strong-fixes.trycloudflare.com` + ngrok `b83e-200-190-25-237.ngrok-free.app` (free, nome aleatório — custom `gerapop-codeba` só pago ERR_NGROK_313); Fly `gerapop` preparado (`fly.toml` GRU, volume `gerapop_data:/data`) mas bloqueado sem cartão; paleta premium leve light editorial (#F8F9FC, slate 900), hero editorial claro, sidebar retrátil 250→72px com persistência + drawer mobile 280px, empty premium + skeletons, bug Novo POP corrigido; biblioteca oficial 3 POPs — `POP-COM-001`, `POP-OPE-001`, `POP-OPE-002_ANÚNCIO DE NAVIO`; `data/pops/` 3; 71 pytest + 8 E2E + build Vite 36kB)
 
 ---
 
@@ -12,8 +12,8 @@
 O usuário preenche um formulário guiado e recebe arquivos `.docx` e `.pdf` formatados, seguindo o padrão oficial da CODEBA com logo e metadados no topo.
 
 **Repositório:** https://github.com/brunoadsba/GeraPOP.git  
-**Branch principal:** `main` (`13681a6`) + `ajustes-finos` (`16372d3`, branch de trabalho atual — 4 commits à frente: redesign premium, paleta light editorial e sidebar retrátil)  
-**Status atual:** MVP v1 completo + export **PDF** + **dashboard home enxuto** (KPIs reais, hero editorial claro com badge/CTA, recentes) + **preview** + **design system premium leve** (light #F8F9FC/slate 900, dark #0A0E1C, hero claro com borda, sidebar retrátil 250→72px persistida + drawer mobile 280px com overlay, empty states premium ilustrados e skeletons stagger, foco com glow, `prefers-reduced-motion`) + **bug "Novo POP" corrigido** (navegação com `state novo_pop` + `RESET`/`discard()` — abre vazio, sem rascunho `PROSPECÇÃO...`) + **padrão CODEBA** (matriz 2 variantes, passos com responsável por linha, seções 7/8/9, header "Página X de Y" p2+, rodapé cópia não controlada, Calibri) + **biblioteca interna** (`data/pops/` 3: `POP-COM-001`, `POP-OPE-001`, `POP-OPE-002`) + **biblioteca oficial** (`POP - Procedimento Operacional Padrão/` 3 pastas) + **React 19 + TS + Vite 6**; **71 pytest + 8 E2E + build 36kB** limpos.
+**Branch principal:** `main` (`b125001`) — `ajustes-finos` mergeada e arquivada (single branch)  
+**Status atual:** MVP v1 completo + export **PDF** + **dashboard home enxuto** (KPIs reais, hero editorial claro com badge/CTA, recentes) + **preview** + **design system premium leve** (light #F8F9FC/slate 900, dark #0A0E1C, hero claro com borda, sidebar retrátil 250→72px persistida + drawer mobile 280px com overlay, empty states premium ilustrados e skeletons stagger, foco com glow, `prefers-reduced-motion`) + **bug "Novo POP" corrigido** (navegação com `state novo_pop` + `RESET`/`discard()` — abre vazio, sem rascunho `PROSPECÇÃO...`) + **padrão CODEBA** (matriz 2 variantes, passos com responsável por linha, seções 7/8/9, header "Página X de Y" p2+, rodapé cópia não controlada, Calibri) + **biblioteca interna** (`data/pops/` 3: `POP-COM-001`, `POP-OPE-001`, `POP-OPE-002`) + **biblioteca oficial** (`POP - Procedimento Operacional Padrão/` 3 pastas) + **React 19 + TS + Vite 6** + **Docker produção validado** (`docker build` → `gerapop-gerapop:8000` healthy, `frontend/dist` servido pelo FastAPI) + **hospedagem sem cartão ativa** (túneis `trycloudflare.com` e `ngrok-free.app` — Fly `gerapop` pronto em `fly.toml` mas bloqueado sem cartão); **71 pytest + 8 E2E + build 36kB** limpos.
 
 ---
 
@@ -53,7 +53,7 @@ GeraPOP (Projeto 2)  →  dados estruturados  →  Fluxo Interativo SEV (Projeto
 | Testes | pytest (`tests/` — 68 testes incluindo API TestClient) + Playwright E2E (`frontend/e2e/` — 8 testes usando Chrome do sistema via `channel: 'chrome'`) |
 | Lint/format | ruff (Python) + eslint (frontend) |
 | Ambiente | uv + Makefile |
-| Deploy v2 (futuro) | FastAPI + frontend estático em Docker + volume (persistente) — ver `docs/deploy.md` (deploy local por enquanto) |
+| Deploy v2 (futuro) | FastAPI + frontend estático em Docker + volume (persistente) — ver `docs/deploy.md` — **Fly `gerapop` (`fly.toml` GRU, `gerapop_data:/data`, `shared-cpu-1x/512MB`, auto_stop) preparado mas bloqueado sem cartão (`fly apps create` exige billing); produção validada via `docker build` → `docker compose up` (`gerapop-gerapop:8000` healthy); túneis sem cartão ativos: Cloudflare Quick `wedding-inherited-strong-fixes.trycloudflare.com` (1s, estável) e ngrok `b83e-200-190-25-237.ngrok-free.app` (0.5s, free aleatório — custom `gerapop-codeba` só pago ERR_NGROK_313), `loca.lt` `gerapop-codeba.loca.lt` instável; atalho `~/ligar-gerapop.sh` + `~/.local/share/applications/gerapop.desktop` |
 | CI | GitHub Actions (`.github/workflows/ci.yml`) — **desativado** (`disabled_manually`, workflow id `330472653`); reativar com `gh workflow enable 330472653 --repo brunoadsba/GeraPOP` |
 | Container | Docker + docker-compose (alternativa ao venv) |
 
@@ -257,7 +257,7 @@ make docker-run
 
 ---
 
-## 8. Estado atual do repositório (2026-08-27)
+## 8. Estado atual do repositório (2026-08-28)
 
 ### Commits já integrados no Git
 - `feat(gerapop): estrutura inicial do MVP com Streamlit e geração de POP`
@@ -282,14 +282,22 @@ make docker-run
 - `feat(pop): evolui modelo e documento com metadados CODEBA` (`0c7958a`)
 - `feat(pop): aplica padrão CODEBA na saída e alimenta biblioteca com seed idempotente` (`859ef60`)
 - `build(make): compatibiliza Makefile com Windows` (`fc26538`)
-- `docs(memory): registra make no Windows e servidores persistentes via WMI` (`2b5b1bf`) — HEAD de `origin/main`
+- `docs(memory): registra make no Windows e servidores persistentes via WMI` (`2b5b1bf`)
+- `feat(ui): enxuga Início — remove Hero/Stepper/Simulacao/FluxoPage, mantém KPIs reais + recentes + empty premium` (`06981d5`)
+- `feat(ui): redesign visível premium com hero, tokens e empty states` (`9272dc1`)
+- `feat(ui): paleta premium leve e hero editorial` (`0240ba6`)
+- `feat(ui): sidebar retrátil com persistência e drawer responsivo` (`7d0ee36`)
+- `fix(ui): logo brandmark premium ao recolher sidebar` (`dd45b3f`) + `fix(ui): remove marca C do sidebar recolhido` (`16372d3`)
+- `fix(e2e): empty premium compatível e playwright cross-platform` (`04e231d`) + `fix(e2e): torna playwright config cross-platform sem erro de tipos` (`7885e36`) + `fix(e2e): isola biblioteca oficial no E2E` (`d51139c`)
+- `chore(hosting): prepara arquitetura para produção` (`118ebb3`) — Dockerfile multi-stage + `backend/main.py` serve `frontend/dist` + `docker-compose.yml` + `.dockerignore` + `.env.example`
+- `chore(repo): profissionaliza remoto - single branch, licença e badges` (`5eb8b08`) — `ajustes-finos` arquivada
+- `chore(deploy): prepara Fly.io — fly.toml, busca de fontes multiplataforma e docs/deploy.md atualizado` (`b125001`) — HEAD de `origin/main`
 
-### Trabalho local em `main` (2026-08-27, ainda não commitado)
+### Trabalho local em `main` (2026-08-28, hospedagem sem cartão)
 
-- **Biblioteca oficial em pasta humana:** geração grava `.docx` e `.pdf` em `POP - Procedimento Operacional Padrão/<CÓDIGO_NOME>/` (`exportar_para_biblioteca` em `gerapop/storage.py`; `POST /api/generate` passa `pdf=gerar_pdf(...)`; seed idempotente também). Preview não exporta.
-- Regenerar o mesmo código sobrescreve; mudança de nome renomeia a pasta; `delete_pop` limpa histórico e pasta oficial.
-- Testes em `tests/test_storage.py` (export, rename, delete) isolados com `GERAPOP_LIBRARY_DIR`.
-- Biblioteca oficial com 3 POPs (2026-08-27): `POP-COM-001`, `POP-OPE-001`, `POP-OPE-002_ANÚNCIO DE NAVIO` (seed + restauração do OPE-002 em `data/pops/` para o frontend).
+- **Fly.io preparado mas bloqueado:** `fly.toml` (`app=gerapop`, `primary_region=gru`, `gerapop_data:/data`, `shared-cpu-1x/512MB`, `auto_stop=suspend`), `Dockerfile` multi-stage validado (`docker build` → `gerapop-gerapop:8000` healthy, `GET /api/health → {"status":"ok"}`, `GET / → 200`), `docs/deploy.md` com Fly (principal) + Docker local (alternativa); `fly auth` OK mas `fly apps create gerapop` exige cartão (`https://fly.io/dashboard/bruno-almeida-934/billing`)
+- **Produção sem cartão ativa via túneis:** `docker compose up --build -d` em `0.0.0.0:8000`; `cloudflared tunnel --url http://localhost:8000` → `https://wedding-inherited-strong-fixes.trycloudflare.com` (1.06s, 200, estável, nome aleatório inevitável no quick tunnel); `ngrok http 8000` → `https://b83e-200-190-25-237.ngrok-free.app` (0.55s, 200, free aleatório — `gerapop-codeba.ngrok-free.app` só pago `ERR_NGROK_313`); `loca.lt` `https://gerapop-codeba.loca.lt` (fixo, sem cartão, mas instável/travando TLS); atalho `~/ligar-gerapop.sh` + `~/.local/share/applications/gerapop.desktop` + `~/GeraPOP-LIGAR.sh`; ngrok authtoken `31WPA4j6Zs8yLp9wjuwAorAxykw_...` em `~/.config/ngrok/ngrok.yml`, binários em `~/.local/bin/{cloudflared,ngrok}`
+- **Biblioteca oficial:** permanece 3 POPs (`POP-COM-001`, `POP-OPE-001`, `POP-OPE-002_ANÚNCIO DE NAVIO`), `data/pops/` 3
 
 ### Já integrado (antes `ajustes-finos`, agora em `main`)
 - **Header Oficial CODEBA e Layout de Alta Densidade:**
@@ -391,11 +399,11 @@ Leia memory.md e docs/plano.md antes de codar.
 Stack: Python 3.11, FastAPI (backend/), React+TS+Vite (frontend/ premium leve), python-docx,
 reportlab, pytest, ruff, eslint.
 Arquitetura: gerapop/models (domínio), services/docx + services/pdf (geração),
-backend/ (API REST), frontend/ (dashboard enxuto com hero editorial claro, sidebar retrátil 250→72px + drawer mobile, empty premium + skeletons, sem /fluxo/sem simulação), fluxo-sev/ (Projeto 1 externo).
+backend/ (API REST + serve frontend/dist), frontend/ (dashboard enxuto com hero editorial claro, sidebar retrátil 250→72px + drawer mobile, empty premium + skeletons, sem /fluxo/sem simulação), fluxo-sev/ (Projeto 1 externo).
 
-Estado: `ajustes-finos` `16372d3` (4 à frente de `main` `13681a6`): paleta light #F8F9FC/slate 900, hero claro, sidebar recolhível com persistência e sem marca C, empty/skeleton premium, bug Novo POP corrigido (RESET+discard). Saída CODEBA (matriz 2 variantes, passos com responsável por linha, seções 7/8/9, header "Página X de Y" p2+, Calibri). Histórico `data/pops/` 3 + biblioteca humana 3 (docx editável + pdf oficial); 71 pytest + 8 E2E + build 36kB limpos.
+Estado: main b125001 (single branch, ajustes-finos arquivada): paleta light #F8F9FC/slate 900, hero claro, sidebar recolhível, empty/skeleton premium, bug Novo POP corrigido. Saída CODEBA (matriz 2 variantes, passos com responsável por linha, seções 7/8/9, header "Página X de Y" p2+, Calibri). Docker produção validado (gerapop-gerapop:8000 healthy). Fly gerapop (fly.toml GRU, gerapop_data:/data) pronto mas bloqueado sem cartão. Túneis sem cartão ativos: cloudflared wedding-inherited-strong-fixes.trycloudflare.com (1s) + ngrok b83e-200-190-25-237.ngrok-free.app (0.5s, free aleatório — custom só pago) + loca.lt instável. Histórico data/pops/ 3 + biblioteca humana 3 (docx editável + pdf oficial); 71 pytest + 8 E2E + build 36kB limpos.
 
-Próximo passo sugerido: piloto com equipe (docs/piloto.md) ou merge `ajustes-finos` → `main` se aprovado; 3 fluxos SEV restantes.
+Próximo passo sugerido: piloto com equipe (docs/piloto.md) via túneis (ngrok/cloudflared) ou Fly quando tiver cartão; 3 fluxos SEV restantes.
 
-NÃO implementar: nuvem, auth, multi-agente, frameworks adicionais sem validação do piloto.
+NÃO implementar: auth, multi-agente, frameworks adicionais sem validação do piloto.
 ```
