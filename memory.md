@@ -1,7 +1,7 @@
 # GeraPOP — Memória de Contexto para LLMs
 
 > Documento de continuidade do projeto. Leia antes de implementar qualquer feature.
-> Última atualização: 2026-08-28 (main `b125001` + túneis sem cartão: Docker produção `gerapop-gerapop:8000` healthy + Cloudflare Quick `wedding-inherited-strong-fixes.trycloudflare.com` + ngrok `b83e-200-190-25-237.ngrok-free.app` (free, nome aleatório — custom `gerapop-codeba` só pago ERR_NGROK_313); Fly `gerapop` preparado (`fly.toml` GRU, volume `gerapop_data:/data`) mas bloqueado sem cartão; paleta premium leve light editorial (#F8F9FC, slate 900), hero editorial claro, sidebar retrátil 250→72px com persistência + drawer mobile 280px, empty premium + skeletons, bug Novo POP corrigido; biblioteca oficial 3 POPs — `POP-COM-001`, `POP-OPE-001`, `POP-OPE-002_ANÚNCIO DE NAVIO`; `data/pops/` 3; 71 pytest + 8 E2E + build Vite 36kB)
+> Última atualização: 2026-08-28 (feat/responsivo `fc9aaef`: GeraPOP 100% responsivo — Mobile First 380/520/640/900px com clamp(), KPIs 3→2→1, cards 2→1, hero/busca/formulário/preview responsivos, sidebar drawer 82vw + 100dvh, touch 40-44px; main `9c2c1ef` + túneis sem cartão: Docker `gerapop-gerapop:8000` healthy + Cloudflare `wedding-inherited-strong-fixes.trycloudflare.com` (1s) + ngrok `b83e-200-190-25-237.ngrok-free.app` (0.5s, custom só pago); paleta premium leve (#F8F9FC/slate 900), hero editorial, sidebar retrátil; biblioteca 3 POPs — `POP-COM-001`, `POP-OPE-001`, `POP-OPE-002`; `data/pops/` 3; 71 pytest + 8 E2E + build 38kB)
 
 ---
 
@@ -12,8 +12,8 @@
 O usuário preenche um formulário guiado e recebe arquivos `.docx` e `.pdf` formatados, seguindo o padrão oficial da CODEBA com logo e metadados no topo.
 
 **Repositório:** https://github.com/brunoadsba/GeraPOP.git  
-**Branch principal:** `main` (`b125001`) — `ajustes-finos` mergeada e arquivada (single branch)  
-**Status atual:** MVP v1 completo + export **PDF** + **dashboard home enxuto** (KPIs reais, hero editorial claro com badge/CTA, recentes) + **preview** + **design system premium leve** (light #F8F9FC/slate 900, dark #0A0E1C, hero claro com borda, sidebar retrátil 250→72px persistida + drawer mobile 280px com overlay, empty states premium ilustrados e skeletons stagger, foco com glow, `prefers-reduced-motion`) + **bug "Novo POP" corrigido** (navegação com `state novo_pop` + `RESET`/`discard()` — abre vazio, sem rascunho `PROSPECÇÃO...`) + **padrão CODEBA** (matriz 2 variantes, passos com responsável por linha, seções 7/8/9, header "Página X de Y" p2+, rodapé cópia não controlada, Calibri) + **biblioteca interna** (`data/pops/` 3: `POP-COM-001`, `POP-OPE-001`, `POP-OPE-002`) + **biblioteca oficial** (`POP - Procedimento Operacional Padrão/` 3 pastas) + **React 19 + TS + Vite 6** + **Docker produção validado** (`docker build` → `gerapop-gerapop:8000` healthy, `frontend/dist` servido pelo FastAPI) + **hospedagem sem cartão ativa** (túneis `trycloudflare.com` e `ngrok-free.app` — Fly `gerapop` pronto em `fly.toml` mas bloqueado sem cartão); **71 pytest + 8 E2E + build 36kB** limpos.
+**Branch principal:** `main` (`9c2c1ef`) + `feat/responsivo` (`fc9aaef`, branch atual — GeraPOP 100% responsivo, 1 commit à frente)  
+**Status atual:** MVP v1 completo + export **PDF** + **dashboard home enxuto** (KPIs reais, hero editorial claro com badge/CTA, recentes) + **preview** + **design system premium leve** (light #F8F9FC/slate 900, dark #0A0E1C, hero claro com borda, sidebar retrátil 250→72px persistida + drawer mobile 280px→82vw com 100dvh, empty premium + skeletons, foco com glow, `prefers-reduced-motion`) + **bug "Novo POP" corrigido** + **padrão CODEBA** (matriz 2 variantes, passos com responsável por linha, seções 7/8/9, header "Página X de Y" p2+, Calibri) + **100% responsivo** (Mobile First 380/520/640/900px: `clamp()` tipográfico, KPIs 3→2→1, cards 2→1, hero/busca/formulário/preview com breakpoints, sidebar drawer, touch 40-44px, `overflow-wrap` e tabelas scrolláveis) + **biblioteca interna** (`data/pops/` 3) + **biblioteca oficial** (3 pastas) + **React 19 + TS + Vite 6** + **Docker validado** (`gerapop-gerapop:8000` healthy) + **túneis sem cartão** (`wedding-...trycloudflare.com` 1s e `b83e-...ngrok-free.app` 0.5s — custom só pago); **71 pytest + 8 E2E + build 38kB** limpos.
 
 ---
 
@@ -257,7 +257,7 @@ make docker-run
 
 ---
 
-## 8. Estado atual do repositório (2026-08-28)
+## 8. Estado atual do repositório (2026-08-28 — feat/responsivo)
 
 ### Commits já integrados no Git
 - `feat(gerapop): estrutura inicial do MVP com Streamlit e geração de POP`
@@ -291,13 +291,15 @@ make docker-run
 - `fix(e2e): empty premium compatível e playwright cross-platform` (`04e231d`) + `fix(e2e): torna playwright config cross-platform sem erro de tipos` (`7885e36`) + `fix(e2e): isola biblioteca oficial no E2E` (`d51139c`)
 - `chore(hosting): prepara arquitetura para produção` (`118ebb3`) — Dockerfile multi-stage + `backend/main.py` serve `frontend/dist` + `docker-compose.yml` + `.dockerignore` + `.env.example`
 - `chore(repo): profissionaliza remoto - single branch, licença e badges` (`5eb8b08`) — `ajustes-finos` arquivada
-- `chore(deploy): prepara Fly.io — fly.toml, busca de fontes multiplataforma e docs/deploy.md atualizado` (`b125001`) — HEAD de `origin/main`
+- `chore(deploy): prepara Fly.io — fly.toml, busca de fontes multiplataforma e docs/deploy.md atualizado` (`b125001`)
+- `docs(memory): atualiza hospedagem sem cartão com túneis ativos e Docker validado` (`9c2c1ef`) — HEAD de `origin/main`
+- `feat(ui): torna GeraPOP 100% responsivo para smartphone, tablet e desktop` (`fc9aaef`) — HEAD de `origin/feat/responsivo` (branch atual, 1 à frente de `main`)
 
-### Trabalho local em `main` (2026-08-28, hospedagem sem cartão)
+### Trabalho em `feat/responsivo` (2026-08-28, 100% responsivo)
 
-- **Fly.io preparado mas bloqueado:** `fly.toml` (`app=gerapop`, `primary_region=gru`, `gerapop_data:/data`, `shared-cpu-1x/512MB`, `auto_stop=suspend`), `Dockerfile` multi-stage validado (`docker build` → `gerapop-gerapop:8000` healthy, `GET /api/health → {"status":"ok"}`, `GET / → 200`), `docs/deploy.md` com Fly (principal) + Docker local (alternativa); `fly auth` OK mas `fly apps create gerapop` exige cartão (`https://fly.io/dashboard/bruno-almeida-934/billing`)
-- **Produção sem cartão ativa via túneis:** `docker compose up --build -d` em `0.0.0.0:8000`; `cloudflared tunnel --url http://localhost:8000` → `https://wedding-inherited-strong-fixes.trycloudflare.com` (1.06s, 200, estável, nome aleatório inevitável no quick tunnel); `ngrok http 8000` → `https://b83e-200-190-25-237.ngrok-free.app` (0.55s, 200, free aleatório — `gerapop-codeba.ngrok-free.app` só pago `ERR_NGROK_313`); `loca.lt` `https://gerapop-codeba.loca.lt` (fixo, sem cartão, mas instável/travando TLS); atalho `~/ligar-gerapop.sh` + `~/.local/share/applications/gerapop.desktop` + `~/GeraPOP-LIGAR.sh`; ngrok authtoken `31WPA4j6Zs8yLp9wjuwAorAxykw_...` em `~/.config/ngrok/ngrok.yml`, binários em `~/.local/bin/{cloudflared,ngrok}`
-- **Biblioteca oficial:** permanece 3 POPs (`POP-COM-001`, `POP-OPE-001`, `POP-OPE-002_ANÚNCIO DE NAVIO`), `data/pops/` 3
+- **Responsividade Mobile First completa:** `global.css` (`app-main` padding fluido `max(1rem,2vw)`, `app-container` `min(1160px,92vw)`, `page-header h1/subtitle` `clamp()`, `input/btn` `min-height 40-44px` + `touch-action`, `sidebar` drawer `min(280px,82vw)` + `100dvh` + `touch-scrolling`, breakpoints 900/640/380); `dashboard.css` (`hero h1/p` `clamp()`, `kpis` 3→2→1 em 900/700/520, `grid` `minmax(0,1fr)` → 1, `card` `min-width:0` + `wrap`, `hero-actions` coluna em 520px, `empty/modal` 96% mobile, `pops-search-bar` `max-width:100%` em 380px); `form.css` (`form-header` coluna em 640px, `form-top-card` padding fluido, `ident-meta-grid` 4→2→1, `revisao-row` 5→2→1, `form-actions` coluna, `accordion` padding reduzido); `preview.css` (`hero` `clamp()`, `brand-header` coluna em 640px, tabelas `block overflow-x:auto`); `PopsPage.tsx` (`pops-search-bar` + `minWidth:0`)
+- **Validação:** `tsc --noEmit` pass, `vite build` 38kB CSS (73 modules) pass, `71 pytest` pass, `docker compose` healthy, túneis `wedding-...trycloudflare.com` (1s) e `b83e-...ngrok-free.app` (0.5s) OK
+- **Hospedagem sem cartão:** `fly.toml` GRU bloqueado sem cartão; produção via `docker compose` + túneis (`cloudflared` + `ngrok` free aleatório — custom só pago); atalho `~/ligar-gerapop.sh`; biblioteca 3 POPs, `data/pops/` 3
 
 ### Já integrado (antes `ajustes-finos`, agora em `main`)
 - **Header Oficial CODEBA e Layout de Alta Densidade:**
@@ -401,9 +403,9 @@ reportlab, pytest, ruff, eslint.
 Arquitetura: gerapop/models (domínio), services/docx + services/pdf (geração),
 backend/ (API REST + serve frontend/dist), frontend/ (dashboard enxuto com hero editorial claro, sidebar retrátil 250→72px + drawer mobile, empty premium + skeletons, sem /fluxo/sem simulação), fluxo-sev/ (Projeto 1 externo).
 
-Estado: main b125001 (single branch, ajustes-finos arquivada): paleta light #F8F9FC/slate 900, hero claro, sidebar recolhível, empty/skeleton premium, bug Novo POP corrigido. Saída CODEBA (matriz 2 variantes, passos com responsável por linha, seções 7/8/9, header "Página X de Y" p2+, Calibri). Docker produção validado (gerapop-gerapop:8000 healthy). Fly gerapop (fly.toml GRU, gerapop_data:/data) pronto mas bloqueado sem cartão. Túneis sem cartão ativos: cloudflared wedding-inherited-strong-fixes.trycloudflare.com (1s) + ngrok b83e-200-190-25-237.ngrok-free.app (0.5s, free aleatório — custom só pago) + loca.lt instável. Histórico data/pops/ 3 + biblioteca humana 3 (docx editável + pdf oficial); 71 pytest + 8 E2E + build 36kB limpos.
+Estado: feat/responsivo fc9aaef (1 à frente de main 9c2c1ef): paleta light #F8F9FC/slate 900, hero claro, sidebar recolhível (82vw/100dvh), GeraPOP 100% responsivo Mobile First 380/520/640/900px (clamp(), KPIs 3→2→1, cards 2→1, hero/busca/form/preview com breakpoints, touch 40-44px). Docker validado (gerapop-gerapop:8000 healthy). Fly gerapop (fly.toml GRU) pronto mas bloqueado sem cartão. Túneis: cloudflared wedding-...trycloudflare.com (1s) + ngrok b83e-...ngrok-free.app (0.5s, free aleatório — custom só pago). Histórico data/pops/ 3 + biblioteca 3 (docx+pdf); 71 pytest + 8 E2E + build 38kB limpos.
 
-Próximo passo sugerido: piloto com equipe (docs/piloto.md) via túneis (ngrok/cloudflared) ou Fly quando tiver cartão; 3 fluxos SEV restantes.
+Próximo passo sugerido: testar responsividade em celular real via túneis e merge feat/responsivo → main quando aprovado; piloto com equipe (docs/piloto.md); 3 fluxos SEV restantes.
 
 NÃO implementar: auth, multi-agente, frameworks adicionais sem validação do piloto.
 ```
