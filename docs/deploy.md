@@ -1,26 +1,28 @@
 # Deploy do GeraPOP — Nuvem Free (sem cartão)
 
-> Fly.io (`fly.toml` GRU) está **bloqueado sem cartão** (`fly apps create` exige billing). Este guia foca em alternativas **100% free sem cartão**.
+> **App name oficial:** `GeraPop` (slug `gerapop` — minúsculo exigido por Koyeb/HF/Fly). Fly.io (`fly.toml` `gerapop` GRU) está **bloqueado sem cartão** (`fly apps create` exige billing). Em 31/08 Koyeb também pausou novos apps ("joining Mistral"). Este guia foca em alternativas **100% free sem cartão** para o app **GeraPop**.
 
-| Opção | Custo sem cartão | Persistência | Esforço | URL |
-|-------|------------------|--------------|---------|-----|
-| **A. Koyeb** (recomendado) | ✅ Free Hobby sem cartão | Efêmera* | Baixo — GitHub auto-deploy | `https://<app>.koyeb.app` |
-| **B. HuggingFace Spaces (Docker)** | ✅ Free sem cartão | Efêmera* | Baixo — push para HF | `https://huggingface.co/spaces/<user>/gerapop` |
-| **C. Cloudflare Tunnel** | ✅ Free sem cartão | Persistente (host local) | Baixo — já validado | `https://wedding-inherited-strong-fixes.trycloudflare.com` |
+| Opção | Custo sem cartão | Persistência | Esforço | URL com `GeraPop` |
+|-------|------------------|--------------|---------|-------------------|
+| **A. Koyeb** | ⚠️ Pausado 31/08 (Mistral) | Efêmera* | — | `https://gerapop-xxxx.koyeb.app` |
+| **B. HuggingFace Spaces (Docker)** | ✅ Free sem cartão — **recomendado** | Efêmera* | Baixo — push para HF | `https://huggingface.co/spaces/<user>/GeraPop` → `https://<user>-gerapop.hf.space` |
+| **C. Cloudflare Tunnel** | ✅ Free sem cartão — **ativo agora** | Persistente (host local) | Baixo — já validado 31/08 | `https://iron-lay-scoop-dsl.trycloudflare.com` |
 | **D. Docker local** | ✅ | Persistente (`./data:/app/data`) | Médio | `http://<servidor>:8000` |
 
 \* Plataformas free sem volume perdem `data/` em redeploy. Use `GET /api/backup` ou `python -m gerapop.backup` regularmente. Biblioteca oficial pode ser versionada via `data/pops/` → commit manual se desejado.
 
 ---
 
-## Opção A — Koyeb (substituto direto do Fly, sem cartão)
+## Opção A — Koyeb (substituto direto do Fly) — PAUSADO 31/08
 
-Suporta `Dockerfile` nativo, região `gru` disponível, detecta `PORT` do `Dockerfile`.
+> **Status 31/08:** `app.koyeb.com` exibe "Koyeb is joining Mistral! Stay tuned..." — criação de novos apps pausada. Mantido para referência futura quando reabrir. **Use Opção B (HuggingFace) ou C (Tunnel) por enquanto.**
+
+Suportava `Dockerfile` nativo, `PORT` do `Dockerfile`.
 
 ```bash
 # 1. Criar conta em koyeb.com (GitHub login, sem cartão no Hobby)
 # 2. No painel: Create App → GitHub → brunoadsba/GeraPOP → branch main
-# 3. Builder: Dockerfile (auto)
+# 3. Builder: Dockerfile (auto) — app name gerapop (slug de GeraPop)
 # 4. Variables:
 #    PORT=8000
 #    GERAPOP_DATA_DIR=/data
@@ -28,34 +30,34 @@ Suporta `Dockerfile` nativo, região `gru` disponível, detecta `PORT` do `Docke
 # 5. Deploy
 ```
 
-Exposta em `https://<nome>.koyeb.app`. Auto-deploy a cada `git push origin main`.
+Exposta seria em `https://gerapop-xxxx.koyeb.app`. Auto-deploy a cada `git push origin main`.
 
 Notas:
 - Sem volume no Hobby: dados efêmeros. Para piloto, baixar backup zip após cada sessão.
-- Se liberar volume pago futuramente, montar `/data` igual ao `fly.toml`.
+- Se reabrir, montar `/data` igual ao `fly.toml`.
 
 ---
 
-## Opção B — HuggingFace Spaces (Docker SDK) — garantido sem cartão
+## Opção B — HuggingFace Spaces (Docker SDK) — garantido sem cartão ⭐ RECOMENDADO para GeraPop
 
-Ideal para demo pública. Espaços Docker são gratuitos sem cartão (públicos).
+Ideal para demo pública do **GeraPop**. Espaços Docker são gratuitos sem cartão (públicos).
 
-1. Criar Space em `huggingface.co/new-space` → SDK `Docker` → Blank
-2. Adicionar remote:
+1. Criar Space em `huggingface.co/new-space` → **Space name:** `GeraPop` → **License:** `mit` → **SDK:** `Docker` → **Blank** → **Create Space**
+2. Adicionar remote (substitua `<user>` pelo seu username HF, ex: `brunoadsba`):
 ```bash
-git remote add hf https://huggingface.co/spaces/<user>/gerapop
+git remote add hf https://huggingface.co/spaces/<user>/GeraPop
 git push hf main
 ```
-3. HF usa `PORT=7860`. O `Dockerfile` já respeita `${PORT:-8000}`, então funciona sem alteração.
-4. Space fica em `https://<user>-gerapop.hf.space`
+3. HF usa `PORT=7860`. O `Dockerfile` do **GeraPop** já respeita `${PORT:-8000}`, então funciona sem alteração.
+4. Space fica em `https://<user>-gerapop.hf.space` (ex: `https://brunoadsba-gerapop.hf.space`)
 
 Exige `README.md` com `sdk: docker` no Space (não no repo principal). Dados também efêmeros.
 
 ---
 
-## Opção C — Cloudflare Tunnel (`cloudflared`) — produção imediata já validada
+## Opção C — Cloudflare Tunnel (`cloudflared`) — produção imediata já validada para GeraPop
 
-Já testado: `wedding-inherited-strong-fixes.trycloudflare.com` (1s estável). Zero cartão, zero hosting — apenas expõe seu `docker compose` local.
+Já validado em 31/08: `iron-lay-scoop-dsl.trycloudflare.com` (`{"status":"ok"}`, `quic`, `cloudflared 2026.8.2`). Anterior `wedding-inherited-strong-fixes.trycloudflare.com` (1s estável). Zero cartão, zero hosting — apenas expõe seu `docker compose` local do **GeraPop**.
 
 ```bash
 # Docker já rodando
@@ -97,9 +99,9 @@ environment:
 
 ---
 
-## Fly.io — bloqueado (referência)
+## Fly.io — bloqueado (referência) — app `gerapop` (slug de GeraPop)
 
-`fly.toml` (app `gerapop`, `primary_region = gru`, `shared-cpu-1x/512MB`, `gerapop_data:/data`) permanece no repo para migração futura, mas `fly deploy`/`fly apps create` exigem cartão. Não usar até liberar billing.
+`fly.toml` (app `gerapop` — slug de `GeraPop`, `primary_region = gru`, `shared-cpu-1x/512MB`, `gerapop_data:/data`) permanece no repo para migração futura, mas `fly deploy`/`fly apps create` exigem cartão. Não usar até liberar billing.
 
 ```bash
 fly auth login
@@ -119,10 +121,10 @@ fly ssh console -C "python scripts/seed_pops.py"
 
 ---
 
-## Checklist rápido free-cloud
+## Checklist rápido free-cloud para GeraPop
 
-- [ ] Escolha A/B/C. Para piloto CODEBA hoje: **C (cloudflared)** é instantâneo e já validado.
+- [ ] Escolha **B (HuggingFace GeraPop)** para URL fixa ou **C (cloudflared `iron-lay-...`)** para piloto instantâneo já validado 31/08.
 - [ ] `docker build` local passa (`71 pytest + tsc + vite 38.67kB`)
-- [ ] Após deploy, `GET /api/health` responde 200
+- [ ] Após deploy, `GET /api/health` responde 200 (`{"status":"ok"}`)
 - [ ] Testar `POST /api/generate` + download `.docx`/`.pdf` + backup zip
-- [ ] Documentar URL pública no `memory.md` (local, ignorado)
+- [ ] Documentar URL pública no `memory.md` (local, ignorado, sensível)
