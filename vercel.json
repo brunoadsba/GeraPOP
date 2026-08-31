@@ -1,5 +1,5 @@
 {
-  "buildCommand": "cd frontend && npm install --registry https://registry.yarnpkg.com && npm run build",
+  "buildCommand": "cd frontend && npm install --registry https://registry.yarnpkg.com && npm run build && cd .. && python scripts/seed_pops.py",
   "outputDirectory": "frontend/dist",
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/index.py" },

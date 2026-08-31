@@ -61,3 +61,4 @@ harnessfiles/
 # Memória sensível do projeto (contém túneis, estado interno, URLs)
 memory.md
 .omo/memory.md
+.vercel

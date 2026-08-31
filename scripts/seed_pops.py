@@ -325,6 +325,55 @@ def pop_ope_001() -> PopData:
     )
 
 
+def pop_ope_002() -> PopData:
+    return PopData.from_form(
+        nome_pop="ANÚNCIO DE NAVIO",
+        codigo="POP-OPE-002",
+        versao="03",
+        data="26/08/2026",
+        area="OPERAÇÕES PORTUÁRIAS",
+        aviso="",
+        objetivo="Padronizar o processo de ANÚNCIO DE NAVIO dentro do sistema OpenPort através da Tela 2003, estabelecendo a sequência correta de preenchimento das seções Dados, Calado e Mercadorias.",
+        campo_aplicacao="Agências Marítimas.",
+        pre_condicoes="Este POP é executado em etapa única — ver Matriz de Responsabilidades (seção 5).",
+        elaborado_por="Bruno Santos",
+        elaborado_cargo="TPO - Fiscalização",
+        aprovado_por="Nazaro Firme",
+        aprovado_cargo="[a preencher]",
+        definicoes=[
+            {"termo": "OpenPort", "definicao": "Sistema usado pela CODEBA"},
+            {"termo": "Anúncio de Navio", "definicao": "Registro da escala do navio no sistema"},
+        ],
+        matriz_responsabilidades=[
+            {
+                "tela": "2003",
+                "nome_tela": "Anúncio de Navio",
+                "etapa": "Criação do anúncio",
+                "responsavel": "Agência Marítima",
+            }
+        ],
+        secoes=[
+            {
+                "titulo": "Etapa 1 — Criação do Anúncio de Navio (Tela 2003)",
+                "responsavel": "AGÊNCIA MARÍTIMA",
+                "passos": [
+                    "Acessar a Tela 2003 no OpenPort",
+                    "Preencher seção Dados do navio",
+                    "Preencher seção Calado",
+                    "Preencher seção Mercadorias",
+                    "Gravar e confirmar anúncio",
+                ],
+                "campos": [],
+            }
+        ],
+        revisoes=[
+            {"revisao": "01", "data": "19/08/2026", "descricao": "Emissão inicial", "responsavel": "Bruno Santos"},
+            {"revisao": "02", "data": "21/08/2026", "descricao": "Ajustes e aprimoramentos", "responsavel": "Nazaro Firme"},
+            {"revisao": "03", "data": "26/08/2026", "descricao": "Versão oficial em validação", "responsavel": "Bruno Santos"},
+        ],
+    )
+
+
 def _pop_id_existente(codigo: str) -> str | None:
     for record in list_pops():
         if record["codigo"] == codigo:
@@ -333,7 +382,7 @@ def _pop_id_existente(codigo: str) -> str | None:
 
 
 def main() -> None:
-    for pop in (pop_com_001(), pop_ope_001()):
+    for pop in (pop_com_001(), pop_ope_001(), pop_ope_002()):
         erros = pop.validate()
         if erros:
             raise SystemExit(f"Validação falhou: {erros}")

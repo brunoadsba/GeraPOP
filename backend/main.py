@@ -6,7 +6,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 
-from backend.routers import backup, drafts, generate, pops
+from backend.routers import attach, backup, drafts, generate, pops
 
 app = FastAPI(title="GeraPOP API", version="0.1.0")
 
@@ -21,6 +21,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(attach.router)
 app.include_router(pops.router)
 app.include_router(generate.router)
 app.include_router(drafts.router)
