@@ -57,3 +57,7 @@ harnessfiles/
 
 # Pastas de testes temporários
 /teste/
+
+# Memória sensível do projeto (contém túneis, estado interno, URLs)
+memory.md
+.omo/memory.md
