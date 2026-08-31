@@ -169,7 +169,7 @@ def montar_conteudo(pop: PopData) -> list[Bloco]:
             Tabela(
                 ("Termo", "Definição"),
                 linhas_def,
-                larguras_cm=(4.4, None),
+                larguras_cm=(4.4, 12.11),
                 primeira_celula_bold=True,
             )
         )
@@ -219,7 +219,7 @@ def montar_conteudo(pop: PopData) -> list[Bloco]:
                 Tabela(
                     ("Tela", "Nome da Tela", "Etapa do Processo", "Responsável"),
                     linhas_matriz,
-                    larguras_cm=(1.8, 4.6, 5.2, 4.4),
+                    larguras_cm=(1.49, 4.86, 5.16, 4.41),
                     primeira_celula_bold=True,
                 )
             )
@@ -274,7 +274,7 @@ def montar_conteudo(pop: PopData) -> list[Bloco]:
                         Tabela(
                             ("#", "Passo"),
                             tuple(linhas_passos),
-                            larguras_cm=(PASSO_COL_WIDTH_CM, None),
+                            larguras_cm=(1.06, 14.86),
                             com_cabecalho_docx=True,
                             estilos_linha=tuple(estilos),
                         )
@@ -287,7 +287,7 @@ def montar_conteudo(pop: PopData) -> list[Bloco]:
                             (str(num), resp, passo)
                             for num, (passo, resp) in enumerate(passos_por_responsavel, start=1)
                         ),
-                        larguras_cm=(PASSO_COL_WIDTH_CM, 3.2, None),
+                        larguras_cm=(1.06, 3.20, 12.25),
                     )
                 )
 
@@ -300,7 +300,7 @@ def montar_conteudo(pop: PopData) -> list[Bloco]:
             if campos:
                 blocos.append(Paragrafo(f"Campos obrigatórios – {tit_limpo}:", bold=True))
                 blocos.append(
-                    Tabela(("Campo", "Descrição / Instruções"), campos, larguras_cm=(4.5, None))
+                    Tabela(("Campo", "Descrição / Instruções"), campos, larguras_cm=(4.5, 11.42))
                 )
 
     # Regras e Restrições (se houver)
@@ -309,13 +309,13 @@ def montar_conteudo(pop: PopData) -> list[Bloco]:
         titulo("Regras e Restrições")
         linhas_regras = tuple((f"R{idx}", regra) for idx, regra in enumerate(regras, start=1))
         blocos.append(
-            Tabela(
-                ("Regra", "Descrição"),
-                linhas_regras,
-                larguras_cm=(1.5, None),
-                primeira_celula_bold=True,
+                Tabela(
+                    ("Regra", "Descrição"),
+                    linhas_regras,
+                    larguras_cm=(1.5, 14.42),
+                    primeira_celula_bold=True,
+                )
             )
-        )
 
     # Consulta e Relatórios (se houver)
     if pop.consulta:
@@ -334,7 +334,7 @@ def montar_conteudo(pop: PopData) -> list[Bloco]:
             Tabela(
                 ("Registro", "Conteúdo mínimo", "Responsável"),
                 linhas_registros,
-                larguras_cm=(4.4, None, 3.6),
+                larguras_cm=(4.4, 8.51, 3.60),
             )
         )
 

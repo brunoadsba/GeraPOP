@@ -234,10 +234,9 @@ def _table(data: list[list], col_widths: list[float], repeat_header: bool = True
 def _obter_logo_path() -> str | None:
     raiz = Path(__file__).resolve().parent.parent.parent.parent
     candidatos = [
-        Path("Logo CODEBA.png"),
-        raiz / "Logo CODEBA.png",
         raiz / "gerapop" / "assets" / "logo-codeba.png",
-        raiz / "frontend" / "public" / "logo-codeba-topo.png",
+        raiz / "Logo CODEBA.png",
+        Path("Logo CODEBA.png"),
     ]
     for c in candidatos:
         if c.is_file():
@@ -251,9 +250,9 @@ def _header_banner(pop: PopData) -> Table:
     subtitle_p = Paragraph(f"<b>{_escape(pop.nome_pop)}</b>", _HEADER_NAME)
 
     if logo_path:
-        logo_img = RLImage(logo_path, width=4.0 * cm, height=1.12 * cm)
+        logo_img = RLImage(logo_path, width=4.2 * cm, height=1.18 * cm)
         data = [[logo_img, [title_p, subtitle_p]]]
-        table = Table(data, colWidths=[4.4 * cm, (_PAGE_W_CM - 4.4) * cm])
+        table = Table(data, colWidths=[4.2 * cm, (_PAGE_W_CM - 4.2) * cm])
     else:
         data = [[[title_p, subtitle_p]]]
         table = Table(data, colWidths=[_PAGE_W_CM * cm])
@@ -288,11 +287,11 @@ def _metadata_table(pop: PopData) -> Table:
             _paragraph(pop.area, _CELL),
         ],
     ]
-    w_label = 2.4
-    w_val1 = 5.8
-    w_val2 = _PAGE_W_CM - (w_label * 2 + w_val1)
-
-    table = _table(data, [w_label, w_val1, w_label, w_val2], repeat_header=False)
+    w_label = 2.82
+    w_val1 = 5.67
+    w_val2 = 2.82
+    w_val3 = 5.20
+    table = _table(data, [w_label, w_val1, w_label, w_val3], repeat_header=False)
     table.setStyle(
         TableStyle(
             [
@@ -331,11 +330,10 @@ def _revisoes_table(pop: PopData) -> Table:
             ]
         )
 
-    w_rev = 1.4
-    w_dt = 2.4
-    w_resp = 3.6
-    w_desc = _PAGE_W_CM - (w_rev + w_dt + w_resp)
-
+    w_rev = 1.23
+    w_dt = 2.47
+    w_resp = 3.53
+    w_desc = 9.28
     table = _table(data, [w_rev, w_dt, w_desc, w_resp], repeat_header=False)
     table.setStyle(
         TableStyle(
@@ -366,8 +364,7 @@ def _aprovacao_table(pop: PopData) -> Table:
             _paragraph(pop.aprovado_cargo or "[a preencher]"),
         ],
     ]
-    w_col = _PAGE_W_CM / 4.0
-    table = _table(data, [w_col, w_col, w_col, w_col], repeat_header=False)
+    table = _table(data, [4.94, 3.31, 4.94, 3.31], repeat_header=False)
     table.setStyle(
         TableStyle(
             [
