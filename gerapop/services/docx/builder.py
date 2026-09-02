@@ -67,6 +67,10 @@ def _larguras_tabela_emu(tabela: Tabela, largura_util: int) -> list[int]:
         for k, idx in enumerate(none_idxs):
             larguras[idx] = base + (1 if k < sobra else 0)
         larguras[none_idxs[-1]] += resto - sum(larguras[i] for i in none_idxs)
+    else:
+        total = sum(w for w in larguras if w is not None)  # type: ignore[arg-type]
+        if total != largura_util:
+            larguras[-1] = larguras[-1] + (largura_util - total)  # type: ignore[operator]
     return [w for w in larguras if w is not None]
 
 
@@ -89,11 +93,24 @@ def _set_col_widths(table, larguras_emu: list[int]) -> None:
     for idx, width in enumerate(larguras_emu):
         if idx < len(table.columns):
             table.columns[idx].width = width
-            for cell in table.columns[idx].cells:
-                tc_pr = cell._tc.tcPr
-                if tc_pr is not None and tc_pr.find(qn("w:gridSpan")) is not None:
+    for row in table.rows:
+        # Detecta linha mesclada (sub) onde as duas células compartilham o mesmo _tc
+        is_merged = len(row.cells) >= 2 and row.cells[0]._tc is row.cells[1]._tc
+        for idx, cell in enumerate(row.cells):
+            if is_merged and idx == 1:
+                continue
+            tc_pr = cell._tc.get_or_add_tcPr()
+            grid_span_el = tc_pr.find(qn("w:gridSpan"))
+            if grid_span_el is not None:
+                try:
+                    span = int(grid_span_el.get(qn("w:val"), "1"))
+                except ValueError:
+                    span = 1
+                if span > 1:
+                    cell.width = sum(larguras_emu[idx: idx + span])
                     continue
-                cell.width = width
+            if idx < len(larguras_emu):
+                cell.width = larguras_emu[idx]
 
 
 def _obter_logo_path() -> str | None:
