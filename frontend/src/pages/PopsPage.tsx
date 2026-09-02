@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
+  attachPop,
   deletePop,
   downloadBackup,
   downloadDocx,
@@ -19,6 +20,7 @@ import {
   IconPlus,
   IconSearch,
   IconTrash,
+  IconUpload,
 } from '../components/ui/Icons';
 import { Modal } from '../components/ui/Modal';
 import { showToast } from '../components/ui/Toast';
@@ -30,6 +32,11 @@ export function PopsPage() {
   const [busca, setBusca] = useState('');
   const [carregando, setCarregando] = useState(true);
   const [confirmando, setConfirmando] = useState<PopListItem | null>(null);
+  const [anexarAberto, setAnexarAberto] = useState(false);
+  const [anexarCodigo, setAnexarCodigo] = useState('');
+  const [anexarNome, setAnexarNome] = useState('');
+  const [anexarFile, setAnexarFile] = useState<File | null>(null);
+  const [anexando, setAnexando] = useState(false);
 
   const carregar = () => {
     setCarregando(true);
@@ -88,6 +95,37 @@ export function PopsPage() {
     carregar();
   };
 
+  const handleAnexar = async () => {
+    if (!anexarCodigo.trim() || !anexarNome.trim() || !anexarFile) {
+      showToast('Preencha código, nome e selecione o arquivo.', 'error');
+      return;
+    }
+    if (anexarFile.size > 10 * 1024 * 1024) {
+      showToast('Arquivo muito grande (máx 10MB).', 'error');
+      return;
+    }
+    const ext = anexarFile.name.split('.').pop()?.toLowerCase();
+    if (ext !== 'docx' && ext !== 'pdf') {
+      showToast('Apenas .docx ou .pdf são aceitos.', 'error');
+      return;
+    }
+    setAnexando(true);
+    try {
+      const res = await attachPop(anexarCodigo.trim(), anexarNome.trim(), anexarFile);
+      showToast(`POP ${res.codigo} anexado: ${res.nome_pop}`, 'success');
+      setAnexarAberto(false);
+      setAnexarCodigo('');
+      setAnexarNome('');
+      setAnexarFile(null);
+      carregar();
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'Falha ao anexar POP.';
+      showToast(msg, 'error');
+    } finally {
+      setAnexando(false);
+    }
+  };
+
   return (
     <>
       <div className="page-header">
@@ -102,6 +140,13 @@ export function PopsPage() {
             </p>
           </div>
           <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+            <Button
+              variant="ghost"
+              icon={<IconUpload size={14} />}
+              onClick={() => setAnexarAberto(true)}
+            >
+              Anexar POP externo
+            </Button>
             <Button
               variant="ghost"
               icon={<IconArchive size={14} />}
@@ -249,6 +294,62 @@ export function PopsPage() {
       >
         Excluir permanentemente o POP <strong>{confirmando?.nome_pop}</strong> (
         {confirmando?.codigo || 'sem código'})? Essa ação não pode ser desfeita.
+      </Modal>
+
+      <Modal
+        open={anexarAberto}
+        title="Anexar POP externo"
+        onClose={() => !anexando && setAnexarAberto(false)}
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setAnexarAberto(false)} disabled={anexando}>
+              Cancelar
+            </Button>
+            <Button variant="primary" icon={<IconUpload size={14} />} onClick={handleAnexar} disabled={anexando}>
+              {anexando ? 'Anexando...' : 'Anexar'}
+            </Button>
+          </>
+        }
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <p style={{ fontSize: '0.85rem', color: 'var(--muted)', margin: 0 }}>
+            Para POPs criados fora do GeraPOP (Word/PDF manual). O arquivo será salvo na biblioteca oficial.
+          </p>
+          <label style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+            <span style={{ fontSize: '0.8rem', fontWeight: 600 }}>Código *</span>
+            <input
+              className="input"
+              placeholder="POP-OPE-003"
+              value={anexarCodigo}
+              onChange={(e) => setAnexarCodigo(e.target.value.toUpperCase())}
+              style={{ height: '40px' }}
+            />
+          </label>
+          <label style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+            <span style={{ fontSize: '0.8rem', fontWeight: 600 }}>Nome do POP *</span>
+            <input
+              className="input"
+              placeholder="Ex: PROGRAMAÇÃO DE CARGA"
+              value={anexarNome}
+              onChange={(e) => setAnexarNome(e.target.value)}
+              style={{ height: '40px' }}
+            />
+          </label>
+          <label style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+            <span style={{ fontSize: '0.8rem', fontWeight: 600 }}>Arquivo .docx ou .pdf * (máx 10MB)</span>
+            <input
+              type="file"
+              accept=".docx,.pdf"
+              onChange={(e) => setAnexarFile(e.target.files?.[0] ?? null)}
+              style={{ fontSize: '0.85rem' }}
+            />
+            {anexarFile ? (
+              <span style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>
+                Selecionado: {anexarFile.name} ({(anexarFile.size / 1024).toFixed(1)} KB)
+              </span>
+            ) : null}
+          </label>
+        </div>
       </Modal>
     </>
   );

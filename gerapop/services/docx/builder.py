@@ -99,11 +99,10 @@ def _set_col_widths(table, larguras_emu: list[int]) -> None:
 def _obter_logo_path() -> str | None:
     raiz = Path(__file__).resolve().parent.parent.parent.parent
     candidatos = [
-        Path("Logo CODEBA.png"),
-        raiz / "Logo CODEBA.png",
-        raiz / "gerapop" / "assets" / "logo-codeba.png",
-        # logo da UI web (fallback)
         raiz / "frontend" / "public" / "logo-codeba-topo.png",
+        raiz / "gerapop" / "assets" / "logo-codeba.png",
+        raiz / "Logo CODEBA.png",
+        Path("Logo CODEBA.png"),
     ]
     for c in candidatos:
         if c.is_file():

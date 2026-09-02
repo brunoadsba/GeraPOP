@@ -14,7 +14,7 @@ from gerapop.storage import get_library_dir, get_storage_dir
 
 router = APIRouter(prefix="/api/pops", tags=["pops"])
 
-_SAFE = re.compile(r"[^A-Z0-9_\- ]", re.IGNORECASE)
+_CHARS_INVALIDOS = re.compile(r'[<>:"/\\|?*]')
 
 
 def _slug_codigo(codigo: str) -> str:
@@ -22,17 +22,10 @@ def _slug_codigo(codigo: str) -> str:
 
 
 def _nome_pasta(codigo: str, nome: str) -> str:
-    # Mesmo padrão de storage.exportar_para_biblioteca: {CODIGO}_{NOME}
-    nome_up = nome.strip().upper()
-    nome_up = _SAFE.sub("", nome_up)
-    nome_up = re.sub(r"\s+", " ", nome_up).strip().replace(" ", "_")
-    # preserva espaços do nome original em maiúsculas? storage preserva espaços, mas para pasta usa _ se já sanitizado?
-    # Seguimos storage: espaços preservados, só remove inválidos de path
-    # Reimplementação simples: usa codigo + _ + nome upper com espaços
-    raw = f"{_slug_codigo(codigo)}_{nome.strip().upper()}"
-    # sanitiza apenas caracteres inválidos de path
-    raw = raw.replace("/", "_").replace("\\", "_")
-    return raw
+    codigo_norm = codigo.strip()
+    nome_limpo = _CHARS_INVALIDOS.sub(" ", nome.strip())
+    nome_limpo = re.sub(r"\s+", " ", nome_limpo).strip().upper()
+    return f"{codigo_norm}_{nome_limpo}" if nome_limpo else codigo_norm
 
 
 @router.post("/attach", status_code=status.HTTP_201_CREATED)
@@ -49,6 +42,19 @@ async def anexar_pop_externo(
     ext = Path(file.filename).suffix.lower()
     if ext not in (".docx", ".pdf"):
         raise HTTPException(status_code=400, detail="apenas .docx ou .pdf são aceitos")
+    try:
+        file.file.seek(0, os.SEEK_END)
+        size = file.file.tell()
+        file.file.seek(0)
+        if size > 10 * 1024 * 1024:
+            raise HTTPException(status_code=413, detail="arquivo muito grande (máx 10MB)")
+    except HTTPException:
+        raise
+    except Exception:
+        try:
+            file.file.seek(0)
+        except Exception:
+            pass
 
     pasta_nome = _nome_pasta(codigo, nome)
     library_root = get_library_dir()
@@ -70,22 +76,21 @@ async def anexar_pop_externo(
     finally:
         await file.close()
 
-    data_root = get_storage_dir()
+    pops_root = get_storage_dir() / "pops"
     try:
-        data_root.mkdir(parents=True, exist_ok=True)
-        data_writable = os.access(data_root, os.W_OK)
+        pops_root.mkdir(parents=True, exist_ok=True)
+        data_writable = os.access(pops_root, os.W_OK)
     except Exception:
         data_writable = False
     if not data_writable:
-        data_root = Path(tempfile.gettempdir()) / "gerapop-data" / "pops"
-        data_root.mkdir(parents=True, exist_ok=True)
+        pops_root = Path(tempfile.gettempdir()) / "gerapop-data" / "pops"
+        pops_root.mkdir(parents=True, exist_ok=True)
 
-    # Cria registro mínimo se não existir
     import json
     import time
 
     pop_id = f"{int(time.time()*1000)}_{os.urandom(4).hex()}"
-    pop_dir = data_root / pop_id
+    pop_dir = pops_root / pop_id
     pop_dir.mkdir(parents=True, exist_ok=True)
     meta = {
         "metadata": {

@@ -134,6 +134,17 @@ export function getFluxoPop(ref: string): Promise<PopData | null> {
   return request<PopData | null>(`/pops/fluxo/${ref}`);
 }
 
+export function attachPop(codigo: string, nome: string, file: File): Promise<{ id: string; codigo: string; nome_pop: string }> {
+  const form = new FormData();
+  form.append('codigo', codigo);
+  form.append('nome', nome);
+  form.append('file', file);
+  return request<{ id: string; codigo: string; nome_pop: string }>('/pops/attach', {
+    method: 'POST',
+    body: form,
+  });
+}
+
 export function triggerDownload(blob: Blob, filename: string): void {
   const url = URL.createObjectURL(blob);
   const anchor = document.createElement('a');

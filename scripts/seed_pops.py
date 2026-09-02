@@ -1,9 +1,11 @@
 """Alimenta a biblioteca do GeraPOP com POP-COM-001 e POP-OPE-001 (padrão CODEBA)."""
 
+from pathlib import Path
+
 from gerapop.models import PopData
 from gerapop.services.docx import gerar_docx
 from gerapop.services.pdf import gerar_pdf
-from gerapop.storage import list_pops, save_pop
+from gerapop.storage import _nome_pasta_biblioteca, get_library_dir, list_pops, save_pop
 
 AREA_COM = "DESENVOLVIMENTO DE NEGÓCIOS"
 
@@ -381,18 +383,36 @@ def _pop_id_existente(codigo: str) -> str | None:
     return None
 
 
+def _bytes_da_biblioteca(pop: PopData, ext: str) -> bytes | None:
+    lib_dir = get_library_dir() / _nome_pasta_biblioteca(pop)
+    candidate = lib_dir / f"{lib_dir.name}{ext}"
+    if candidate.is_file():
+        return candidate.read_bytes()
+    # varre por código caso nome tenha mudado
+    if lib_dir.parent.exists():
+        for entry in lib_dir.parent.iterdir():
+            if entry.is_dir() and entry.name.startswith(pop.codigo + "_"):
+                alt = entry / f"{entry.name}{ext}"
+                if alt.is_file():
+                    return alt.read_bytes()
+    return None
+
+
 def main() -> None:
     for pop in (pop_com_001(), pop_ope_001(), pop_ope_002()):
         erros = pop.validate()
         if erros:
             raise SystemExit(f"Validação falhou: {erros}")
+        docx_bytes = _bytes_da_biblioteca(pop, ".docx") or gerar_docx(pop).getvalue()
+        pdf_bytes = _bytes_da_biblioteca(pop, ".pdf") or gerar_pdf(pop).getvalue()
         novo_id = save_pop(
             pop,
-            gerar_docx(pop).getvalue(),
+            docx_bytes,
             pop_id=_pop_id_existente(pop.codigo),
-            pdf=gerar_pdf(pop).getvalue(),
+            pdf=pdf_bytes,
         )
-        print(f"Salvo {pop.codigo} ({pop.nome_pop}) -> {novo_id}")
+        origem = "biblioteca" if _bytes_da_biblioteca(pop, ".docx") else "gerado"
+        print(f"Salvo {pop.codigo} ({pop.nome_pop}) -> {novo_id} [{origem} {len(docx_bytes)} docx / {len(pdf_bytes)} pdf]")
 
     print("\nBiblioteca atual:")
     for record in list_pops():

@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import io
+import urllib.parse
+from pathlib import Path
 
 from fastapi import APIRouter, HTTPException, Query, status
 from fastapi.responses import StreamingResponse
@@ -13,7 +15,14 @@ from gerapop.codigo import encontrar_codigo_duplicado
 from gerapop.constants import DOCX_MIME, PDF_MIME
 from gerapop.services.docx import gerar_docx
 from gerapop.services.pdf import gerar_pdf
-from gerapop.storage import get_docx_bytes, get_pop, list_pops, save_pop
+from gerapop.storage import (
+    _nome_pasta_biblioteca,
+    get_docx_bytes,
+    get_library_dir,
+    get_pop,
+    list_pops,
+    save_pop,
+)
 
 router = APIRouter(prefix="/api/generate", tags=["generate"])
 
@@ -60,16 +69,40 @@ def gerar_pop(
 
 
 def _stream(data: bytes | io.BytesIO, media_type: str, filename: str) -> StreamingResponse:
-    """Streams bytes ou BytesIO como attachment com o nome informado."""
+    """Streams bytes ou BytesIO como attachment com o nome informado (RFC 5987 para acentos)."""
     if hasattr(data, "getvalue"):
         body = data
     else:
         body = io.BytesIO(data)
+    # Fallback ASCII sem acentos + UTF-8 encoded para suportar "ANÚNCIO", "PROGRAMAÇÃO" no Vercel/Chrome
+    fallback = filename.encode("ascii", "ignore").decode() or "arquivo"
+    quoted = urllib.parse.quote(filename, safe="")
+    disposition = f'attachment; filename="{fallback}"; filename*=UTF-8\'\'{quoted}'
     return StreamingResponse(
         body,
         media_type=media_type,
-        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+        headers={"Content-Disposition": disposition},
     )
+
+
+def _bytes_da_biblioteca(pop, ext: str) -> bytes | None:
+    """Retorna bytes do arquivo da biblioteca local se existir (fonte da verdade 607K)."""
+    try:
+        lib_dir = get_library_dir() / _nome_pasta_biblioteca(pop)
+        stem = lib_dir.name
+        candidate = lib_dir / f"{stem}{ext}"
+        if candidate.is_file():
+            return candidate.read_bytes()
+        # fallback: varre pasta do código caso nome tenha mudado
+        if lib_dir.parent.exists():
+            for entry in lib_dir.parent.iterdir():
+                if entry.is_dir() and entry.name.startswith(pop.codigo + "_"):
+                    alt = entry / f"{entry.name}{ext}"
+                    if alt.is_file():
+                        return alt.read_bytes()
+    except Exception:
+        return None
+    return None
 
 
 @router.post("/preview/docx", response_class=StreamingResponse)
@@ -88,18 +121,21 @@ def preview_pdf(payload: PopCreateRequest) -> StreamingResponse:
 
 @router.get("/{pop_id}/docx", response_class=StreamingResponse)
 def baixar_docx(pop_id: str) -> StreamingResponse:
-    """Retorna o .docx do POP salvo (reconstrói se ausente)."""
+    """Retorna o .docx do POP salvo (prioriza biblioteca local 56K correta)."""
     pop = get_pop(pop_id)
     if pop is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="POP não encontrado")
-    data = get_docx_bytes(pop_id) or gerar_docx(pop).getvalue()
+    data = _bytes_da_biblioteca(pop, ".docx") or get_docx_bytes(pop_id) or gerar_docx(pop).getvalue()
     return _stream(data, DOCX_MIME, pop.output_filename())
 
 
 @router.get("/{pop_id}/pdf", response_class=StreamingResponse)
 def baixar_pdf(pop_id: str) -> StreamingResponse:
-    """Gera e retorna o .pdf do POP salvo."""
+    """Retorna o .pdf (prioriza biblioteca local 607K 3p correta, evita truncagem 40K 1p)."""
     pop = get_pop(pop_id)
     if pop is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="POP não encontrado")
-    return _stream(gerar_pdf(pop), PDF_MIME, _nome_pdf(pop.output_filename()))
+    data = _bytes_da_biblioteca(pop, ".pdf")
+    if data is None:
+        data = gerar_pdf(pop).getvalue()
+    return _stream(data, PDF_MIME, _nome_pdf(pop.output_filename()))

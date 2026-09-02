@@ -37,12 +37,16 @@ Thumbs.db
 # Outputs
 *.docx
 !docs/**/*.docx
+!POP - Procedimento Operacional Padrão/**/*.docx
+!POP - Procedimento Operacional Padrão/**/*.pdf
 
 # Dados gerados (histórico de POPs) — apenas na raiz; fluxo-sev/data é versionado
 /data/
 
 # Metadados de download do Windows (NTFS ADS) junto à biblioteca oficial
 *:Zone.Identifier
+~$*.docx
+~$*.pdf
 
 # Artefatos de QA (Playwright MCP)
 .playwright-mcp/

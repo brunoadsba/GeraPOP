@@ -234,6 +234,7 @@ def _table(data: list[list], col_widths: list[float], repeat_header: bool = True
 def _obter_logo_path() -> str | None:
     raiz = Path(__file__).resolve().parent.parent.parent.parent
     candidatos = [
+        raiz / "frontend" / "public" / "logo-codeba-topo.png",
         raiz / "gerapop" / "assets" / "logo-codeba.png",
         raiz / "Logo CODEBA.png",
         Path("Logo CODEBA.png"),
